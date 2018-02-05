@@ -17,7 +17,7 @@
 
 
 
-+puedesMover  [source(judge)]<- .print("Inicio Jugador 1");
++puedesMover <- .print("Inicio Jugador 1");
 	.send(judge,tell,mover(ficha,pos(3,3),pos(13,13))).
 +correjir [source(A)] : A=judge <-
 	.print("Corrigiendo movimiento");

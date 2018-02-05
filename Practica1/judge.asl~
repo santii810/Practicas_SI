@@ -10,9 +10,9 @@ mismaPosicion(OX,OY,DX,DY) :-	OX=DX & OY=DY.
 turno(player1).
 
 cambiarTurno(X):-
-	X=player1 & turno(player2).
+	X=player1, turno(player2).
 cambiarTurno(X):-
-	X = player2 & turno(player1).
+	turno(player1);
 	
 
 /* Initial goals */
@@ -20,6 +20,8 @@ cambiarTurno(X):-
 
 
 /* Plans */
+
+
 
 +!start : turno(X) <- 
 	.print("Iniciar partida.");

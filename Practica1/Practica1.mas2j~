@@ -1,0 +1,15 @@
+/* Jason Project */
+
+MAS practica1 {
+
+    infrastructure: Centralised
+
+    agents:
+        player1;
+
+        player2;
+
+        judge;
+
+}
+

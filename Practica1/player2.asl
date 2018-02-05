@@ -1,14 +1,20 @@
-// Agent Player2 in project Practica1.mas2j
-
-/* Initial beliefs and rules */
-
-/* Initial goals */
-
-!start.
-
-/* Plans */
-
-+!start : true <- .print("Inicio jugador 2");
+// Agent Player2 in project Practica1.mas2j
+
+
+
+/* Initial beliefs and rules */
+
+
+
+/* Initial goals */
+
+
+
+/* Plans */
+
+
+
++puedesMover  <- .print("Inicio jugador 2");
 	.send(judge,tell,mover(ficha,pos(3,2),pos(-7,3))).
 +correjir [source(A)] : A=judge <-
 	.print("Corrigiendo movimiento");
