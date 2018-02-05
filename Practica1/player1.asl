@@ -4,8 +4,8 @@
 
 /* Initial beliefs and rules */
 
-
-
+incorrectoA(mover(ficha,pos(3,3),pos(13,13))).
+correcto(mover(ficha,pos(3,3),pos(4,3))).
 /* Initial goals */
 
 
@@ -15,12 +15,15 @@
 
 /* Plans */
 
-
-
-+puedesMover  [source(judge)]<- .print("Inicio Jugador 1");
-	.send(judge,tell,mover(ficha,pos(3,3),pos(13,13))).
-+correjir [source(A)] : A=judge <-
++mueve  [source(judge)]: incorrectoA(X)<- 
+	.print("Inicio Jugador 1");
+	.send(judge,tell,X).
++correjir [source(judge)] : correcto(X)<-
 	.print("Corrigiendo movimiento");
-	.send(judge,untell,mover(ficha,pos(3,3),pos(3,3)));
-	.send(judge,tell,mover(ficha,pos(3,3),pos(4,3))).
+	?correcto(mover(_,pos(_,_),pos(D,E)));
+	-+correcto(mover(A,pos(D,E),pos(D+1,E+1)));
+	.send(judge,tell,X).
++movimientoCorrecto [source(judge)] <-
+	.print("Ficha movida").
+
 
