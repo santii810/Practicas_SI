@@ -2,7 +2,7 @@
 
 /* Initial beliefs and rules */
 numTurno(1).
-maxTurnos(10).
+maxTurnos(100).
 size(10). //tamaño del tablero
 tablero(DX,DY) :- DX <0 | DY <0 | (size(X) & X<DX) | X < DY.
 mismaPosicion(OX,OY,OX,OY).

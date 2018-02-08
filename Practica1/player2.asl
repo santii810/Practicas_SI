@@ -1,8 +1,5 @@
 // Agent Player2 in project Practica1.mas2j
 
-
-
-
 /* Initial beliefs and rules */
 
 incorrectoA(mover(ficha,pos(3,3),pos(3,3))).
@@ -10,12 +7,7 @@ correcto(mover(ficha,pos(1,3),pos(2,5))).
 /* Initial goals */
 
 
-
-
 /* Plans */
-
-
-
 +mueve  [source(judge)]: incorrectoA(X)<- 
 	.print("Inicio Jugador 2");
 	.send(judge,tell,X).
