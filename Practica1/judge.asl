@@ -3,17 +3,21 @@
 /* Initial beliefs and rules */
 numTurno(1).
 maxTurnos(100).
-size(10). //tamaño del tablero
-tablero(DX,DY) :- DX <0 | DY <0 | (size(X) & X<DX) | X < DY.
+size(10). //tamaÃ±o del tablero
+tablero(DX,DY) :- 
+				size(X) &
+				(DX < 0 |
+				 DY < 0 |
+				(DX < 0 & DY < 0) |
+				(X < DX) |
+				(X < DY) | 
+				((X < DX) & (X < DY))).
 mismaPosicion(OX,OY,OX,OY).
 turno(player1).
 correcto(OX,OY,DX,DY):- not(tablero(DX,DY)) & not(mismaPosicion(OX,OY,DX,DY)).
 
 finTurno :- maxTurnos(Max) & numTurno(N) & Max < N.
-cambiarTurno(X):-
-	X=player1 & turno(player2).
-cambiarTurno(X):-
-	X = player2 & turno(player1).
+
 
 
 /* Initial goals */
@@ -42,7 +46,7 @@ cambiarTurno(X):-
 	-mover(Ficha,pos(OX,OY),pos(DX,DY))[source(A)].
 +mover(Ficha,pos(OX,OY),pos(DX,DY)) [source(A)]: correcto(OX,OY,DX,DY)<- 
 	.print("Movimiento correcto. Moviendo de (", OX, ",", OY, ") a (", DX, ",", DY, ")." );
-	.send(A,tell,puedesMover);
+	.send(A,tell,movimientoCorrecto);
 	.send(A,untell,movimientoCorrecto);
 	-mover(Ficha,pos(OX,OY),pos(DX,DY))[source(A)];
 	if(A=player1)
@@ -55,6 +59,6 @@ cambiarTurno(X):-
 	
 +mover(Ficha,pos(OX,OY),pos(DX,DY))<-
 	.print("Movimiento indeterminado").
-	
+
 	
 
