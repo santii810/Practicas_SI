@@ -14,7 +14,7 @@ correcto(mover(ficha,pos(0,0),pos(0,0))).
 	-+movimiento(mover(ficha,pos(DX,DY),pos(math.random(15)+1,math.random(15)+1)));
 	?movimiento(X);
 	.send(judge,tell,X).
-//Si tiene que rectificar una o varias veces significa que ha realizado algún movimiento
+//Si tiene que rectificar una o varias veces significa que ha realizado algun movimiento
 +correjir [source(judge)] : movimiento(X)<-
 	.print("Corrigiendo movimiento");
 	//Las coordenadas de destino de correcto,son las coordenadas por donde empieza el siguiente movimiento

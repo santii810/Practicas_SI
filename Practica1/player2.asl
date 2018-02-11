@@ -27,6 +27,5 @@ correcto(mover(ficha,pos(0,0),pos(0,0))).
 	//El movimiento realizado pasa a ser el movimiento correcto
 	-+correcto(X);
 	.print("Ficha movida").
-.
 
 
