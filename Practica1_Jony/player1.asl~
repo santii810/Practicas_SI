@@ -5,8 +5,8 @@
 
 /* Initial beliefs and rules */
 
-//movimiento(moverDesdeEnDireccion(pos(0,0),up)).
-correcto(moverDesdeEnDireccion(pos(0,0),up)).
+//movimiento(moverDesdeEnDireccion(pos(0,0),down)).
+correcto(moverDesdeEnDireccion(pos(0,0),down)).
 /* Initial goals */
 
 /* Plans */
@@ -17,13 +17,11 @@ correcto(moverDesdeEnDireccion(pos(0,0),up)).
 	if(R >= 1 & R < 2){-+direccion(down);}
 	if(R >= 2 & R < 3){-+direccion(left);}
 	if(R >= 3){-+direccion(right);}
-
-	if(Dir=up){-+movimiento(moverDesdeEnDireccion(pos(X,Y+1),D));}
-	if(Dir=down){-+movimiento(moverDesdeEnDireccion(pos(X,Y-1),D));}
-	if(Dir=left){-+movimiento(moverDesdeEnDireccion(pos(X-1,Y),D));}
-	if(Dir=right){-+movimiento(moverDesdeEnDireccion(pos(X+1,Y),D));}
 	
 	?direccion(D);
+	-+movimiento(moverDesdeEnDireccion(pos(X,Y),D));
+
+
 	.print("Inicio Jugador 1");
 	//-+movimiento(moverDesdeEnDireccion(pos(DX,DY),D));
 	?movimiento(Mov);
@@ -55,5 +53,6 @@ correcto(moverDesdeEnDireccion(pos(0,0),up)).
 	//El movimiento realizado pasa a ser el movimiento correcto
 	-+correcto(X);
 	.print("Ficha movida").
+
 
 
