@@ -57,5 +57,8 @@ correcto(moverDesdeEnDireccion(pos(0,0),down)).
 	-+correcto(X);
 	.print("Ficha movida").
 
+	
++valido(X,Y) [source(judge)]<- 
+	-+correcto(moverDesdeEnDireccion(pos(X,Y),down)).	
 
 

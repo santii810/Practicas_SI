@@ -3,16 +3,21 @@
 
 
 /* Initial beliefs and rules */
+/* #region atributos de configuracion*/
+	maxTurnos(100).//Maximo de turnos del juego
+	size(10). //tamaño del tablero
+	numTurno(1).//Almacena el número de turnos que se estan realizando en cada momento
+	turno(player1). //Jugador que empieza el juego
 
+/*	#endregion */
 
 limiteVecesFueraTablero :- vecesFueraTablero(N) & N >= 3.//Veces que esta permitido enviar un mov. fuera de tablero
 //Por defecto estan a 0 las veces de fuera de tablero y fuera de turno
 vecesFueraTablero(0).
 //Necesitamos almacenar las veces que ha perdido el turno cada jugador por separado (player1, player2)
 vecesFueraTurno(0,0).
-numTurno(1).//Almacena el número de turnos que se estan realizando en cada momento
-maxTurnos(15).//Maximo de turnos del juego  /*TODO cambiar esto*/
-size(1). //tamaño del tablero
+
+
 //comprobación general de fuera tablero
 comprobarFueraTablero(DX,DY) :- 
 				size(X) &
@@ -22,14 +27,12 @@ fueraTablero(pos(X,Y),up) :- comprobarFueraTablero(X,Y-1).
 fueraTablero(pos(X,Y),down) :- comprobarFueraTablero(X,Y+1).
 fueraTablero(pos(X,Y),left) :- comprobarFueraTablero(X-1,Y).
 fueraTablero(pos(X,Y),right) :- comprobarFueraTablero(X+1,Y).
-//Por defecto empieza el player1
-turno(player1).
+
 
 //Comprobación del movimiento correcto
 correcto(pos(X,Y),Dir):- not(fueraTablero(pos(X,Y),Dir)). 
 /*
-TODO
-comprobar que las fichas sean de distinto color
+TODO	comprobar que las fichas sean de distinto color
 */
 finTurno :- maxTurnos(Max) & numTurno(N) & Max < N.
 
@@ -56,14 +59,11 @@ finTurno :- maxTurnos(Max) & numTurno(N) & Max < N.
 	.print("El jugador ", A, " ha superado el limite de turnos fallidos");
 	?numTurno(N);
 	-+numTurno(N+1);
-	!start.
-				
-	   
+	!start.		   
 	
 	
 //Caso para cuando se tienen 3 veces fuera de tablero y la posición vuelve a ser fuera de tablero (3+1 <= 3)
 +moverDesdeEnDireccion(pos(X,Y),Dir)[source(A)] : limiteVecesFueraTablero & not(correcto(pos(X,Y),Dir))  <-
-	.print(3);
 	//Incrementamos el numero de movimientos incorrectos en este turno
 	?vecesFueraTablero(V);
 	-+vecesFueraTablero(V+1);
@@ -97,7 +97,6 @@ finTurno :- maxTurnos(Max) & numTurno(N) & Max < N.
 	
 //Caso para cuando la dirección recibida sea incorrecta
 +moverDesdeEnDireccion(pos(X,Y),Dir)[source(A)] : not(correcto(pos(X,Y),Dir)) & vecesFueraTablero(V) <-
-	.print(2);
 	//Incrementamos el numero de movimientos incorrectos en este turno
 //	?vecesFueraTablero(V);
 	-+vecesFueraTablero(V+1);
@@ -109,14 +108,13 @@ finTurno :- maxTurnos(Max) & numTurno(N) & Max < N.
 	
 //Caso para cuando el movimiento es correcto
 +moverDesdeEnDireccion(pos(X,Y),Dir)[source(A)] : correcto(pos(X,Y),Dir) <-
-	.print(1);	
 	.print(moverDesdeEnDireccion(pos(X,Y),Dir));
 	.send(A,tell,puedesMover);
 	.send(A,untell,puedesMover);
 	-moverDesdeEnDireccion(pos(X,Y),Dir)[source(A)];
 	//Para saber la posición a la cual se dirigi y almacenar el valor de "celda(X,Y,own)"
-	if(Dir=up){-+celda(X,Y+1,1);}
-	if(Dir=down){-+celda(X,Y-1,1);}
+	if(Dir=up){-+celda(X,Y-1,1);}
+	if(Dir=down){-+celda(X,Y+1,1);}
 	if(Dir=left){-+celda(X-1,Y,1);}
 	if(Dir=right){-+celda(X+1,Y,1);}
 	if(A=player1){
@@ -129,4 +127,8 @@ finTurno :- maxTurnos(Max) & numTurno(N) & Max < N.
 	?numTurno(N);
 	-+numTurno(N+1);
 	-+vecesFueraTablero(0);//Reiniciamos contador de veces fueraTablero
+	?celda(DX,DY,_)
+	.send(A,tell,valido(DX,DY));
+	.send(A,untell,valido(DX,DY));
+	.print("Devuelto a ", A, "posicion (", DX, ", ", DY, ").");
 	!start.
