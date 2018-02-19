@@ -10,8 +10,8 @@ limiteVecesFueraTablero :- veces(fueraTablero,N) & N >= 3.//Veces que esta permi
 veces(fueraTablero,0).
 veces(fueraTurno,0).
 numTurno(1).//Almacena el número de turnos que se estan realizando en cada momento
-maxTurnos(100).//Maximo de turnos del juego
-size(10). //tamaño del tablero
+maxTurnos(5).//Maximo de turnos del juego  /*TODO cambiar esto*/
+size(1). //tamaño del tablero
 //comprobación general de fuera tablero
 comprobarFueraTablero(DX,DY) :- 
 				size(X) &
@@ -52,9 +52,12 @@ finTurno :- maxTurnos(Max) & numTurno(N) & Max < N.
 	.send(X,untell, mueve).
 
 //Caso para cuando se tienen 3 veces fuera de tablero y la posición vuelve a ser fuera de tablero (3+1 <= 3)
-+moverDesdeEnDireccion(pos(X,Y),Dir)[source(A)] : limiteVecesFueraTablero & fueraTablero(pos(X,Y),Dir) <-
++moverDesdeEnDireccion(pos(X,Y),Dir)[source(A)] : limiteVecesFueraTablero & not(correcto(pos(X,Y),Dir)) <-
+.print(3);
 	?veces(fueraTablero,V);
-	.print(veces(fueraTablero,V+1));
+	-+veces(fueraTablero,V+1);
+	?veces(fueraTablero,Faltas);
+	.print("Fallo, fuera del tablero:", V);
 	-moverDesdeEnDireccion(pos(X,Y),Dir)[source(A)];
 	if(A=player1)
 		{-+turno(player2);}
@@ -65,8 +68,9 @@ finTurno :- maxTurnos(Max) & numTurno(N) & Max < N.
 	-+numTurno(N+1);
 	!start.
 
-//Caso para cuando la dirección recibida sea fuera de tablero
-+moverDesdeEnDireccion(pos(X,Y),Dir)[source(A)] : fueraTablero(pos(X,Y),Dir) <-
+//Caso para cuando la dirección recibida sea incorrecta
++moverDesdeEnDireccion(pos(X,Y),Dir)[source(A)] : not(correcto(pos(X,Y),Dir)) <-
+.print(2);
 	?veces(fueraTablero,V);
 	-+veces(fueraTablero,V+1);
 	.print(veces(fueraTablero,V+1));
@@ -76,7 +80,8 @@ finTurno :- maxTurnos(Max) & numTurno(N) & Max < N.
 	
 //Caso para cuando el movimiento es correcto
 +moverDesdeEnDireccion(pos(X,Y),Dir)[source(A)] : correcto(pos(X,Y),Dir) <-
-	.print(moverDesdeEnDireccion(pos(X,Y),Dir));
+.print(1);	
+.print(moverDesdeEnDireccion(pos(X,Y),Dir));
 	.send(A,tell,puedesMover);
 	.send(A,untell,puedesMover);
 	-moverDesdeEnDireccion(pos(X,Y),Dir)[source(A)];
