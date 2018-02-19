@@ -57,6 +57,7 @@ finTurno :- maxTurnos(Max) & numTurno(N) & Max < N.
 +moverDesdeEnDireccion(pos(X,Y),Dir)[source(A)] : vecesFueraTurno(P1,P2) &
 				( (A = player1 & P1 >= 3) | (A = player2 & P2 >= 3) )  <-
 	.print("El jugador ", A, " ha superado el limite de turnos fallidos");
+	-moverDesdeEnDireccion(pos(X,Y),Dir)[source(A)];
 	?numTurno(N);
 	-+numTurno(N+1);
 	!start.		   
@@ -79,11 +80,14 @@ finTurno :- maxTurnos(Max) & numTurno(N) & Max < N.
 	?vecesFueraTurno(P1,P2);
 	if(A = player1){
 		-+vecesFueraTurno(P1+1,P2);
-		.print("Fuera turno " , P2+1 , "ª vez");
+		NumVeces = P1+1;
 	}else{
 		-+vecesFueraTurno(P1,P2+1);
-		.print("Fuera turno " , P2+1 , "ª vez");
+		NumVeces = P2+1;
 	}
+	.print("Fuera turno " , NumVeces , "ª vez");
+	.send(A,tell,invalido(fueraTurno,NumVeces));
+	.send(A,untell,invalido(fueraTurno,NumVeces));
 	
 	
 	?numTurno(N);
@@ -98,11 +102,10 @@ finTurno :- maxTurnos(Max) & numTurno(N) & Max < N.
 //Caso para cuando la dirección recibida sea incorrecta
 +moverDesdeEnDireccion(pos(X,Y),Dir)[source(A)] : not(correcto(pos(X,Y),Dir)) & vecesFueraTablero(V) <-
 	//Incrementamos el numero de movimientos incorrectos en este turno
-//	?vecesFueraTablero(V);
 	-+vecesFueraTablero(V+1);
 	.print("Movimiento incorrecto ", V+1 , "ª vez.");
-	.send(A,tell,correjir);
-	.send(A,untell,correjir);
+	.send(A,tell,invalido(fueraTablero,V+1));
+	.send(A,untell,invalido(fueraTablero,V+1));
 	-moverDesdeEnDireccion(pos(X,Y),Dir)[source(A)].
 
 	
@@ -127,6 +130,8 @@ finTurno :- maxTurnos(Max) & numTurno(N) & Max < N.
 	?numTurno(N);
 	-+numTurno(N+1);
 	-+vecesFueraTablero(0);//Reiniciamos contador de veces fueraTablero
+	
+	//Se le envia un mensaje de movimiento valido al player
 	?celda(DX,DY,_)
 	.send(A,tell,valido(DX,DY));
 	.send(A,untell,valido(DX,DY));

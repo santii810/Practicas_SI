@@ -26,9 +26,11 @@ correcto(moverDesdeEnDireccion(pos(0,0),down)).
 	.print("Movimiento a realizar: ", Mov);
 	.send(judge,tell,Mov).
 	
-
-//Si tiene que rectificar una o varias veces significa que ha realizado algún movimiento
-+correjir [source(judge)] : movimiento(X)<-
+// Si devuelve un invalidod e tipo fueraTurno el jugador no puede hacer nada
++invalido(fueraTurno,Veces) [source(judge)].
+	
+//Si recibe un invalido de tipo fueraTablero el jugador debe rectificar el movimiento
++invalido(fueraTablero,Veces) [source(judge)] : movimiento(X)<-
 	.print("Corrigiendo movimiento");
 	//Las coordenadas de destino de correcto,son las coordenadas por donde empieza el siguiente movimiento
 	?correcto(moverDesdeEnDireccion(pos(OX,OY),Dir));
@@ -57,7 +59,7 @@ correcto(moverDesdeEnDireccion(pos(0,0),down)).
 	-+correcto(X);
 	.print("Ficha movida").
 
-	
+//Significa que el juez ha aceptado el movimiento  por lo que lo registramos
 +valido(X,Y) [source(judge)]<- 
 	-+correcto(moverDesdeEnDireccion(pos(X,Y),down)).	
 
