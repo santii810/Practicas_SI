@@ -21,12 +21,12 @@ finTurno :- maxTurnos(Max) & numTurno(N) & Max < N.
 
 
 /* Initial goals */
-!start.
+!startGame.
 
 
 /* Plans */
-+!start : finTurno.
-+!start  <- 
++!startGame : finTurno.
++!startGame  <- 
 	?numTurno(N);	
 	?turno(X);
 	.print("\n\n\n");
