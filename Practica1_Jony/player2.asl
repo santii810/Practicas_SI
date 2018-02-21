@@ -11,7 +11,7 @@ correcto(moverDesdeEnDireccion(pos(0,0),down)).
 
 /* Plans */
 //Si es el primer movimiento, entonces viene a partir de un correcto
-+mueve[source(judge)]: correcto(moverDesdeEnDireccion(pos(X,Y),Dir))<- 
++puedesMover[source(judge)]: correcto(moverDesdeEnDireccion(pos(X,Y),Dir))<- 
 	R = math.random(4);
 	if(R < 1){-+direccion(up);}
 	if(R >= 1 & R < 2){-+direccion(down);}
@@ -52,15 +52,9 @@ correcto(moverDesdeEnDireccion(pos(0,0),down)).
 	.send(judge,tell,Mov).
 	
 	
-//Si se realiza un movimiento correcto
-+puedesMover [source(judge)] <-
-	?movimiento(X);
-	//El movimiento realizado pasa a ser el movimiento correcto
-	-+correcto(X);
-	.print("Ficha movida").
-
 //Significa que el juez ha aceptado el movimiento  por lo que lo registramos
 +valido(X,Y) [source(judge)]<- 
+	.print("Ficha movida");
 	-+correcto(moverDesdeEnDireccion(pos(X,Y),down)).	
 
 

@@ -5,8 +5,8 @@
 
 /* Initial beliefs and rules */
 
-//movimiento(moverDesdeEnDireccion(pos(0,0),up)).
-correcto(moverDesdeEnDireccion(pos(0,0),up)).
+//movimiento(moverDesdeEnDireccion(pos(0,0),down)).
+correcto(moverDesdeEnDireccion(pos(0,0),down)).
 /* Initial goals */
 
 /* Plans */
@@ -17,20 +17,20 @@ correcto(moverDesdeEnDireccion(pos(0,0),up)).
 	if(R >= 1 & R < 2){-+direccion(down);}
 	if(R >= 2 & R < 3){-+direccion(left);}
 	if(R >= 3){-+direccion(right);}
-
-	if(Dir=up){-+movimiento(moverDesdeEnDireccion(pos(X,Y+1),D));}
-	if(Dir=down){-+movimiento(moverDesdeEnDireccion(pos(X,Y-1),D));}
-	if(Dir=left){-+movimiento(moverDesdeEnDireccion(pos(X-1,Y),D));}
-	if(Dir=right){-+movimiento(moverDesdeEnDireccion(pos(X+1,Y),D));}
 	
 	?direccion(D);
-	.print("Inicio Jugador 2");
-	//-+movimiento(moverDesdeEnDireccion(pos(DX,DY),D));
+	-+movimiento(moverDesdeEnDireccion(pos(X,Y),D));
+
 	?movimiento(Mov);
-	.print("Movimiento a realizar",Mov);
+	.print("Inicio Jugador 1");
+	.print("Movimiento a realizar: ", Mov);
 	.send(judge,tell,Mov).
-//Si tiene que rectificar una o varias veces significa que ha realizado algún movimiento
-+correjir [source(judge)] : movimiento(X)<-
+	
+// Si devuelve un invalidod e tipo fueraTurno el jugador no puede hacer nada
++invalido(fueraTurno,Veces) [source(judge)].
+	
+//Si recibe un invalido de tipo fueraTablero el jugador debe rectificar el movimiento
++invalido(fueraTablero,Veces) [source(judge)] : movimiento(X)<-
 	.print("Corrigiendo movimiento");
 	//Las coordenadas de destino de correcto,son las coordenadas por donde empieza el siguiente movimiento
 	?correcto(moverDesdeEnDireccion(pos(OX,OY),Dir));
@@ -40,15 +40,18 @@ correcto(moverDesdeEnDireccion(pos(0,0),up)).
 	if(R >= 1 & R < 2){-+direccion(down);}
 	if(R >= 2 & R < 3){-+direccion(left);}
 	if(R >= 3){-+direccion(right);}
+	
 	?direccion(D);
-	if(Dir=up){-+movimiento(moverDesdeEnDireccion(pos(OX,OY+1),D));}
-	if(Dir=down){-+movimiento(moverDesdeEnDireccion(pos(OX,OY-1),D));}
-	if(Dir=left){-+movimiento(moverDesdeEnDireccion(pos(OX-1,OY),D));}
-	if(Dir=right){-+movimiento(moverDesdeEnDireccion(pos(OX+1,OY),D));}
+	-+movimiento(moverDesdeEnDireccion(pos(OX,OY),Dir));
+
+
+	
 	//Almacenamos el nuevo movimiento
 	?movimiento(Mov);
 	.print(Mov);
 	.send(judge,tell,Mov).
+	
+	
 //Si se realiza un movimiento correcto
 +puedesMover [source(judge)] <-
 	?movimiento(X);
@@ -56,5 +59,8 @@ correcto(moverDesdeEnDireccion(pos(0,0),up)).
 	-+correcto(X);
 	.print("Ficha movida").
 
+//Significa que el juez ha aceptado el movimiento  por lo que lo registramos
++valido(X,Y) [source(judge)]<- 
+	-+correcto(moverDesdeEnDireccion(pos(X,Y),down)).	
 
 

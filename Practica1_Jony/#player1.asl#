@@ -4,14 +4,26 @@
 
 
 /* Initial beliefs and rules */
-
 //movimiento(moverDesdeEnDireccion(pos(0,0),down)).
 correcto(moverDesdeEnDireccion(pos(0,0),down)).
-/* Initial goals */
 
+
+
+
+
+/* Initial goals */
+!start.
++!start <-
+	.print("Inicio forzado");
+	?correcto(Mov);
+	.send(judge,tell,Mov);
+	!saltar.
+	
++!saltar <- .wait(50);
+			!start.
 /* Plans */
 //Si es el primer movimiento, entonces viene a partir de un correcto
-+mueve[source(judge)]: correcto(moverDesdeEnDireccion(pos(X,Y),Dir))<- 
++puedesMover[source(judge)]: correcto(moverDesdeEnDireccion(pos(X,Y),Dir))<- 
 	R = math.random(4);
 	if(R < 1){-+direccion(up);}
 	if(R >= 1 & R < 2){-+direccion(down);}
@@ -28,9 +40,13 @@ correcto(moverDesdeEnDireccion(pos(0,0),down)).
 	
 // Si devuelve un invalidod e tipo fueraTurno el jugador no puede hacer nada
 +invalido(fueraTurno,Veces) [source(judge)].
+
+//Cuando el jugador hace un movimiento invalido mas de 3 veces deja el turno
++invalido(fueraTablero,Veces) [source(judge)] : Veces > 3.
 	
 //Si recibe un invalido de tipo fueraTablero el jugador debe rectificar el movimiento
-+invalido(fueraTablero,Veces) [source(judge)] : movimiento(X)<-
++invalido(fueraTablero,Veces) [source(judge)] : movimiento(X) <-
+
 	.print("Corrigiendo movimiento");
 	//Las coordenadas de destino de correcto,son las coordenadas por donde empieza el siguiente movimiento
 	?correcto(moverDesdeEnDireccion(pos(OX,OY),Dir));
@@ -43,24 +59,15 @@ correcto(moverDesdeEnDireccion(pos(0,0),down)).
 	
 	?direccion(D);
 	-+movimiento(moverDesdeEnDireccion(pos(OX,OY),Dir));
-
-
-	
 	//Almacenamos el nuevo movimiento
 	?movimiento(Mov);
 	.print(Mov);
 	.send(judge,tell,Mov).
 	
 	
-//Si se realiza un movimiento correcto
-+puedesMover [source(judge)] <-
-	?movimiento(X);
-	//El movimiento realizado pasa a ser el movimiento correcto
-	-+correcto(X);
-	.print("Ficha movida").
-
 //Significa que el juez ha aceptado el movimiento  por lo que lo registramos
 +valido(X,Y) [source(judge)]<- 
+	.print("Ficha movida");
 	-+correcto(moverDesdeEnDireccion(pos(X,Y),down)).	
 
-
++invalido(fueraTurno,Veces)[source(judge)].
