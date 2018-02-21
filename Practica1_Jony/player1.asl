@@ -14,9 +14,8 @@ correcto(moverDesdeEnDireccion(pos(0,0),down)).
 /* Initial goals */
 !start.
 +!start <-
-	.print("------------------------------------------------------Inicio forzado 2");
+	.print("Inicio forzado");
 	?correcto(Mov);
-	.print("Movimiento a realizar",Mov);
 	.send(judge,tell,Mov);
 	!saltar.
 	
