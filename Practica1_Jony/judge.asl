@@ -5,7 +5,7 @@
 /* Initial beliefs and rules */
 /* #region atributos de configuracion*/
 	maxTurnos(10).//Maximo de turnos del juego
-	size(1). //tamaño del tablero
+	size(3). //tamaño del tablero
 	numTurno(1).//Almacena el número de turnos que se estan realizando en cada momento
 	turno(player1). //Jugador que empieza el juego
 	maxFueraTurno(3).
@@ -24,8 +24,8 @@ veces(player2,fueraTurno,0).
 
 //comprobación general de fuera tablero
 comprobarFueraTablero(DX,DY) :- 
-				size(X) &
-				(DX < 0 | DY < 0 | X <= DX | X <= DY ).
+				size(Tam) &
+				(DX < 0 | DY < 0 | DX >= Tam | DY >= Tam).
 //comprobacion específica de cada uno de los movimientos deseados
 fueraTablero(pos(X,Y),up) :- comprobarFueraTablero(X,Y-1).
 fueraTablero(pos(X,Y),down) :- comprobarFueraTablero(X,Y+1).
