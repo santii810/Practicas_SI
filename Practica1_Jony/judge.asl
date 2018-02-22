@@ -4,7 +4,7 @@
 
 /* Initial beliefs and rules */
 /* #region atributos de configuracion*/
-	maxTurnos(100).//Maximo de turnos del juego
+	maxTurnos(10).//Maximo de turnos del juego
 	size(1). //tamaño del tablero
 	numTurno(1).//Almacena el número de turnos que se estan realizando en cada momento
 	turno(player1). //Jugador que empieza el juego
@@ -32,6 +32,12 @@ fueraTablero(pos(X,Y),down) :- comprobarFueraTablero(X,Y+1).
 fueraTablero(pos(X,Y),left) :- comprobarFueraTablero(X-1,Y).
 fueraTablero(pos(X,Y),right) :- comprobarFueraTablero(X+1,Y).
 
+eligeColor(Color):-
+	.random(Random) & Color = math.floor(Random*6).
+
+eligeColor :- 
+	.random(Random) & Exp = math.floor(Random*6) & color(Exp). //escogemos color al azar
+
 
 //Comprobación del movimiento correcto
 correcto(pos(X,Y),Dir):- not(fueraTablero(pos(X,Y),Dir)). 
@@ -44,11 +50,20 @@ finTurno :- maxTurnos(Max) & numTurno(N) & Max < N.
 
 
 /* Initial goals */
+!rellenar.
 !start.
 
 
 
 /* Plans */
++!rellenar: size(Size) <-
+	for (.range(Y,0,Size-1)) {
+		for (.range(X,0,Size-1)) {
+			?eligeColor(Color);
+			+tablero(ficha(in,Color),celda(X,Y,0));
+		}
+	}.
+
 +!start : finTurno. // Si el numero de turno es mayor al maximo de turnos finaliza el goal.
 
 +!start : numTurno(NumTurno) & turno(X) <- 
@@ -56,7 +71,6 @@ finTurno :- maxTurnos(Max) & numTurno(N) & Max < N.
 	.print("Inicio turno ", NumTurno, " jugador " , X);
 	.send(X, tell, puedesMover);
 	.send(X,untell, puedesMover).
-
 	
 // Cuando un jugador expulsado juega en su turno
 +moverDesdeEnDireccion(pos(X,Y),Dir)[source(A)] :turno(A) & veces(A,fueraTurno,NumFueraTurno) & maxFueraTurno(Max) & NumFueraTurno > Max <-
@@ -75,101 +89,65 @@ finTurno :- maxTurnos(Max) & numTurno(N) & Max < N.
 	-moverDesdeEnDireccion(pos(X,Y),Dir)[source(A)]. 
 	
 //Cuando un jugador interactua sin ser su turno	
-+moverDesdeEnDireccion(pos(X,Y),Dir)[source(A)] : not(turno(A)) <- 
+	+moverDesdeEnDireccion(pos(X,Y),Dir)[source(A)] : not(turno(A)) <- 
+	-moverDesdeEnDireccion(pos(X,Y),Dir)[source(A)];	
 	?veces(A,fueraTurno,V);
 	-+veces(A,fueraTurno,V+1);
-	-moverDesdeEnDireccion(pos(X,Y),Dir)[source(A)];
-	.print(A, "++++++++++++++++ ha intentado realizar un movimiento fuera de su turno, " ,V+1, "ª falta");
+	.print(A, " ha intentado realizar un movimiento fuera de su turno, " ,V+1, "ª falta");
 	.send(A,tell,invalido(fueraTurno,V+1));
 	.send(A,untell,invalido(fueraTurno,V+1)).
-	
-		
-	
-	
-	
-		   
+			   
 	
 	
 //Caso para cuando se tienen 3 veces fuera de tablero y la posición vuelve a ser fuera de tablero (3+1 <= 3)
 +moverDesdeEnDireccion(pos(X,Y),Dir)[source(A)] : turno(A) & limiteVecesFueraTablero & not(correcto(pos(X,Y),Dir))  <-
-	//Incrementamos el numero de movimientos incorrectos en este turno
-	?vecesFueraTablero(V);
+	-moverDesdeEnDireccion(pos(X,Y),Dir)[source(A)];
+	?vecesFueraTablero(V); //Incrementamos el numero de movimientos incorrectos en este turno
 	-+vecesFueraTablero(V+1);
 	.print("Movimiento incorrecto ", V+1 , "ª vez.");
-	-moverDesdeEnDireccion(pos(X,Y),Dir)[source(A)];
 	if(A=player1){
 		-+turno(player2);
 	}else{
 		-+turno(player1);
 	};
 	-+vecesFueraTablero(0);//Reiniciamos contador de veces fueraTablero
-	
-/*	?vecesFueraTurno(P1,P2);
-	if(A = player1){
-		-+vecesFueraTurno(P1+1,P2);
-		NumVeces = P1+1;
-	}else{
-		-+vecesFueraTurno(P1,P2+1);
-		NumVeces = P2+1;
-	}
-	.print("Fuera turno " , NumVeces , "ª vez");
-	*/
-	
+		
 	.send(A,tell,invalido(fueraTurno,NumVeces));
 	.send(A,untell,invalido(fueraTurno,NumVeces));
-	
-	
+		
 	?numTurno(N);
 	-+numTurno(N+1);
 	!start.
 
-
-
-
-
 	
 //Caso para cuando la dirección recibida sea incorrecta
 +moverDesdeEnDireccion(pos(X,Y),Dir)[source(A)] : turno(A) &  not(correcto(pos(X,Y),Dir)) & vecesFueraTablero(V) <-
+	-moverDesdeEnDireccion(pos(X,Y),Dir)[source(A)]	;
 	//Incrementamos el numero de movimientos incorrectos en este turno
 	-+vecesFueraTablero(V+1);
 	.print("Movimiento incorrecto ", V+1 , "ª vez.");
 	.send(A,tell,invalido(fueraTablero,V+1));
-	.send(A,untell,invalido(fueraTablero,V+1));
-	-moverDesdeEnDireccion(pos(X,Y),Dir)[source(A)].
+	.send(A,untell,invalido(fueraTablero,V+1)).
 
 	
 //Caso para cuando el movimiento es correcto
 +moverDesdeEnDireccion(pos(X,Y),Dir)[source(A)] : turno(A) &  correcto(pos(X,Y),Dir) <-
-	.print(moverDesdeEnDireccion(pos(X,Y),Dir));
-	-moverDesdeEnDireccion(pos(X,Y),Dir)[source(A)];
-	//Para saber la posición a la cual se dirigi y almacenar el valor de "celda(X,Y,own)"
-	if(Dir=up){-+celda(X,Y-1,1);}
-	if(Dir=down){-+celda(X,Y+1,1);}
-	if(Dir=left){-+celda(X-1,Y,1);}
-	if(Dir=right){-+celda(X+1,Y,1);}
-	if(A=player1){
-		-celda(X,Y,1);
-		-+turno(player2);
-	}else{
-		-celda(X,Y,2);
-		-+turno(player1);
-	};
+	-moverDesdeEnDireccion(pos(X,Y),Dir)[source(A)] ;
+	.print("Movimiento correcto.");
 	?numTurno(N);
 	-+numTurno(N+1);
 	-+vecesFueraTablero(0);//Reiniciamos contador de veces fueraTablero
-	
-	//Se le envia un mensaje de movimiento valido al player
-	?celda(DX,DY,_)
-	.send(A,tell,valido(DX,DY));
-	.send(A,untell,valido(DX,DY));
-	.print("Devuelto a ", A, "posicion (", DX, ", ", DY, ").");
+	.send(A,tell,valido);
+	.send(A,untell,valido);
 	!start.
 	
 	
 //Movimiento indeterminado del jugador
 +moverDesdeEnDireccion(pos(X,Y),Dir)[source(A)] <-
+	-moverDesdeEnDireccion(pos(X,Y),Dir)[source(A)];
 	.print("Movimiento indeterminado del jugador",A).
 
 //Movimiento indeterminado
 +moverDesdeEnDireccion(pos(X,Y),Dir) <-
+	-moverDesdeEnDireccion(pos(X,Y),Dir);
 	.print("Movimiento indeterminado").

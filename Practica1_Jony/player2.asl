@@ -4,14 +4,25 @@
 
 
 /* Initial beliefs and rules */
+direccion(0,up).
+direccion(1,down).
+direccion(2,rigth).
+direccion(3,left).
 
-//movimiento(moverDesdeEnDireccion(pos(0,0),down)).
-correcto(moverDesdeEnDireccion(pos(0,0),down)).
+
 /* Initial goals */
-
+//!start.
++!start <-
+	.print("Inicio forzado");
+	?correcto(Mov);
+	.send(judge,tell,Mov);
+	!saltar.
+	
++!saltar <- .wait(50);
+			!start.
 /* Plans */
 //Si es el primer movimiento, entonces viene a partir de un correcto
-+puedesMover[source(judge)]: correcto(moverDesdeEnDireccion(pos(X,Y),Dir))<- 
++puedesMover[source(judge)]<- 
 	R = math.random(4);
 	if(R < 1){-+direccion(up);}
 	if(R >= 1 & R < 2){-+direccion(down);}
@@ -19,42 +30,35 @@ correcto(moverDesdeEnDireccion(pos(0,0),down)).
 	if(R >= 3){-+direccion(right);}
 	
 	?direccion(D);
-	-+movimiento(moverDesdeEnDireccion(pos(X,Y),D));
-
-	?movimiento(Mov);
+	.random(X);
+	.random(Y);
+	Mov = moverDesdeEnDireccion(pos(math.floor(X*10),math.floor(Y*10)),D)
 	.print("Inicio Jugador 1");
-	.print("Movimiento a realizar: ", Mov);
+	.print(Mov);	
 	.send(judge,tell,Mov).
 	
 // Si devuelve un invalidod e tipo fueraTurno el jugador no puede hacer nada
 +invalido(fueraTurno,Veces) [source(judge)].
+
+//Cuando el jugador hace un movimiento invalido mas de 3 veces deja el turno
++invalido(fueraTablero,Veces) [source(judge)] : Veces > 3.
 	
 //Si recibe un invalido de tipo fueraTablero el jugador debe rectificar el movimiento
-+invalido(fueraTablero,Veces) [source(judge)] : movimiento(X)<-
++invalido(fueraTablero,Veces) [source(judge)] <-
 	.print("Corrigiendo movimiento");
-	//Las coordenadas de destino de correcto,son las coordenadas por donde empieza el siguiente movimiento
-	?correcto(moverDesdeEnDireccion(pos(OX,OY),Dir));
-	//Metodo de movimiento dinamico
-	R = math.random(4);
-	if(R < 1){-+direccion(up);}
-	if(R >= 1 & R < 2){-+direccion(down);}
-	if(R >= 2 & R < 3){-+direccion(left);}
-	if(R >= 3){-+direccion(right);}
-	
-	?direccion(D);
-	-+movimiento(moverDesdeEnDireccion(pos(OX,OY),Dir));
-
-
-	
-	//Almacenamos el nuevo movimiento
-	?movimiento(Mov);
-	.print(Mov);
+	.random(Random);
+	?direccion(math.floor(Random*4), Direccion);
+	.random(X,10);
+	.random(Y,10);
+	Mov = moverDesdeEnDireccion(pos(math.floor(X),math.floor(Y)),Direccion); 
+	.print("Movimiento a realizar: ", Mov);
 	.send(judge,tell,Mov).
+		
+	
 	
 	
 //Significa que el juez ha aceptado el movimiento  por lo que lo registramos
-+valido(X,Y) [source(judge)]<- 
-	.print("Ficha movida");
-	-+correcto(moverDesdeEnDireccion(pos(X,Y),down)).	
++valido[source(judge)]<- 
+	.print("Ficha movida").	
 
-
++invalido(fueraTurno,Veces)[source(judge)].
