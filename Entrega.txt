@@ -1,0 +1,40 @@
+MAth Thail
+
+
+chooseC(C) :- 
+	.random(X) & Exp =math.floor(X*6) & color(Exp,C). //escogemos color al azar
+	
+	for (.range(Y,N,0,-1)) {
+		for (.range(X,0,N)) {
+			
+			?chooseC(C);
+			if (freeGroup(X,Y,C)) {
+				.print("Pongo ficha de color: ",C);
+				put(X,Y,C,0);
+				.random(M);
+				R = math.floor(M*N*2);
+				if(R == 2){
+					.random(H);
+					J = math.floor(H*3);
+					if(J == 0){
+						!putIp(X,Y);
+					}
+					if(J == 1){
+						!putCt(X,Y);
+					}
+					if(J == 2){
+						!putCo(X,Y);
+					}
+					if(J == 3){
+						!putGs(X,Y);
+					}
+				}
+			} else { //en caso de que s encuentren agrupaciones iniciales, se cambia el color de la pieza
+			    .print("Detectada agrupación de color: ",C," ......................");
+				if (C<512) {C1 = C*2;} else {C1 = 16;};
+				
+				.print("Pongo ficha de color: ",C1);
+				put(X,Y,C1,0);
+			}
+		}
+	}.
