@@ -1,14 +1,11 @@
 
 // Agent Player1 in project Practica1.mas2j
 
-
-
 /* Initial beliefs and rules */
 direccion(0,up).
 direccion(1,down).
 direccion(2,right).
 direccion(3,left).
-
 
 randomMov(Mov):-
 	.random(Random) &
@@ -33,7 +30,7 @@ randomMov(Mov):-
 	.print("Inicio Jugador 1");
 	.random(Random);
 	?direccion(math.floor(Random*4), Direccion);
-	.random(X)
+	.random(X);
 	.random(Y);
 	Mov = moverDesdeEnDireccion(pos(math.floor(X*10),math.floor(Y*10)),Direccion);
 	.print(Mov);	
@@ -57,6 +54,18 @@ randomMov(Mov):-
 	.print(Mov);	
 	.send(judge,tell,Mov).
 		
+	
+	//Si recibe un invalido de tipo fueraTablero el jugador debe rectificar el movimiento
++invalido(mismoColor) [source(judge)] <-
+	.print("Corrigiendo movimiento");
+	
+	.random(Random);
+	?direccion(math.floor(Random*4), Direccion);
+	.random(X);
+	.random(Y);
+	Mov = moverDesdeEnDireccion(pos(math.floor(X*10),math.floor(Y*10)),Direccion);
+	.print(Mov);	
+	.send(judge,tell,Mov).
 	
 	
 	

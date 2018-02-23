@@ -1,20 +1,17 @@
 // Agent judge in project Practica1.mas2j
 
-
-
 /* Initial beliefs and rules */
 /* #region atributos de configuracion*/
 	maxTurnos(10).//Maximo de turnos del juego
-	size(3). //tamaño del tablero
+	size(10). //tamaño del tabler
 	numTurno(1).//Almacena el número de turnos que se estan realizando en cada momento
 	turno(player1). //Jugador que empieza el juego
 	maxFueraTurno(3).
 	maxFueraTablero(3).
-
 /*	#endregion */
 
 limiteVecesFueraTablero :- vecesFueraTablero(N) & N >= 3.//Veces que esta permitido enviar un mov. fuera de tablero
-//Por defecto estan a 0 las veces de fuera de tablero y fuera de turno
+//Por defecto estan a 0 las veces de fuera de tabl y fuera de turno
 vecesFueraTablero(0).
 //Necesitamos almacenar las veces que ha perdido el turno cada jugador por separado (player1, player2)
 vecesFueraTurno(0,0).
@@ -22,7 +19,7 @@ veces(fueraTablero,0).
 veces(player1,fueraTurno,0).
 veces(player2,fueraTurno,0).
 
-//comprobación general de fuera tablero
+//comprobación general de fuera tabl
 comprobarFueraTablero(DX,DY) :- 
 				size(Tam) &
 				(DX < 0 | DY < 0 | DX >= Tam | DY >= Tam).
@@ -32,8 +29,18 @@ fueraTablero(pos(X,Y),down) :- comprobarFueraTablero(X,Y+1).
 fueraTablero(pos(X,Y),left) :- comprobarFueraTablero(X-1,Y).
 fueraTablero(pos(X,Y),right) :- comprobarFueraTablero(X+1,Y).
 
-eligeColor(Color):-
-	.random(Random) & Color = math.floor(Random*6).
+//eligeColor(Color):-	Color = 1.
+eligeColor(Color):-	.random(Random) & Color = math.floor(Random*6).
+
+siguienteMovimiento(pos(X,Y),up,pos(X,Y-1)).
+siguienteMovimiento(pos(X,Y),down,pos(X,Y+1)).
+siguienteMovimiento(pos(X,Y),right,pos(X+1,Y)).
+siguienteMovimiento(pos(X,Y),left,pos(X-1,Y)).
+
+mismoColor(pos(OX,OY),Dir):- 
+	siguienteMovimiento(pos(OX,OY),Dir,pos(DX,DY))
+	& tablero(ficha(_, Color), celda(OX, OY, _)) 
+	& tablero(ficha(_, Color), celda(DX, DY, _)).
 
 eligeColor :- 
 	.random(Random) & Exp = math.floor(Random*6) & color(Exp). //escogemos color al azar
@@ -42,7 +49,7 @@ eligeColor :-
 //Comprobación del movimiento correcto
 correcto(pos(X,Y),Dir):- not(fueraTablero(pos(X,Y),Dir)). 
 /*
-TODO	comprobar que las fichas sean de distinto color
+TODO comprobar que las fichas sean de distinto color
 */
 finTurno :- maxTurnos(Max) & numTurno(N) & Max < N.
 
@@ -51,7 +58,7 @@ finTurno :- maxTurnos(Max) & numTurno(N) & Max < N.
 
 /* Initial goals */
 !rellenar.
-!start.
+
 
 
 
@@ -60,9 +67,10 @@ finTurno :- maxTurnos(Max) & numTurno(N) & Max < N.
 	for (.range(Y,0,Size-1)) {
 		for (.range(X,0,Size-1)) {
 			?eligeColor(Color);
-			+tablero(ficha(in,Color),celda(X,Y,0));
+			+tablero(ficha(in, Color), celda(X, Y, 0));
 		}
-	}.
+	};
+	!start.
 
 +!start : finTurno. // Si el numero de turno es mayor al maximo de turnos finaliza el goal.
 
@@ -129,11 +137,30 @@ finTurno :- maxTurnos(Max) & numTurno(N) & Max < N.
 	.send(A,tell,invalido(fueraTablero,V+1));
 	.send(A,untell,invalido(fueraTablero,V+1)).
 
+
+	
+//Caso para cuando las fichas son del mismo color
++moverDesdeEnDireccion(pos(X,Y),Dir)[source(A)] : turno(A) & mismoColor(pos(X,Y),Dir) <-
+	-moverDesdeEnDireccion(pos(X,Y),Dir)[source(A)]	;
+	//Incrementamos el numero de movimientos incorrectos en este turno
+	.print("\nMovimiento incorrecto , fichas del mismo color");
+	.send(A,tell,invalido(mismoColor));
+	.send(A,untell,invalido(mismoColor)).
+	
+
 	
 //Caso para cuando el movimiento es correcto
-+moverDesdeEnDireccion(pos(X,Y),Dir)[source(A)] : turno(A) &  correcto(pos(X,Y),Dir) <-
-	-moverDesdeEnDireccion(pos(X,Y),Dir)[source(A)] ;
++moverDesdeEnDireccion(pos(X,Y),Dir)[source(A)] : turno(A) & correcto(pos(X,Y),Dir) <-
+	-moverDesdeEnDireccion(pos(X,Y),Dir)[source(A)];
 	.print("Movimiento correcto.");
+	?siguienteMovimiento(pos(X,Y),Dir,pos(DX,DY));
+	.print(DX," ",DY);
+	
+//	?tablero(ficha(_,Color), celda(X,Y,_));
+	?tablero(ficha(_,Color), celda(DX,DY,0));
+	.print("\n " , Color);
+	
+	
 	?numTurno(N);
 	-+numTurno(N+1);
 	-+vecesFueraTablero(0);//Reiniciamos contador de veces fueraTablero
