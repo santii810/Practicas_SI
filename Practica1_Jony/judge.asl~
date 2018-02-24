@@ -58,7 +58,7 @@ finTurno :- maxTurnos(Max) & numTurno(N) & Max < N.
 
 /* Initial goals */
 !rellenar.
-!start.
+
 
 
 
@@ -67,9 +67,10 @@ finTurno :- maxTurnos(Max) & numTurno(N) & Max < N.
 	for (.range(Y,0,Size-1)) {
 		for (.range(X,0,Size-1)) {
 			?eligeColor(Color);
-			+tablero(ficha(in, Color),celda(X, Y, 0));
+			+tablero(ficha(in, Color), celda(X, Y, 0));
 		}
-	}.
+	};
+	!start.
 
 +!start : finTurno. // Si el numero de turno es mayor al maximo de turnos finaliza el goal.
 
@@ -160,11 +161,11 @@ finTurno :- maxTurnos(Max) & numTurno(N) & Max < N.
 	.print("\n " , Color);
 	
 	
-/*	?numTurno(N);
+	?numTurno(N);
 	-+numTurno(N+1);
 	-+vecesFueraTablero(0);//Reiniciamos contador de veces fueraTablero
 	.send(A,tell,valido);
-	.send(A,untell,valido);*/
+	.send(A,untell,valido);
 	!start.
 	
 	

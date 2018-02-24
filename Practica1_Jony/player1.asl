@@ -14,16 +14,8 @@ randomMov(Mov):-
 	.random(Y) &
 	Mov = moverDesdeEnDireccion(pos(math.floor(X*10),math.floor(Y*10)),D).
 
-/* Initial goals */
-//!start.
-+!start <-
-	.print("Inicio forzado");
-	?correcto(Mov);
-	.send(judge,tell,Mov);
-	!saltar.
+/* Initial goals */		
 	
-+!saltar <- .wait(50);
-			!start.
 /* Plans */
 //Si es el primer movimiento, entonces viene a partir de un correcto
 +puedesMover[source(judge)]<- 
@@ -71,6 +63,6 @@ randomMov(Mov):-
 	
 //Significa que el juez ha aceptado el movimiento  por lo que lo registramos
 +valido[source(judge)]<- 
-	.print("Ficha movida").	
+	.print("Ficha movida\n\n").	
 
 +invalido(fueraTurno,Veces)[source(judge)].
