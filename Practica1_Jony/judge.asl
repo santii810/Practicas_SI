@@ -2,8 +2,8 @@
 
 /* Initial beliefs and rules */
 /* #region atributos de configuracion*/
-maxTurnos(11).//Maximo de turnos del juego
-size(5). //tamaño del tabler
+maxTurnos(100).//Maximo de turnos del juego
+size(10). //tamaño del tabler
 numTurno(1).//Almacena el número de turnos que se estan realizando en cada momento
 turno(player1). //Jugador que empieza el juego
 maxFueraTurno(3).
@@ -17,7 +17,7 @@ vecesFueraTablero(0).
 //vecesFueraTurno(0,0).
 veces(fueraTablero,0).
 veces(player1,fueraTurno,0).
-veces(player2,fueraTurno,3).
+veces(player2,fueraTurno,0).
 
 //comprobación general de fuera tablero
 comprobarFueraTablero(DX,DY) :- 
@@ -69,7 +69,7 @@ par(Numero) :- 0 = Numero mod 2.
 		}
 	};
 	?maxTurnos(Max);
-	if(par(Max)){
+	/*if(par(Max)){
 		-+turnosPlayer1(Max/2);
 		-+turnosPlayer2(Max/2);
 	}
@@ -77,16 +77,17 @@ par(Numero) :- 0 = Numero mod 2.
 		-+turnosPlayer1(math.ceil(Max/2));
 		-+turnosPlayer2(math.floor(Max/2));
 	};
+	*/
 	!start.
 
 +!start : finTurno. // Si el numero de turno es mayor al maximo de turnos finaliza el goal.
 //Si se expulsa a un jugador el que quede tendra que realizar los turnos asignados
-+!start : superarLimiteFueraTurno(player2) & numTurno(N) & turnosPlayer1(N-1).
-+!start : superarLimiteFueraTurno(player1) & numTurno(N) & turnosPlayer2(N-1).
+//+!start : superarLimiteFueraTurno(player2) & numTurno(N) & turnosPlayer1(N-1).
+//+!start : superarLimiteFueraTurno(player1) & numTurno(N) & turnosPlayer2(N-1).
 
 +!start : numTurno(NumTurno) & turno(X) <- 
 	//.print("\n\n\n");
-	.print("Inicio turno ", NumTurno, " jugador " , X);
+	.print("\n\nInicio turno ", NumTurno, " jugador " , X);
 	.send(X, tell, puedesMover);
 	.send(X,untell, puedesMover).
 	
@@ -132,7 +133,9 @@ par(Numero) :- 0 = Numero mod 2.
 			-+turno(player2);
 		} else {
 			-+turno(player1);
-		};	
+		};
+		?numTurno(T);
+		-+numTurno(T+1);
 	}else{
 		if(A=player1){
 			-+turno(player2);
@@ -181,7 +184,9 @@ par(Numero) :- 0 = Numero mod 2.
 			-+turno(player2);
 		} else {
 			-+turno(player1);
-		};	
+		};
+		?numTurno(T);
+		-+numTurno(T+1);
 	}else{
 		if(A=player1){
 			-+turno(player2);

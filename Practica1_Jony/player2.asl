@@ -18,14 +18,16 @@ randomMov(Mov):-
 
 //!start.
 +!start <-
+	.wait(5);
 	.print("Inicio forzado jugador2");
 	.random(Random);
 	?direccion(math.floor(Random*4), Direccion);
 	.random(X);
 	.random(Y);
 	Mov = moverDesdeEnDireccion(pos(math.floor(X*10),math.floor(Y*10)),Direccion);
-	.print(Mov);	
-	.send(judge,tell,Mov).	
+	.print(Mov);
+	.send(judge,tell,Mov);
+	!start.	
 
 /* Plans */
 //Si es el primer movimiento, entonces viene a partir de un correcto
@@ -70,6 +72,6 @@ randomMov(Mov):-
 	
 //Significa que el juez ha aceptado el movimiento  por lo que lo registramos
 +valido[source(judge)]<- 
-	.print("Ficha movida\n\n").	
+	.print("Ficha movida").	
 
 +invalido(fueraTurno,Veces)[source(judge)].
