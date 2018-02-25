@@ -10,14 +10,20 @@ maxFueraTurno(3).
 maxFueraTablero(3).
 /*	#endregion */
 
-limiteVecesFueraTablero :- vecesFueraTablero(N) & N >= 3.//Veces que esta permitido enviar un mov. fuera de tablero
-//Por defecto estan a 0 las veces de fuera de tabl y fuera de turno
+/* #region valores iniciales*/
+//Por defecto estan a 0 las veces de fuera de tablero y fuera de turno
 vecesFueraTablero(0).
 //Necesitamos almacenar las veces que ha perdido el turno cada jugador por separado (player1, player2)
 //vecesFueraTurno(0,0).
 veces(fueraTablero,0).
 veces(player1,fueraTurno,0).
 veces(player2,fueraTurno,3).
+
+
+/*	#endregion */
+// Unifica si el numero de faltas de tipo fueraTablero es mayor al maximo de permitidas
+limiteVecesFueraTablero :- maxFueraTablero(Max) & vecesFueraTablero(N) & N >= Max.
+
 
 //comprobación general de fuera tablero
 comprobarFueraTablero(DX,DY) :- 
@@ -42,14 +48,9 @@ mismoColor(pos(OX,OY),Dir):-
 	& tablero(ficha(_, Color), celda(OX, OY, _)) 
 	& tablero(ficha(_, Color), celda(DX, DY, _)).
 
-//eligeColor :- 	.random(Random) & Exp = math.floor(Random*6) & color(Exp). //escogemos color al azar
-
-
 //Comprobación del movimiento correcto
 correcto(pos(X,Y),Dir):- not(fueraTablero(pos(X,Y),Dir)). 
-/*
-TODO comprobar que las fichas sean de distinto color
-*/
+
 finTurno :- (maxTurnos(Max) & numTurno(N) & Max < N).
 
 superarLimiteFueraTurno(A) :- veces(A,fueraTurno,NumFueraTurno) & maxFueraTurno(Max) & NumFueraTurno > Max.
