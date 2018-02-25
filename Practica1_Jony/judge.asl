@@ -55,7 +55,7 @@ mismoColor(pos(OX,OY),Dir):-
 	& tablero(ficha(_, Color), celda(OX, OY, _)) 
 	& tablero(ficha(_, Color), celda(DX, DY, _)).
 
-//Unifica si el movimiento es movimientoCorrecto
+//Unifica si el movimiento es correcto
 //movimientoCorrecto(pos(X,Y),Dir):- not(fueraTablero(pos(X,Y),Dir)). //Version antigua, nueva sin probar
 movimientoCorrecto(Mov):- not(fueraTablero(Mov)) & not(mismoColor(Mov)). 
 
@@ -152,9 +152,9 @@ cambiarTurno(player2, player1).
 //Caso para cuando se tienen 3 veces fuera de tablero y la posición vuelve a ser fuera de tablero (3+1 <= 3)
 +moverDesdeEnDireccion(pos(X,Y),Dir)[source(A)] : turno(A) & limiteVecesFueraTablero & not(movimientoCorrecto(pos(X,Y),Dir))  <-
 	-moverDesdeEnDireccion(pos(X,Y),Dir)[source(A)];
-	?veces(fueraTablero, V); //Incrementamos el numero de movimientos inmovimientoCorrectos en este turno
+	?veces(fueraTablero, V); //Incrementamos el numero de movimientos incorrecto en este turno
 	-+veces(fueraTablero, V+1);
-	.print("Movimiento inmovimientoCorrecto ", V+1 , "ª vez.\n\n");
+	.print("Movimiento incorrecto ", V+1 , "ª vez.\n\n");
 	if(superarLimiteFueraTurno(player1) | superarLimiteFueraTurno(player2))	{
 		if(superarLimiteFueraTurno(player1)){
 			-+turno(player2);
@@ -177,9 +177,9 @@ cambiarTurno(player2, player1).
 //Caso para cuando la dirección recibida sea incorrecta
 +moverDesdeEnDireccion(pos(X,Y),Dir)[source(A)] : turno(A) & not(movimientoCorrecto(pos(X,Y),Dir)) & veces(fueraTablero, V) <-
 	-moverDesdeEnDireccion(pos(X,Y),Dir)[source(A)]	;
-	//Incrementamos el numero de movimientos inmovimientoCorrectos en este turno
+	//Incrementamos el numero de movimientos incorrecto en este turno
 	-+veces(fueraTablero, V+1);
-	.print("Movimiento inmovimientoCorrecto ", V+1 , "ª vez.");
+	.print("Movimiento incorrecto ", V+1 , "ª vez.");
 	.send(A,tell,invalido(fueraTablero,V+1));
 	.send(A,untell,invalido(fueraTablero,V+1)).
 
@@ -187,17 +187,17 @@ cambiarTurno(player2, player1).
 //Caso para cuando las fichas son del mismo color
 +moverDesdeEnDireccion(pos(X,Y),Dir)[source(A)] : turno(A) & mismoColor(pos(X,Y),Dir) <-
 	-moverDesdeEnDireccion(pos(X,Y),Dir)[source(A)]	;
-	//Incrementamos el numero de movimientos inmovimientoCorrectos en este turno
-	.print("Movimiento inmovimientoCorrecto , fichas del mismo color");
+	//Incrementamos el numero de movimientos incorrectos en este turno
+	.print("Movimiento incorrecto , fichas del mismo color");
 	.send(A,tell,invalido(mismoColor));
 	.send(A,untell,invalido(mismoColor)).
 	
 
 	
-//Caso para cuando el movimiento es movimientoCorrecto
+//Caso para cuando el movimiento es correcto
 +moverDesdeEnDireccion(pos(X,Y),Dir)[source(A)] : turno(A) & movimientoCorrecto(pos(X,Y),Dir) <-
 	-moverDesdeEnDireccion(pos(X,Y),Dir)[source(A)];
-	.print("Movimiento movimientoCorrecto");
+	.print("Movimiento correcto");
 	?numTurno(N);
 	-+numTurno(N+1);
 	-+veces(fueraTablero, 0);//Reiniciamos contador de veces fueraTablero
