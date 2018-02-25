@@ -69,11 +69,8 @@ superarLimiteFueraTurno(A) :- veces(A,fueraTurno,NumFueraTurno) & maxFueraTurno(
 par(Numero) :- 0 = Numero mod 2.
 
 
-
-
-
-
-
+cambiarTurno(player1, player2).
+cambiarTurno(player2, player1).
 
 /* Initial goals */
 !start.
@@ -127,11 +124,9 @@ par(Numero) :- 0 = Numero mod 2.
 +moverDesdeEnDireccion(pos(X,Y),Dir)[source(A)] :turno(A) & superarLimiteFueraTurno(A) <-
 	.print("El jugador ", A, " ha superado el limite de turnos fallidos, su turno queda deshabilitado\n\n");
 	-moverDesdeEnDireccion(pos(X,Y),Dir)[source(A)];
-	if(A=player1){
-		-+turno(player2);
-	}else{
-		-+turno(player1);
-	};
+	?cambiarTurno(A,B);
+	-+turno(B);
+
 	!ordenarMovimiento.
 
 // Caso para cuando el jugador que envia ha superado el limite de advertencias fueraTurno
@@ -167,11 +162,8 @@ par(Numero) :- 0 = Numero mod 2.
 			-+turno(player1);
 		};	
 	}else{
-		if(A=player1){
-			-+turno(player2);
-		}else{
-			-+turno(player1);
-		};
+		?cambiarTurno(A,B);
+		-+turno(B);
 	};
 	-+veces(fueraTablero, 0);//Reiniciamos contador de veces fueraTablero
 		
@@ -216,11 +208,8 @@ par(Numero) :- 0 = Numero mod 2.
 			-+turno(player1);
 		};	
 	}else{
-		if(A=player1){
-			-+turno(player2);
-		}else{
-			-+turno(player1);
-		};
+		?cambiarTurno(A,B);
+		-+turno(B);
 	};
 	.send(A,tell,valido);
 	.send(A,untell,valido);
