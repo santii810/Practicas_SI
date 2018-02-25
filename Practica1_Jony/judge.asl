@@ -81,9 +81,12 @@ par(Numero) :- 0 = Numero mod 2.
 
 /* Plans */
 +!start<-
+	!comprobarTurnos;
 	!rellenar;
 	!ordenarMovimiento.
-
++!comprobarTurnos: maxTurnos(N) & par(N).
++!comprobarTurnos: maxTurnos(N) <-
+	-+maxTurnos(N-1).
 
 +!rellenar: size(Size) <-
 	for (.range(Y,0,Size-1)) {
