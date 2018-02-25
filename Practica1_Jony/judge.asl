@@ -56,9 +56,7 @@ mismoColor(pos(OX,OY),Dir):-
 	& tablero(ficha(_, Color), celda(DX, DY, _)).
 
 //Unifica si el movimiento es correcto
-//movimientoCorrecto(pos(X,Y),Dir):- not(fueraTablero(pos(X,Y),Dir)). //Version antigua, nueva sin probar
-movimientoCorrecto(Mov):- not(fueraTablero(Mov)).
-//movimientoCorrecto(Mov):- not(fueraTablero(Mov)) & not(mismoColor(Mov)).
+movimientoCorrecto(pos(X,Y),Dir):- not(fueraTablero(pos(X,Y),Dir)) & not(mismoColor(Mov)).
 
 // Unifica si el turno actual es mayor al maximo de turnos configurado
 finTurno :- (maxTurnos(Max) & numTurno(N) & Max < N).
@@ -143,7 +141,7 @@ cambiarTurno(player2, player1).
 	-moverDesdeEnDireccion(pos(X,Y),Dir)[source(A)];
 	?veces(fueraTablero, V); //Incrementamos el numero de movimientos incorrecto en este turno
 	-+veces(fueraTablero, V+1);
-	.print("Movimiento incorrecto ", V+1 , "ª vez.\n\n");
+	.print("Movimiento incorrecto ", V+1 , "ª vez.\n             Cambio de turno \n\n");
 	if(superarLimiteFueraTurno(player1) | superarLimiteFueraTurno(player2))	{
 		if(superarLimiteFueraTurno(player1)){
 			-+turno(player2);
