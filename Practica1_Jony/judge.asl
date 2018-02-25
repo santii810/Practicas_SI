@@ -4,7 +4,7 @@
 
 /* ----------------------- #region atributos de configuracion*/
 maxTurnos(11).//Maximo de turnos del juego
-size(5). //tamaño del tabler
+size(10). //tamaño del tabler
 numTurno(1).//Almacena el número de turnos que se estan realizando en cada momento
 turno(player1). //Jugador que empieza el juego
 maxFueraTurno(3).
@@ -57,7 +57,8 @@ mismoColor(pos(OX,OY),Dir):-
 
 //Unifica si el movimiento es correcto
 //movimientoCorrecto(pos(X,Y),Dir):- not(fueraTablero(pos(X,Y),Dir)). //Version antigua, nueva sin probar
-movimientoCorrecto(Mov):- not(fueraTablero(Mov)) & not(mismoColor(Mov)). 
+movimientoCorrecto(Mov):- not(fueraTablero(Mov)).
+//movimientoCorrecto(Mov):- not(fueraTablero(Mov)) & not(mismoColor(Mov)).
 
 // Unifica si el turno actual es mayor al maximo de turnos configurado
 finTurno :- (maxTurnos(Max) & numTurno(N) & Max < N).
@@ -81,6 +82,7 @@ cambiarTurno(player2, player1).
 	!comprobarTurnos;
 	!rellenar;
 	!ordenarMovimiento.
+	
 +!comprobarTurnos: maxTurnos(N) & par(N).
 +!comprobarTurnos: maxTurnos(N) <-
 	-+maxTurnos(N-1).
@@ -91,22 +93,9 @@ cambiarTurno(player2, player1).
 			?eligeColor(Color);
 			+tablero(ficha(in, Color), celda(X, Y, 0));
 		}
-	};
-	?maxTurnos(Max);
-	if(par(Max)){
-		-+turnosPlayer1(Max/2);
-		-+turnosPlayer2(Max/2);
-	}
-	else{
-		-+turnosPlayer1(math.ceil(Max/2));
-		-+turnosPlayer2(math.floor(Max/2));
-	};
-	!ordenarMovimiento.
+	}.
 
 +!ordenarMovimiento : finTurno. // Si el numero de turno es mayor al maximo de turnos finaliza el goal.
-//Si se expulsa a un jugador el que quede tendra que realizar los turnos asignados
-+!ordenarMovimiento : superarLimiteFueraTurno(player2) & numTurno(N) & turnosPlayer1(N-1).
-+!ordenarMovimiento : superarLimiteFueraTurno(player1) & numTurno(N) & turnosPlayer2(N-1).
 
 +!ordenarMovimiento : numTurno(NumTurno) & turno(X) <- 
 	//.print("\n\n\n");
@@ -138,7 +127,7 @@ cambiarTurno(player2, player1).
 	.send(A,tell,invalido(fueraTurno,V+1));
 	.send(A,untell,invalido(fueraTurno,V+1)).
 	
-//Cuando un jugador interactua sin ser su turno	
+// falta: fueraTurno	
 +moverDesdeEnDireccion(pos(X,Y),Dir)[source(A)] : not(turno(A)) <- 
 	-moverDesdeEnDireccion(pos(X,Y),Dir)[source(A)];	
 	?veces(A,fueraTurno,V);
@@ -149,7 +138,7 @@ cambiarTurno(player2, player1).
 			   
 	
 	
-//Caso para cuando se tienen 3 veces fuera de tablero y la posición vuelve a ser fuera de tablero (3+1 <= 3)
+// falta fueraTablero  (se comprueba por ultima vez si el movimiento es correcto)
 +moverDesdeEnDireccion(pos(X,Y),Dir)[source(A)] : turno(A) & limiteVecesFueraTablero & not(movimientoCorrecto(pos(X,Y),Dir))  <-
 	-moverDesdeEnDireccion(pos(X,Y),Dir)[source(A)];
 	?veces(fueraTablero, V); //Incrementamos el numero de movimientos incorrecto en este turno
@@ -174,7 +163,7 @@ cambiarTurno(player2, player1).
 	!ordenarMovimiento.
 
 	
-//Caso para cuando la dirección recibida sea incorrecta
+//	Dirección recibida sea incorrecta
 +moverDesdeEnDireccion(pos(X,Y),Dir)[source(A)] : turno(A) & not(movimientoCorrecto(pos(X,Y),Dir)) & veces(fueraTablero, V) <-
 	-moverDesdeEnDireccion(pos(X,Y),Dir)[source(A)]	;
 	//Incrementamos el numero de movimientos incorrecto en este turno
@@ -184,7 +173,7 @@ cambiarTurno(player2, player1).
 	.send(A,untell,invalido(fueraTablero,V+1)).
 
 	
-//Caso para cuando las fichas son del mismo color
+//	Fichas de mismo color
 +moverDesdeEnDireccion(pos(X,Y),Dir)[source(A)] : turno(A) & mismoColor(pos(X,Y),Dir) <-
 	-moverDesdeEnDireccion(pos(X,Y),Dir)[source(A)]	;
 	//Incrementamos el numero de movimientos incorrectos en este turno
@@ -194,13 +183,15 @@ cambiarTurno(player2, player1).
 	
 
 	
-//Caso para cuando el movimiento es correcto
+//	Movimiento correcto
 +moverDesdeEnDireccion(pos(X,Y),Dir)[source(A)] : turno(A) & movimientoCorrecto(pos(X,Y),Dir) <-
 	-moverDesdeEnDireccion(pos(X,Y),Dir)[source(A)];
 	.print("Movimiento correcto");
 	?numTurno(N);
 	-+numTurno(N+1);
 	-+veces(fueraTablero, 0);//Reiniciamos contador de veces fueraTablero
+	
+	
 	if(superarLimiteFueraTurno(player1) | superarLimiteFueraTurno(player2))	{
 		if(superarLimiteFueraTurno(player1)){
 			-+turno(player2);

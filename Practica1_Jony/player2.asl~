@@ -1,5 +1,5 @@
 
-// Agent Player1 in project Practica1.mas2j
+// Agent Player2 in project Practica1.mas2j
 
 /* Initial beliefs and rules */
 direccion(0,up).
@@ -15,19 +15,22 @@ randomMov(Mov):-
 	Mov = moverDesdeEnDireccion(pos(math.floor(X*10),math.floor(Y*10)),D).
 
 /* Initial goals */
+
 //!start.
 +!start <-
-	.print("Inicio forzado");
-	?correcto(Mov);
-	.send(judge,tell,Mov);
-	!saltar.
-	
-+!saltar <- .wait(50);
-			!start.
+	.print("Inicio forzado jugador2");
+	.random(Random);
+	?direccion(math.floor(Random*4), Direccion);
+	.random(X);
+	.random(Y);
+	Mov = moverDesdeEnDireccion(pos(math.floor(X*10),math.floor(Y*10)),Direccion);
+	.print(Mov);	
+	.send(judge,tell,Mov).	
+
 /* Plans */
 //Si es el primer movimiento, entonces viene a partir de un correcto
-+puedesMover[source(judge)]<- 
-	.print("Inicio Jugador 1");
++puedesMover[source(judge)] <- 
+	.print("Inicio Jugador 2");
 	.random(Random);
 	?direccion(math.floor(Random*4), Direccion);
 	.random(X);
@@ -45,7 +48,6 @@ randomMov(Mov):-
 //Si recibe un invalido de tipo fueraTablero el jugador debe rectificar el movimiento
 +invalido(fueraTablero,Veces) [source(judge)] <-
 	.print("Corrigiendo movimiento");
-	
 	.random(Random);
 	?direccion(math.floor(Random*4), Direccion);
 	.random(X);
@@ -58,7 +60,6 @@ randomMov(Mov):-
 	//Si recibe un invalido de tipo fueraTablero el jugador debe rectificar el movimiento
 +invalido(mismoColor) [source(judge)] <-
 	.print("Corrigiendo movimiento");
-	
 	.random(Random);
 	?direccion(math.floor(Random*4), Direccion);
 	.random(X);
@@ -67,10 +68,8 @@ randomMov(Mov):-
 	.print(Mov);	
 	.send(judge,tell,Mov).
 	
-	
-	
 //Significa que el juez ha aceptado el movimiento  por lo que lo registramos
 +valido[source(judge)]<- 
-	.print("Ficha movida").	
+	.print("Ficha movida\n\n").	
 
 +invalido(fueraTurno,Veces)[source(judge)].

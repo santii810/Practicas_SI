@@ -27,6 +27,8 @@ randomMov(Mov):-
 	.print(Mov);	
 	.send(judge,tell,Mov).	
 
+	
+	
 /* Plans */
 //Si es el primer movimiento, entonces viene a partir de un correcto
 +puedesMover[source(judge)] <- 
