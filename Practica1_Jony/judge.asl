@@ -76,10 +76,15 @@ par(Numero) :- 0 = Numero mod 2.
 
 
 /* Initial goals */
-!rellenar.
+!start.
 
 
 /* Plans */
++!start<-
+	!rellenar;
+	!ordenarMovimiento.
+
+
 +!rellenar: size(Size) <-
 	for (.range(Y,0,Size-1)) {
 		for (.range(X,0,Size-1)) {
@@ -96,14 +101,14 @@ par(Numero) :- 0 = Numero mod 2.
 		-+turnosPlayer1(math.ceil(Max/2));
 		-+turnosPlayer2(math.floor(Max/2));
 	};
-	!start.
+	!ordenarMovimiento.
 
-+!start : finTurno. // Si el numero de turno es mayor al maximo de turnos finaliza el goal.
++!ordenarMovimiento : finTurno. // Si el numero de turno es mayor al maximo de turnos finaliza el goal.
 //Si se expulsa a un jugador el que quede tendra que realizar los turnos asignados
-+!start : superarLimiteFueraTurno(player2) & numTurno(N) & turnosPlayer1(N-1).
-+!start : superarLimiteFueraTurno(player1) & numTurno(N) & turnosPlayer2(N-1).
++!ordenarMovimiento : superarLimiteFueraTurno(player2) & numTurno(N) & turnosPlayer1(N-1).
++!ordenarMovimiento : superarLimiteFueraTurno(player1) & numTurno(N) & turnosPlayer2(N-1).
 
-+!start : numTurno(NumTurno) & turno(X) <- 
++!ordenarMovimiento : numTurno(NumTurno) & turno(X) <- 
 	//.print("\n\n\n");
 	.print("Inicio turno ", NumTurno, " jugador " , X);
 	.send(X, tell, puedesMover);
@@ -124,7 +129,7 @@ par(Numero) :- 0 = Numero mod 2.
 	}else{
 		-+turno(player1);
 	};
-	!start.
+	!ordenarMovimiento.
 
 // Caso para cuando el jugador que envia ha superado el limite de advertencias fueraTurno
 +moverDesdeEnDireccion(pos(X,Y),Dir)[source(A)] : not(turno(A)) & veces(A,fueraTurno,NumFueraTurno) & NumFueraTurno >= 3 <-
@@ -171,7 +176,7 @@ par(Numero) :- 0 = Numero mod 2.
 	-+numTurno(N+1);
 	.send(A,tell,invalido(fueraTurno,NumVeces));
 	.send(A,untell,invalido(fueraTurno,NumVeces));
-	!start.
+	!ordenarMovimiento.
 
 	
 //Caso para cuando la dirección recibida sea incorrecta
@@ -216,7 +221,7 @@ par(Numero) :- 0 = Numero mod 2.
 	};
 	.send(A,tell,valido);
 	.send(A,untell,valido);
-	!start.
+	!ordenarMovimiento.
 	
 	
 //Movimiento indeterminado del jugador
