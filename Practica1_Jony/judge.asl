@@ -3,7 +3,7 @@
 /* Initial beliefs and rules */
 
 /* ----------------------- #region atributos de configuracion*/
-maxTurnos(11).//Maximo de turnos del juego
+maxTurnos(111).//Maximo de turnos del juego
 size(10). //tamaño del tabler
 numTurno(1).//Almacena el número de turnos que se estan realizando en cada momento
 turno(player1). //Jugador que empieza el juego
@@ -17,7 +17,7 @@ maxFueraTablero(3).
 //Por defecto estan a 0 las veces de fuera de tablero y fuera de turno
 veces(fueraTablero, 0).
 veces(player1,fueraTurno,0).
-veces(player2,fueraTurno,5).
+veces(player2,fueraTurno,0).
 
 
 /*	#endregion */
