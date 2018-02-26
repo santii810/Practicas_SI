@@ -17,7 +17,7 @@ maxFueraTablero(3).
 //Por defecto estan a 0 las veces de fuera de tablero y fuera de turno
 veces(fueraTablero, 0).
 veces(player1,fueraTurno,0).
-veces(player2,fueraTurno,5).
+veces(player2,fueraTurno,0).
 numeroColores(6).
 
 /*	#endregion */

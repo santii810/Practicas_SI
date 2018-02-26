@@ -9,18 +9,15 @@ direccion(3,left).
 
 randomMov(Mov):-
 	size(Size) &
-	R1 = math.floor(math.random(4)) &
-	R2 = math.floor(math.random(Size)) &
-	R3 = math.floor(math.random(Size)) &
-	direccion(R1,Dir) &
-	Mov = moverDesdeEnDireccion(pos(R2,R3),Dir).
-	
-	
+	.random(R1) & .random(R2) & .random(R3) & 
+	direccion(4 * math.floor(R1), Dir) &
+	Mov = moverDesdeEnDireccion(pos(math.floor(R2*Size), math.floor(R3 * Size)),Dir).
+
 	
 	
 
 /* Initial goals */		
-!start.
+//!start.
 
 
 +!start: not(eliminado) <-
