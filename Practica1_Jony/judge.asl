@@ -17,7 +17,7 @@ maxFueraTablero(3).
 //Por defecto estan a 0 las veces de fuera de tablero y fuera de turno
 veces(fueraTablero, 0).
 veces(player1,fueraTurno,0).
-veces(player2,fueraTurno,0).
+veces(player2,fueraTurno,5).
 
 
 /*	#endregion */
@@ -78,14 +78,14 @@ cambiarTurno(player2, player1).
 /* Plans */
 +!start<-
 	!comprobarTurnos;
-	!rellenar;
+	!rellenarTablero;
 	!ordenarMovimiento.
 	
 +!comprobarTurnos: maxTurnos(N) & par(N).
 +!comprobarTurnos: maxTurnos(N) <-
 	-+maxTurnos(N-1).
 
-+!rellenar: size(Size) <-
++!rellenarTablero: size(Size) <-
 	for (.range(Y,0,Size-1)) {
 		for (.range(X,0,Size-1)) {
 			?eligeColor(Color);
@@ -102,21 +102,7 @@ cambiarTurno(player2, player1).
 	.send(X,untell, puedesMover).
 
 	
-	/*
-	Orden para moverDesdeEnDireccion:
-	Limite de turnos superado
-	
-	*/
-// Cuando un jugador expulsado juega en su turno
-+moverDesdeEnDireccion(pos(X,Y),Dir)[source(A)] :turno(A) & superarLimiteFueraTurno(A) <-
-	.print("El jugador ", A, " ha superado el limite de turnos fallidos, su turno queda deshabilitado\n\n");
-	-moverDesdeEnDireccion(pos(X,Y),Dir)[source(A)];
-	?cambiarTurno(A,B);
-	-+turno(B);
-
-	!ordenarMovimiento.
-
-// Caso para cuando el jugador que envia ha superado el limite de advertencias fueraTurno
+// El jugador ha sobrepasado el limite de advertencias de tipo fueraTurno
 +moverDesdeEnDireccion(pos(X,Y),Dir)[source(A)] : not(turno(A)) & veces(A,fueraTurno,NumFueraTurno) & NumFueraTurno >= 3 <-
 	.print("El jugador ", A, " ha superado el limite de turnos fallidos\n\n");
 	-moverDesdeEnDireccion(pos(X,Y),Dir)[source(A)];
@@ -202,6 +188,7 @@ cambiarTurno(player2, player1).
 	};
 	.send(A,tell,valido);
 	.send(A,untell,valido);
+	.wait(1); // Se espera para que el jugador imprima antes de volver a empezar el ciclo (meramente estetico)
 	!ordenarMovimiento.
 	
 	
