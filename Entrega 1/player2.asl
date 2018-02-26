@@ -27,7 +27,7 @@ randomMov(Mov):-
 	?randomMov(Mov);
 	.print(Mov);	
 	.send(judge,tell,Mov);
-	.wait(100);
+	.wait(10);
 	!start.
 
 /* Plans */
@@ -63,6 +63,6 @@ randomMov(Mov):-
 	
 //Significa que el juez ha aceptado el movimiento  por lo que lo registramos
 +valido[source(judge)]<- 
-	.print("Ficha movida\n\n").	
+	.print("Ficha movida\n").	
 
 +invalido(fueraTurno,Veces)[source(judge)].

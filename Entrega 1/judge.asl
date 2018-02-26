@@ -97,14 +97,14 @@ cambiarTurno(player2, player1).
 
 +!ordenarMovimiento : numTurno(NumTurno) & turno(X) <- 
 	//.print("\n\n\n");
-	.print("Inicio turno ", NumTurno, " jugador " , X);
+	.print("\n\n\nInicio turno ", NumTurno, " jugador " , X);
 	.send(X, tell, puedesMover);
 	.send(X,untell, puedesMover).
 
 	
 // El jugador ha sobrepasado el limite de advertencias de tipo fueraTurno
 +moverDesdeEnDireccion(pos(X,Y),Dir)[source(A)] : not(turno(A)) & veces(A,fueraTurno,NumFueraTurno) & NumFueraTurno >= 3 <-
-	.print("El jugador ", A, " ha superado el limite de turnos fallidos\n\n");
+	.print("El jugador ", A, " ha superado el limite de turnos fallidos\n");
 	-moverDesdeEnDireccion(pos(X,Y),Dir)[source(A)];
 	?veces(A,fueraTurno,V);
 	-+veces(A,fueraTurno,V+1);
@@ -127,23 +127,20 @@ cambiarTurno(player2, player1).
 	-moverDesdeEnDireccion(pos(X,Y),Dir)[source(A)];
 	?veces(fueraTablero, V); //Incrementamos el numero de movimientos incorrecto en este turno
 	-+veces(fueraTablero, V+1);
-	.print("Movimiento incorrecto ", V+1 , "ª vez.\n             Cambio de turno \n\n");
-	if(superarLimiteFueraTurno(player1) | superarLimiteFueraTurno(player2))	{
-		if(superarLimiteFueraTurno(player1)){
-			-+turno(player2);
-		} else {
-			-+turno(player1);
-		};	
-	}else{
-		?cambiarTurno(A,B);
-		-+turno(B);
-	};
+	.print("Movimiento incorrecto ", V+1 , "ª vez.\n             Cambio de turno \n");
 	-+veces(fueraTablero, 0);//Reiniciamos contador de veces fueraTablero
-		
-	?numTurno(N);
-	-+numTurno(N+1);
+	
 	.send(A,tell,invalido(fueraTurno,NumVeces));
 	.send(A,untell,invalido(fueraTurno,NumVeces));
+	
+	?numTurno(NumTurno);
+	-+numTurno(NumTurno+1);
+	?cambiarTurno(A,B);
+	-+turno(B);	
+	if(superarLimiteFueraTurno(B)){
+		-+numTurno(NumTurno+2);
+		-+turno(A);
+	};
 	!ordenarMovimiento.
 
 	
@@ -171,24 +168,21 @@ cambiarTurno(player2, player1).
 +moverDesdeEnDireccion(pos(X,Y),Dir)[source(A)] : turno(A) & movimientoCorrecto(pos(X,Y),Dir) <-
 	-moverDesdeEnDireccion(pos(X,Y),Dir)[source(A)];
 	.print("Movimiento correcto");
-	?numTurno(N);
-	-+numTurno(N+1);
 	-+veces(fueraTablero, 0);//Reiniciamos contador de veces fueraTablero
-	
-	
-	if(superarLimiteFueraTurno(player1) | superarLimiteFueraTurno(player2))	{
-		if(superarLimiteFueraTurno(player1)){
-			-+turno(player2);
-		} else {
-			-+turno(player1);
-		};	
-	}else{
-		?cambiarTurno(A,B);
-		-+turno(B);
-	};
+
 	.send(A,tell,valido);
 	.send(A,untell,valido);
-	.wait(1); // Se espera para que el jugador imprima antes de volver a empezar el ciclo (meramente estetico)
+	
+	?numTurno(NumTurno);
+	-+numTurno(NumTurno+1);
+	?cambiarTurno(A,B);
+	-+turno(B);	
+	if(superarLimiteFueraTurno(B)){
+		-+numTurno(NumTurno+2);
+		-+turno(A);
+	};
+	
+	.wait(2); // Se espera para que el jugador imprima antes de volver a empezar el ciclo (meramente estetico)
 	!ordenarMovimiento.
 	
 	
