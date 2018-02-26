@@ -8,23 +8,23 @@ direccion(2,right).
 direccion(3,left).
 
 randomMov(Mov):-
-	.random(Random) &
-	direccion(math.floor(Random*4), Direccion)&
-	.random(X) &
-	.random(Y) &
-	Mov = moverDesdeEnDireccion(pos(math.floor(X*10),math.floor(Y*10)),D).
+	R1 = math.floor(math.random(4)) &
+	R2 = math.floor(math.random(10)) &
+	R3 = math.floor(math.random(10)) &
+	direccion(R1,Dir) &
+	Mov = moverDesdeEnDireccion(pos(R2,R3),Dir).
+	
+	
+	
+	
 
 /* Initial goals */		
 	
 /* Plans */
 //Si es el primer movimiento, entonces viene a partir de un correcto
 +puedesMover[source(judge)]<- 
-	.print("Inicio Jugador 1");
-	.random(Random);
-	?direccion(math.floor(Random*4), Direccion);
-	.random(X);
-	.random(Y);
-	Mov = moverDesdeEnDireccion(pos(math.floor(X*10),math.floor(Y*10)),Direccion);
+	.print("Moviendo Jugador 1");
+	?randomMov(Mov);
 	.print(Mov);	
 	.send(judge,tell,Mov).
 	
@@ -37,12 +37,7 @@ randomMov(Mov):-
 //Si recibe un invalido de tipo fueraTablero el jugador debe rectificar el movimiento
 +invalido(fueraTablero,Veces) [source(judge)] <-
 	.print("Corrigiendo movimiento");
-	
-	.random(Random);
-	?direccion(math.floor(Random*4), Direccion);
-	.random(X);
-	.random(Y);
-	Mov = moverDesdeEnDireccion(pos(math.floor(X*10),math.floor(Y*10)),Direccion);
+	?randomMov(Mov);
 	.print(Mov);	
 	.send(judge,tell,Mov).
 		
@@ -50,12 +45,7 @@ randomMov(Mov):-
 	//Si recibe un invalido de tipo fueraTablero el jugador debe rectificar el movimiento
 +invalido(mismoColor) [source(judge)] <-
 	.print("Corrigiendo movimiento");
-	
-	.random(Random);
-	?direccion(math.floor(Random*4), Direccion);
-	.random(X);
-	.random(Y);
-	Mov = moverDesdeEnDireccion(pos(math.floor(X*10),math.floor(Y*10)),Direccion);
+	?randomMov(Mov);
 	.print(Mov);	
 	.send(judge,tell,Mov).
 	
