@@ -8,9 +8,10 @@ direccion(2,right).
 direccion(3,left).
 
 randomMov(Mov):-
+	size(Size) &
 	R1 = math.floor(math.random(4)) &
-	R2 = math.floor(math.random(10)) &
-	R3 = math.floor(math.random(10)) &
+	R2 = math.floor(math.random(Size)) &
+	R3 = math.floor(math.random(Size)) &
 	direccion(R1,Dir) &
 	Mov = moverDesdeEnDireccion(pos(R2,R3),Dir).
 	
@@ -23,7 +24,8 @@ randomMov(Mov):-
 
 
 +!start<-
-	.print("Moviendo Jugador 2");
+	-+size(10); // Cuando arranca el movimiento forzoso el juez aun no le comunico el tamaño y falla
+	.print("Moviendo forzoso Jugador 2");
 	?randomMov(Mov);
 	.print(Mov);	
 	.send(judge,tell,Mov);
@@ -31,6 +33,9 @@ randomMov(Mov):-
 	!start.
 
 /* Plans */
+//El juez les comunica el tamaño del tablero
++size(Size) [source(judge)].
+
 //Si es el primer movimiento, entonces viene a partir de un correcto
 +puedesMover[source(judge)]<- 
 	.print("Moviendo Jugador 2");

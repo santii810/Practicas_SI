@@ -8,9 +8,10 @@ direccion(2,right).
 direccion(3,left).
 
 randomMov(Mov):-
+	size(Size) &
 	R1 = math.floor(math.random(4)) &
-	R2 = math.floor(math.random(10)) &
-	R3 = math.floor(math.random(10)) &
+	R2 = math.floor(math.random(Size)) &
+	R3 = math.floor(math.random(Size)) &
 	direccion(R1,Dir) &
 	Mov = moverDesdeEnDireccion(pos(R2,R3),Dir).
 	
@@ -21,6 +22,9 @@ randomMov(Mov):-
 /* Initial goals */		
 	
 /* Plans */
+//El juez les comunica el tamaño del tablero
++size(Size) [source(judge)].
+
 //Si es el primer movimiento, entonces viene a partir de un correcto
 +puedesMover[source(judge)]<- 
 	.print("Moviendo Jugador 1");

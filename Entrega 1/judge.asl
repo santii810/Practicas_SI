@@ -78,6 +78,7 @@ cambiarTurno(player2, player1).
 /* Plans */
 +!start<-
 	!comprobarTurnos;
+	!configurarPlayers;
 	!rellenarTablero;
 	!ordenarMovimiento.
 	
@@ -85,6 +86,10 @@ cambiarTurno(player2, player1).
 +!comprobarTurnos: maxTurnos(N) <-
 	-+maxTurnos(N-1).
 
++!configurarPlayers: size(Size) <-
+	.send(player1,tell,size(Size));
+	.send(player2,tell,size(Size)).
+	
 +!rellenarTablero: size(Size) <-
 	for (.range(Y,0,Size-1)) {
 		for (.range(X,0,Size-1)) {
