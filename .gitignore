@@ -1,4 +1,3 @@
-
 *.asl~
-*.asl~
+*.stop___MAS
 *build.xml
