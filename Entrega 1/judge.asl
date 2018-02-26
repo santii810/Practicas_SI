@@ -18,7 +18,7 @@ maxFueraTablero(3).
 veces(fueraTablero, 0).
 veces(player1,fueraTurno,0).
 veces(player2,fueraTurno,5).
-
+numeroColores(6).
 
 /*	#endregion */
 
@@ -41,7 +41,7 @@ fueraTablero(pos(X,Y),right) :- comprobarFueraTablero(X+1,Y).
 
 //Elige un color de manera aleatoria
 //eligeColor(Color):-	Color = 1. //Clausula de pruebas que asigna el mismo color a todas las fichas
-eligeColor(Color):-	.random(Random) & Color = math.floor(Random*6).
+eligeColor(Color):-	.random(Random)& numeroColores(NumColores) & Color = math.floor(Random*NumColores).
 
 // Grupo de clausulas que calculan las coordenadas de destino
 calcularDestino(pos(X,Y),up,pos(X,Y-1)).
