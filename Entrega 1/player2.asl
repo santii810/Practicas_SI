@@ -23,14 +23,16 @@ randomMov(Mov):-
 !start.
 
 
-+!start<-
++!start: not(eliminado) <-
 	-+size(10); // Cuando arranca el movimiento forzoso el juez aun no le comunico el tamaño y falla
 	.print("Moviendo forzoso Jugador 2");
 	?randomMov(Mov);
 	.print(Mov);	
 	.send(judge,tell,Mov);
 	.wait(10);
-	!start.
+	!start
+	.
++!start.
 
 /* Plans */
 //El juez les comunica el tamaño del tablero
@@ -42,8 +44,12 @@ randomMov(Mov):-
 	?randomMov(Mov);
 	.print(Mov);	
 	.send(judge,tell,Mov).
-	
-// Si devuelve un invalidod e tipo fueraTurno el jugador no puede hacer nada
+
+// Si devuelve un invalido de tipo fueraTurno el jugador no puede hacer nada
++invalido(fueraTurno,Veces) [source(judge)] : Veces > 3 <-
+-+eliminado.
+
+// Si devuelve un invalido de tipo fueraTurno el jugador no puede hacer nada
 +invalido(fueraTurno,Veces) [source(judge)].
 
 //Cuando el jugador hace un movimiento invalido mas de 3 veces deja el turno
@@ -58,7 +64,7 @@ randomMov(Mov):-
 		
 	
 	//Si recibe un invalido de tipo fueraTablero el jugador debe rectificar el movimiento
-+invalido(mismoColor) [source(judge)] <-
++tryAgain [source(judge)] <-
 	.print("Corrigiendo movimiento");
 	?randomMov(Mov);
 	.print(Mov);	
@@ -70,4 +76,6 @@ randomMov(Mov):-
 +valido[source(judge)]<- 
 	.print("Ficha movida\n").	
 
-+invalido(fueraTurno,Veces)[source(judge)].
+// Si devuelve un invalido de tipo fueraTurno el jugador no puede hacer nada
++invalido(X,Veces)[source(judge)]<-
+	.print("Movimiento invalido de tipo: ", X, " no controlado").

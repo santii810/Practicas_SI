@@ -47,7 +47,7 @@ randomMov(Mov):-
 		
 	
 //Si recibe un invalido de tipo fueraTablero el jugador debe rectificar el movimiento
-+invalido(mismoColor) [source(judge)] <-
++tryAgain [source(judge)] <-
 	.print("Corrigiendo movimiento");
 	?randomMov(Mov);
 	.print(Mov);	

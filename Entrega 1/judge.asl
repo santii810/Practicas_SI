@@ -3,7 +3,7 @@
 /* Initial beliefs and rules */
 
 /* ----------------------- #region atributos de configuracion*/
-maxTurnos(111).//Maximo de turnos del juego
+maxTurnos(10).//Maximo de turnos del juego
 size(10). //tamaño del tabler
 numTurno(1).//Almacena el número de turnos que se estan realizando en cada momento
 turno(player1). //Jugador que empieza el juego
@@ -17,7 +17,7 @@ maxFueraTablero(3).
 //Por defecto estan a 0 las veces de fuera de tablero y fuera de turno
 veces(fueraTablero, 0).
 veces(player1,fueraTurno,0).
-veces(player2,fueraTurno,0).
+veces(player2,fueraTurno,5).
 
 
 /*	#endregion */
@@ -56,17 +56,16 @@ mismoColor(pos(OX,OY),Dir):-
 	& tablero(ficha(_, Color), celda(DX, DY, _)).
 
 //Unifica si el movimiento es correcto
-movimientoCorrecto(pos(X,Y),Dir):- not(fueraTablero(pos(X,Y),Dir)) & not(mismoColor(Mov)).
+movimientoCorrecto(pos(X,Y),Dir):- 
+	not(fueraTablero(pos(X,Y),Dir)) & 
+	not(comprobarFueraTablero(X,Y)) &
+	not(mismoColor(Mov)).
 
 // Unifica si el turno actual es mayor al maximo de turnos configurado
 finTurno :- (maxTurnos(Max) & numTurno(N) & Max < N).
 
 //Unifica si el jugador A supera el numero maximo configurado de faltas de tipo fueraTurno
 superarLimiteFueraTurno(A) :- veces(A,fueraTurno,NumFueraTurno) & maxFueraTurno(Max) & NumFueraTurno > Max.
-
-//Unifica si Numero es par
-par(Numero) :- 0 = Numero mod 2.
-
 
 cambiarTurno(player1, player2).
 cambiarTurno(player2, player1).
@@ -77,15 +76,10 @@ cambiarTurno(player2, player1).
 
 /* Plans */
 +!start<-
-	!comprobarTurnos;
 	!configurarPlayers;
 	!rellenarTablero;
 	!ordenarMovimiento.
 	
-+!comprobarTurnos: maxTurnos(N) & par(N).
-+!comprobarTurnos: maxTurnos(N) <-
-	-+maxTurnos(N-1).
-
 +!configurarPlayers: size(Size) <-
 	.send(player1,tell,size(Size));
 	.send(player2,tell,size(Size)).
@@ -102,7 +96,7 @@ cambiarTurno(player2, player1).
 
 +!ordenarMovimiento : numTurno(NumTurno) & turno(X) <- 
 	//.print("\n\n\n");
-	.print("\n\n\nInicio turno ", NumTurno, " jugador " , X);
+	.print("Inicio turno ", NumTurno, " jugador " , X);
 	.send(X, tell, puedesMover);
 	.send(X,untell, puedesMover).
 
@@ -132,7 +126,7 @@ cambiarTurno(player2, player1).
 	-moverDesdeEnDireccion(pos(X,Y),Dir)[source(A)];
 	?veces(fueraTablero, V); //Incrementamos el numero de movimientos incorrecto en este turno
 	-+veces(fueraTablero, V+1);
-	.print("Movimiento incorrecto ", V+1 , "ª vez.\n             Cambio de turno \n");
+	.print("Movimiento incorrecto(fueraTablero, ", V+1 , ").\n             Cambio de turno \n");
 	-+veces(fueraTablero, 0);//Reiniciamos contador de veces fueraTablero
 	
 	.send(A,tell,invalido(fueraTurno,NumVeces));
@@ -151,10 +145,10 @@ cambiarTurno(player2, player1).
 	
 //	Dirección recibida sea incorrecta
 +moverDesdeEnDireccion(pos(X,Y),Dir)[source(A)] : turno(A) & not(movimientoCorrecto(pos(X,Y),Dir)) & veces(fueraTablero, V) <-
-	-moverDesdeEnDireccion(pos(X,Y),Dir)[source(A)]	;
+	-moverDesdeEnDireccion(pos(X,Y),Dir)[source(A)];
 	//Incrementamos el numero de movimientos incorrecto en este turno
 	-+veces(fueraTablero, V+1);
-	.print("Movimiento incorrecto ", V+1 , "ª vez.");
+	.print("Movimiento incorrecto(fueraTablero, ", V+1 , ").");
 	.send(A,tell,invalido(fueraTablero,V+1));
 	.send(A,untell,invalido(fueraTablero,V+1)).
 
@@ -164,8 +158,8 @@ cambiarTurno(player2, player1).
 	-moverDesdeEnDireccion(pos(X,Y),Dir)[source(A)]	;
 	//Incrementamos el numero de movimientos incorrectos en este turno
 	.print("Movimiento incorrecto , fichas del mismo color");
-	.send(A,tell,invalido(mismoColor));
-	.send(A,untell,invalido(mismoColor)).
+	.send(A,tell,tryAgain);
+	.send(A,untell,tryAgain).
 	
 
 	
