@@ -3,7 +3,7 @@
 /* Initial beliefs and rules */
 
 /* ----------------------- #region atributos de configuracion*/
-maxTurnos(10).//Maximo de turnos del juego
+maxTurnos(101).//Maximo de turnos del juego
 size(10). //tamaño del tabler
 numTurno(1).//Almacena el número de turnos que se estan realizando en cada momento
 turno(player1). //Jugador que empieza el juego
@@ -40,7 +40,6 @@ fueraTablero(pos(X,Y),left) :- comprobarFueraTablero(X-1,Y).
 fueraTablero(pos(X,Y),right) :- comprobarFueraTablero(X+1,Y).
 
 //Elige un color de manera aleatoria
-//eligeColor(Color):-	Color = 1. //Clausula de pruebas que asigna el mismo color a todas las fichas
 eligeColor(Color):-	.random(Random)& numeroColores(NumColores) & Color = math.floor(Random*NumColores).
 
 // Grupo de clausulas que calculan las coordenadas de destino
