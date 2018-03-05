@@ -1,0 +1,35 @@
+SI
+
+
+algoritmo de caida de fichas
+control de colores, que no se repita un color demasiado
+
+
+
+CAIDA -> CAEMOS Y RODAMOS
+
+Agrupaciones:
+clasica de 3 horizontal o vertical
+cuatro en cuadrado
+cuatro en linea
+5 en T horizontal o vertical
+5 en linea
+
+
+fichas especiales: (foto)
+
+
+1: tablero
+2: agrupar fichas
+3: eliminar fichas
+4: caida de fichas
+5: generar fichas nuevas
+
+
+
+
+1:model.put(x,y,c,label).
+
+
+
+
