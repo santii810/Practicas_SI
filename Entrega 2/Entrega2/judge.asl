@@ -3,7 +3,6 @@
 /* ----- Initial beliefs and rules ------ */
 
 size(10).
-
 jugadasRestantes(100).
 
 jugadasPlayer(player1,0).
@@ -14,10 +13,6 @@ turnoActual(player1).
 turnoActivado(0).
 
 fueraTablero(0).
-
-
-color(0,16).
-color(N,C) :- color(N-1,C1) & C = C1*2.
 
 fueraTurno(player1,0).
 fueraTurno(player2,0).
@@ -31,7 +26,7 @@ validacion(X,Y,"up",COrigen) :- tablero(celda(X,Y-1,_),ficha(CDestino,_)) & not 
 validacion(X,Y,"down",COrigen) :- tablero(celda(X,Y+1,_),ficha(CDestino,_)) & not mismoColor(COrigen,CDestino).
 validacion(X,Y,"left",COrigen) :- tablero(celda(X-1,Y,_),ficha(CDestino,_)) & not mismoColor(COrigen,CDestino).
 validacion(X,Y,"right",COrigen) :- tablero(celda(X+1,Y,_),ficha(CDestino,_)) & not mismoColor(COrigen,CDestino).
-mismoColor(X,X). //TODO cambiar esta mierda
+mismoColor(COrigen,CDestino) :- COrigen=CDestino.
 
 //Comprobacion de Movimiento
 direccionCorrecta(pos(X,Y),Dir):- tablero(celda(X,Y,_),_) & movimiento(X,Y,Dir).
@@ -52,12 +47,15 @@ randomFicha(Rand,Ficha):-
 plNumb(player1,1).
 plNumb(player2,2).
 
+color(0,16).
+color(N,C) :- color(N-1,C1) & C = C1*2.
+
+
 //Calculo de coordenadas para un movimiento
 nextMove(P1,P2,P1,P2-1,"up").
 nextMove(P1,P2,P1,P2+1,"down").
 nextMove(P1,P2,P1+1,P2,"right").
 nextMove(P1,P2,P1-1,P2,"left").
-
 
 
 /* ----- Initial goals ----- */
@@ -66,6 +64,119 @@ nextMove(P1,P2,P1-1,P2,"left").
 
 
 /* ----- Plans ----- */
+
+
+/* COMIENZO INTOCABLE */
+
+//Comienzo del turno de un jugador.
++!comienzoTurno : jugadorDescalificado(player1,1) & jugadorDescalificado(player2,1) <-
+			.print("FIN DE LA PARTIDA: Ambos jugadores han sido descalificados. TRAMPOSOS!!!").
+
++!comienzoTurno : turnoActual(P) & jugadasRestantes(N) & N>0 & jugadasPlayer(P,J) & J<50 <-
+	.print("Turno de: ",P,"!");
+	-+turnoActivado(1);
+	.print(P,", puedes mover");
+	.send(P,tell,puedesMover);
+	.send(P,untell,puedesMover).
+
++!comienzoTurno : jugadasRestantes(N) & N=0 <- .print("FIN DE LA PARTIDA: Se ha realizado el numero maximo de jugadas").
+
+
++!comienzoTurno : turnoActual(P) & jugadasPlayer(P,J) & J>=50 <- .print("FIN DE LA PARTIDA: ",P," ha realizado el maximo de jugadas por jugador (50)").
+
+
++!comienzoTurno <- .print("DEBUG: Error en +!comienzoTurno"). //Salvaguarda
+
++moverDesdeEnDireccion(pos(X,Y),Dir)[source(P)] : 
+	turnoActual(P) & movimientoValido(pos(X,Y),Dir) & turnoActivado(1) <-
+			-+turnoActivado(0);
+			-moverDesdeEnDireccion(pos(X,Y),Dir)[source(P)];
+			.print("Jugada valida!")
+			.send(P,tell,valido);
+			.send(P,untell,valido);
+			+intercambiarFichas(X,Y,Dir,P);
+			-intercambiarFichas(X,Y,Dir,P);
+			-+turnoTerminado(P);
+			!comienzoTurno.
+
+//Movimiento Incorrecto
++moverDesdeEnDireccion(pos(X,Y),Dir)[source(P)] : 
+	turnoActual(P) & not movimientoValido(pos(X,Y),Dir) & turnoActivado(1)<-
+			-+turnoActivado(0);
+			+movimientoInvalido(pos(X,Y),Dir,P).
+
+//Movimiento realizado por un jugador que tiene el turno pero el juez aun no le ha ordenado mover
++moverDesdeEnDireccion(pos(X,Y),Dir)[source(P)] : 
+	turnoActual(P) & turnoActivado(0) <-
+			.print("Agente ",P,", espera mi orden para realizar el siguiente movimiento. No intentes mover mas de una vez.").
+
+
+//Movimiento realizado por un jugador fuera de su turno
++moverDesdeEnDireccion(pos(X,Y),Dir)[source(P)] : 
+	not turnoActual(P) & fueraTurno(P,N) <-
+		.print(P," Has intentado realizar un movimiento fuera de tu turno. ", N+1," aviso");
+		.send(P,tell,invalido(fueraTurno,N+1));
+		.send(P,untell,invalido(fueraTurno,N+1));
+		-fueraTurno(P,N);
+		+fueraTurno(P,N+1).
+
+//Descalificacion de un jugador
++fueraTurno(P,N) : N>3 <-
+		-jugadorDescalificado(P,0);
+		+jugadorDescalificado(P,1);
+		.print("AVISO: ",P," ha sido descalificado por tramposo!!!").
+
+
+
+//Deteccion de un agente externo a la partida (distinto a player1 y player 2) que esta intentando jugar.
+// Esta regla la podeis adecuar a vuestras necesidades
+
++moverDesdeEnDireccion(pos(X,Y),Dir)[source(P)] : 
+	not turnoActual(P) & not fueraTurno(P,N) <- // --- TODO ---
+		.print("El agente ",P," externo a la partida está intentando jugar.").
+
+// Esta regla la podeis adecuar a vuestras necesidades
++moverDesdeEnDireccion(pos(X,Y),Dir)[source(P)] <- 
+	.print("DEBUG: Error en +moverDesdeEnDireccion. Source", P). //Salvaguarda
+
+//Comprobacion de la falta cometida por mover una ficha hacia una posicion fuera del tablero, intentar mover una ficha de una posicion inexistente, o realizar un tipo de movimiento desconocido
++movimientoInvalido(pos(X,Y),Dir,P):
+	fueraTablero(V) & not direccionCorrecta(pos(X,Y),Dir)  <-
+		-movimientoInvalido(pos(X,Y),Dir,P);
+		.print("Movimiento Invalido. Has intentado mover una ficha fuera del tablero");
+		.send(P,tell,invalido(fueraTablero,V+1));
+		.send(P,untell,invalido(fueraTablero,V+1));
+		-+turnoActivado(1);
+		-+fueraTablero(V+1).
+
+//Comprobacion de la falta cometida por intercambiar dos fichas del mismo color
++movimientoInvalido(pos(X,Y),Dir,P) : 
+	not colorFichasDistintos(pos(X,Y),Dir) <-
+		-movimientoInvalido(pos(X,Y),Dir,P);
+		.print("Movimiento Invalido. Has intentado  intercambiar dos fichas del mismo color");
+		-+turnoActivado(1);
+		.print("Intentalo de nuevo!");
+		.send(P,tell,tryAgain);
+		.send(P,untell,tryAgain).
+
+// Esta regla la podeis adecuar a vuestras necesidades
++movimientoInvalido(pos(X,Y),Dir,P) <- 
+	.print("DEBUG: Error en +movimientoInvalido").
+
+
+//Recepcion del aviso de que un jugador pasa turno por haber realizado un movimiento fuera del tablero mas de 3 veces
++pasoTurno[source(P)] : turnoActual(P) <-
+		-+fueraTablero(0);
+		.print(P," ha pasado turno");
+		+cambioTurno(P);
+		!comienzoTurno.
+			
+			
+
+/* FIN INTOCABLE */
+
+
+
 
 
 +!startGame <- +generacionTablero;
@@ -99,24 +210,6 @@ nextMove(P1,P2,P1-1,P2,"left").
 		 .send(P,tell,size(N)).
 
 
-//Comienzo del turno de un jugador.
-+!comienzoTurno : jugadorDescalificado(player1,1) & jugadorDescalificado(player2,1) <-
-			.print("FIN DE LA PARTIDA: Ambos jugadores han sido descalificados. TRAMPOSOS!!!").
-
-+!comienzoTurno : turnoActual(P) & jugadasRestantes(N) & N>0 & jugadasPlayer(P,J) & J<50 <-
-	.print("Turno de: ",P,"!");
-	-+turnoActivado(1);
-	.print(P,", puedes mover");
-	.send(P,tell,puedesMover);
-	.send(P,untell,puedesMover).
-
-+!comienzoTurno : jugadasRestantes(N) & N=0 <- .print("FIN DE LA PARTIDA: Se ha realizado el numero maximo de jugadas").
-
-
-+!comienzoTurno : turnoActual(P) & jugadasPlayer(P,J) & J>=50 <- .print("FIN DE LA PARTIDA: ",P," ha realizado el maximo de jugadas por jugador (50)").
-
-
-+!comienzoTurno <- .print("DEBUG: Error en +!comienzoTurno"). //Salvaguarda
 
 
 //Cambio de turno de un jugador a otro
@@ -158,105 +251,29 @@ nextMove(P1,P2,P1-1,P2,"left").
 
 //Analisis del movimiento solicitado por un jugador
 //Movimiento correcto
-+moverDesdeEnDireccion(pos(X,Y),Dir)[source(P)] : turnoActual(P) & movimientoValido(pos(X,Y),Dir) & turnoActivado(1)<-
-												-+turnoActivado(0);
-												-moverDesdeEnDireccion(pos(X,Y),Dir)[source(P)];
-												.print("Jugada valida!")
-												.send(P,tell,valido);
-												.send(P,untell,valido);
-												+intercambiarFichas(X,Y,Dir,P);
-												-intercambiarFichas(X,Y,Dir,P);
-												-+turnoTerminado(P);
-												!comienzoTurno.
 
 +turnoTerminado(P): jugadorDescalificado(J,B) & B=1 <- +cambioTurnoMismoJugador(P).
 +turnoTerminado(P) <- +cambioTurno(P).
 
 +intercambiarFichas(X,Y,Dir,P) : nextMove(X,Y,NX,NY,Dir) & plNumb(P,PlNumb) <-
-								-tablero(celda(X,Y,Own1),ficha(Color1,Tipo1));
-								-tablero(celda(NX,NY,Own2),ficha(Color2,Tipo2));
-								.send(player1,untell,tablero(celda(X,Y,Own1),ficha(Color1,Tipo1)));
-								.send(player1,untell,tablero(celda(NX,NY,Own2),ficha(Color2,Tipo2)));
-								.send(player2,untell,tablero(celda(X,Y,Own1),ficha(Color1,Tipo1)));
-								.send(player2,untell,tablero(celda(NX,NY,Own2),ficha(Color2,Tipo2)));
-								+tablero(celda(NX,NY,PlNumb),ficha(Color1,Tipo1));
-								+tablero(celda(X,Y,PlNumb),ficha(Color2,Tipo2));
-								.send(player1,tell,tablero(celda(NX,NY,PlNumb),ficha(Color1,Tipo1)));
-								.send(player1,tell,tablero(celda(X,Y,PlNumb),ficha(Color2,Tipo2)));
-								.send(player2,tell,tablero(celda(NX,NY,PlNumb),ficha(Color1,Tipo1)));
-								.send(player2,tell,tablero(celda(X,Y,PlNumb),ficha(Color2,Tipo2)));
-								
-								?color(Color1,C1);
-								?color(Color2,C2);
-								exchange(C1,X,NX,C2,Y,NY);
-								
-								
-								.print("Se han intercambiado las fichas entre las posiciones (",X,",",Y,") y (",NX,",",NY,")").
+	-tablero(celda(X,Y,Own1),ficha(Color1,Tipo1));
+	-tablero(celda(NX,NY,Own2),ficha(Color2,Tipo2));
+	.send(player1,untell,tablero(celda(X,Y,Own1),ficha(Color1,Tipo1)));
+	.send(player1,untell,tablero(celda(NX,NY,Own2),ficha(Color2,Tipo2)));
+	.send(player2,untell,tablero(celda(X,Y,Own1),ficha(Color1,Tipo1)));
+	.send(player2,untell,tablero(celda(NX,NY,Own2),ficha(Color2,Tipo2)));
+	+tablero(celda(NX,NY,PlNumb),ficha(Color1,Tipo1));
+	+tablero(celda(X,Y,PlNumb),ficha(Color2,Tipo2));
+	.send(player1,tell,tablero(celda(NX,NY,PlNumb),ficha(Color1,Tipo1)));
+	.send(player1,tell,tablero(celda(X,Y,PlNumb),ficha(Color2,Tipo2)));
+	.send(player2,tell,tablero(celda(NX,NY,PlNumb),ficha(Color1,Tipo1)));
+	.send(player2,tell,tablero(celda(X,Y,PlNumb),ficha(Color2,Tipo2)));
+	//Pasamos color de 0-5 a escala binaria
+	?color(Color1,C1);
+	?color(Color2,C2);
+	exchange(C1,X,NX,C2,Y,NY);
+	.print("Se han intercambiado las fichas entre las posiciones (",X,",",Y,") y (",NX,",",NY,")").
 
-//Movimiento Incorrecto
-+moverDesdeEnDireccion(pos(X,Y),Dir)[source(P)] : turnoActual(P) & not movimientoValido(pos(X,Y),Dir) & turnoActivado(1)<-
-												-+turnoActivado(0);
-												+movimientoInvalido(pos(X,Y),Dir,P).
-
-//Movimiento realizado por un jugador que tiene el turno pero el juez aun no le ha ordenado mover
-+moverDesdeEnDireccion(pos(X,Y),Dir)[source(P)] : turnoActual(P) & turnoActivado(0) <-
-												.print("Agente ",P,", espera mi orden para realizar el siguiente movimiento. No intentes mover mas de una vez.").
-
-
-//Movimiento realizado por un jugador fuera de su turno
-+moverDesdeEnDireccion(pos(X,Y),Dir)[source(P)] : not turnoActual(P) & fueraTurno(P,N) <-
-												.print(P," Has intentado realizar un movimiento fuera de tu turno. ", N+1," aviso");
-												.send(P,tell,invalido(fueraTurno,N+1));
-												.send(P,untell,invalido(fueraTurno,N+1));
-												-fueraTurno(P,N);
-												+fueraTurno(P,N+1).
-
-//Descalificacion de un jugador
-+fueraTurno(P,N) : N>3 <-
-					-jugadorDescalificado(P,0);
-					+jugadorDescalificado(P,1);
-					.print("AVISO: ",P," ha sido descalificado por tramposo!!!").
-
-
-
-//Deteccion de un agente externo a la partida (distinto a player1 y player 2) que esta intentando jugar.
-+moverDesdeEnDireccion(pos(X,Y),Dir)[source(P)] : not turnoActual(P) & not fueraTurno(P,N) <- // --- TODO ---
-												.print("El agente ",P," externo a la partida está intentando jugar.").
-
-
-
-+moverDesdeEnDireccion(pos(X,Y),Dir)[source(P)] <- .print("DEBUG: Error en +moverDesdeEnDireccion. Source", P). //Salvaguarda
-
-
-
-
-//Comprobacion de la falta cometida por mover una ficha hacia una posicion fuera del tablero, intentar mover una ficha de una posicion inexistente, o realizar un tipo de movimiento desconocido
-+movimientoInvalido(pos(X,Y),Dir,P) :fueraTablero(V) & not direccionCorrecta(pos(X,Y),Dir)  <-
-													-movimientoInvalido(pos(X,Y),Dir,P);
-													.print("Movimiento Invalido. Has intentado mover una ficha fuera del tablero");
-													.send(P,tell,invalido(fueraTablero,V+1));
-													.send(P,untell,invalido(fueraTablero,V+1));
-													-+turnoActivado(1);
-													-+fueraTablero(V+1).
-
-//Comprobacion de la falta cometida por intercambiar dos fichas del mismo color
-+movimientoInvalido(pos(X,Y),Dir,P) : not colorFichasDistintos(pos(X,Y),Dir) <-
-										-movimientoInvalido(pos(X,Y),Dir,P);
-										.print("Movimiento Invalido. Has intentado  intercambiar dos fichas del mismo color");
-										-+turnoActivado(1);
-										.print("Intentalo de nuevo!");
-										.send(P,tell,tryAgain);
-										.send(P,untell,tryAgain).
-
-+movimientoInvalido(pos(X,Y),Dir,P) <- .print("DEBUG: Error en +movimientoInvalido").
-
-
-//Recepcion del aviso de que un jugador pasa turno por haber realizado un movimiento fuera del tablero mas de 3 veces
-+pasoTurno[source(P)] : turnoActual(P) <-
-						-+fueraTablero(0);
-						.print(P," ha pasado turno");
-						+cambioTurno(P);
-						!comienzoTurno.
 
 //Plan por defecto a ejecutar en caso desconocido.
 +Default[source(A)]: not A=self  <- .print("El agente ",A," se comunica conmigo, pero no lo entiendo!").
