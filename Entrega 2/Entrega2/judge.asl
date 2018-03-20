@@ -2,26 +2,51 @@
 
 /* ----- Initial beliefs and rules ------ */
 //Recopilar datos de posicion y color de una ficha
-getFichaProp(X,Y,Color):- tablero(celda(X,Y,_),ficha(Color,_)).
-getFichaProp(X,Y,Color,Tipo,Prop):- tablero(celda(X,Y,Prop),ficha(Color,Tipo)).
+datos(X,Y,Color):- tablero(celda(X,Y,_),ficha(Color,_)).
+datos(X,Y,Color,Tipo,Prop):- tablero(celda(X,Y,Prop),ficha(Color,Tipo)).
+
+hayAgrupacion(X,Y,C):- grupo3Fil(X,Y,C)|grupo3Col(X,Y,C)|grupo4FilA(X,Y,C)|grupo4FilB(X,Y,C)|grupo4ColA(X,Y,C)|grupo4ColB(X,Y,C)| 
+					  grupo4SquareA(X,Y,C)|grupo4SquareB(X,Y,C)|grupo4SquareC(X,Y,C)|grupo4SquareD(X,Y,C)|grupo5Fil(X,Y,C)|grupo5Col(X,Y,C)|
+					  grupo5TN(X,Y,C)|grupo5TI(X,Y,C)|grupo5TR(X,Y,C)|grupo5TL(X,Y,C).
+
 
 //Agrupaciones de 3
 grupo3Fil(X,Y,C) :- // #_#
-	size(N) & 	X-1 >= 0 &	X+1 < N &	getFichaProp(X-1,Y,C) &	getFichaProp(X,Y,C) &	getFichaProp(X+1,Y,C).
+	size(N) & X-1 >= 0 & X+1 < N & datos(X-1,Y,C) & datos(X,Y,C) & datos(X+1,Y,C).
 grupo3Col(X,Y,C) :- // #_# (ficha desde medio)
-	size(N) & Y-1 >= 0 & Y+1 < N & getFichaProp(X,Y-1,C) & getFichaProp(X,Y,C) & getFichaProp(X,Y+1,C).
+		size(N) & Y-1 >= 0 & Y+1 < N & datos(X,Y-1,C) & datos(X,Y,C) & datos(X,Y+1,C).
 //Agrupaciones de 4
-	
+grupo4FilA(X,Y,C) :- // #_##
+	size(N) & X-1 >= 0 & X+2 < N & datos(X-1,Y,C) & datos(X,Y,C) & datos(X+1,Y,C) & datos(X+2,Y,C).
+grupo4FilB(X,Y,C) :- // ##_#
+	size(N) & X-2 >= 0 & X+1 < N & datos(X-1,Y,C) & datos(X-2,Y,C) & datos(X,Y,C) & datos(X+1,Y,C).	
+
+grupo4ColA(X,Y,C) :- // #_## (Vertical)
+	size(N) & Y-1 >= 0 & Y+2 < N & datos(X,Y-1,C) & datos(X,Y,C) & datos(X,Y+1,C) & datos(X,Y+2,C).
+grupo4ColB(X,Y,C) :- // ##_# (Vertical)
+	size(N) & Y-2 >= 0 & Y+1 < N & datos(X,Y-1,C) & datos(X,Y-2,C) & datos(X,Y,C) & datos(X,Y+1,C).
+
+//Cuadrado	
+grupo4SquareA(X,Y,C) :- // hueco arriba-izquierda
+	size(N) & X+1 < N & Y+1 < N & datos(X,Y,C) & datos(X+1,Y,C) & datos(X,Y+1,C) & datos(X+1,Y+1,C).
+grupo4SquareB(X,Y,C) :- // hueco arriba-derecha
+	size(N) & X-1 >= 0 & Y+1 < N & datos(X,Y,C) & datos(X-1,Y,C) & datos(X,Y+1,C) & datos(X-1,Y+1,C).
+grupo4SquareC(X,Y,C) :- // hueco abajo-izquierda
+	size(N) & X+1 < N & Y-1 >= 0 & datos(X,Y,C) & datos(X+1,Y,C) & datos(X,Y-1,C) & datos(X+1,Y-1,C).
+grupo4SquareD(X,Y,C) :- // hueco abajo-derecha
+	size(N) & X-1 >= 0 & Y+1 < N & datos(X,Y,C) & datos(X-1,Y,C) & datos(X,Y+1,C) & datos(X-1,Y+1,C).	
 //Agrupación de 5
 //##_##
-grupo5Fil(X,Y,C) :- size(N) & X+2 < N & X-2 >= 0 & getFichaProp(X+1,Y,C) & getFichaProp(X+2,Y,C) & getFichaProp(X-1,Y,C) & getFichaProp(X-2,Y,C).
+grupo5Fil(X,Y,C) :- size(N) & X+2 < N & X-2 >= 0 & datos(X+1,Y,C) & datos(X+2,Y,C) & datos(X,Y,C) & datos(X-1,Y,C) & datos(X-2,Y,C).
 //(Medio vertical)##_##
-grupo5Col(X,Y,C) :- size(N) & Y+2 < N & Y-2 >= 0 & getFichaProp(X,Y+1,C) & getFichaProp(X,Y+1,C) & getFichaProp(X,Y-1,C) & getFichaProp(X-2,Y-2,C).
-
+grupo5Col(X,Y,C) :- size(N) & Y+2 < N & Y-2 >= 0 & datos(X,Y+1,C) & datos(X,Y+2,C) & datos(X,Y,C) & datos(X,Y-1,C) & datos(X,Y-2,C).
+//Agrupación 5 en T
+grupo5TN(X,Y,C) :- size(N) & X-1 >=0 & X+1 < N & Y+2 < N & datos(X-1,Y,C) & datos(X,Y,C) & datos(X+1,Y,C) & datos(X,Y+1,C) & datos(X,Y+2,C).
+grupo5TI(X,Y,C) :- size(N) & X-1 >=0 & X+1 < N & Y-2 < N & datos(X-1,Y,C) & datos(X,Y,C) & datos(X+1,Y,C) & datos(X,Y-1,C) & datos(X,Y-2,C).
+grupo5TR(X,Y,C) :- size(N) & X-2 >=0 & Y+1 < N & Y-1 >=0 & datos(X-1,Y,C) & datos(X-2,Y,C) & datos(X,Y,C) & datos(X,Y+1,C) & datos(X,Y-1,C).
+grupo5TL(X,Y,C) :- size(N) & X+1 < N & Y+1 < N & Y-1 >=0 & datos(X+1,Y,C) & datos(X+2,Y,C) & datos(X,Y,C) & datos(X,Y+1,C) & datos(X,Y-1,C).
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
 size(10).
 jugadasRestantes(100).
 
@@ -45,13 +70,29 @@ color(0,16).
 color(N,C) :- color(N-1,C1) & C = C1*2.
 eligeColor(Real,Color):- .random(Random) & Real = math.floor(Random*6) & color(Real,Color).
 
+numVecesColor(0,0).
+numVecesColor(1,0).
+numVecesColor(2,0).
+numVecesColor(3,0).
+numVecesColor(4,0).
+numVecesColor(5,0).
+colorLleno(Color):- size(N) & numVecesColor(Color,Veces) & Veces >= math.floor((N*N)/6).
+otroColor(0):- not colorLleno(0).
+otroColor(1):- not colorLleno(1).
+otroColor(2):- not colorLleno(2).
+otroColor(3):- not colorLleno(3).
+otroColor(4):- not colorLleno(4).
+otroColor(5):- not colorLleno(5).
+
+repetirColor(Color,Nuevo):- Color+1 < 6 & Nuevo = Color+1.
+repetirColor(Color,Nuevo):- Color-1 >= 0 & Nuevo = Color-1.
+
 //Comprobacion completa de las condiciones de un movimiento correcto: Seleccion, movimiento y color
 movimientoValido(pos(X,Y),Dir):- tablero(celda(X,Y,_),ficha(COrigen,_)) & validacion(X,Y,Dir,COrigen).
 validacion(X,Y,"up",COrigen) :- tablero(celda(X,Y-1,_),ficha(CDestino,_)) & not mismoColor(COrigen,CDestino).
 validacion(X,Y,"down",COrigen) :- tablero(celda(X,Y+1,_),ficha(CDestino,_)) & not mismoColor(COrigen,CDestino).
 validacion(X,Y,"left",COrigen) :- tablero(celda(X-1,Y,_),ficha(CDestino,_)) & not mismoColor(COrigen,CDestino).
 validacion(X,Y,"right",COrigen) :- tablero(celda(X+1,Y,_),ficha(CDestino,_)) & not mismoColor(COrigen,CDestino).
-
 mismoColor(COrigen,CDestino) :- COrigen=CDestino.
 
 //Comprobacion de Movimiento
@@ -62,8 +103,7 @@ movimiento(X,Y,"left") :- tablero(celda(X-1,Y,_),_).
 movimiento(X,Y,"right") :- tablero(celda(X+1,Y,_),_).
 
 //Comprobacion de Color
-colorFichasDistintos(pos(X,Y),Dir):- 
-	tablero(celda(X,Y,_),ficha(COrigen,_)) & validacion(X,Y,Dir,COrigen).
+colorFichasDistintos(pos(X,Y),Dir):- tablero(celda(X,Y,_),ficha(COrigen,_)) & validacion(X,Y,Dir,COrigen).
 
 //Parte de la generacion aleatoria del tipo de ficha
 randomFicha(Rand,Ficha):-
@@ -219,224 +259,35 @@ nextMove(P1,P2,P1-1,P2,"left").
 
 //Generacion aleatoria del tablero y fichas.
 +generacionTablero : size(N)<-
-
-	
-	+tablero(celda(0,0,0),ficha(4,ip));
-	put(0,0,4,ip);
-	+tablero(celda(0,1,0),ficha(0,ip));
-	put(0,1,0,ip);
-	+tablero(celda(0,2,0),ficha(0,ip));
-	put(0,2,0,ip);
-	+tablero(celda(0,3,0),ficha(5,ip));
-	put(0,3,5,ip);
-	+tablero(celda(0,4,0),ficha(4,ip));
-	put(0,4,4,ip);
-	+tablero(celda(0,5,0),ficha(5,ip));
-	put(0,5,5,ip);
-	+tablero(celda(0,6,0),ficha(5,ip));
-	put(0,6,5,ip);
-	+tablero(celda(0,7,0),ficha(5,ip));
-	put(0,7,5,ip);
-	+tablero(celda(0,8,0),ficha(4,ip));
-	put(0,8,4,ip);
-	+tablero(celda(0,9,0),ficha(3,ip));
-	put(0,9,3,ip);
-	+tablero(celda(1,0,0),ficha(0,ip));
-	put(1,0,0,ip);
-	+tablero(celda(1,1,0),ficha(4,ip));
-	put(1,1,4,ip);
-	+tablero(celda(1,2,0),ficha(4,ip));
-	put(1,2,4,ip);
-	+tablero(celda(1,3,0),ficha(1,ip));
-	put(1,3,1,ip);
-	+tablero(celda(1,4,0),ficha(4,ip));
-	put(1,4,4,ip);
-	+tablero(celda(1,5,0),ficha(0,ip));
-	put(1,5,0,ip);
-	+tablero(celda(1,6,0),ficha(0,ip));
-	put(1,6,0,ip);
-	+tablero(celda(1,7,0),ficha(0,ip));
-	put(1,7,0,ip);
-	+tablero(celda(1,8,0),ficha(0,ip));
-	put(1,8,0,ip);
-	+tablero(celda(1,9,0),ficha(5,ip));
-	put(1,9,5,ip);
-	+tablero(celda(2,0,0),ficha(4,ip));
-	put(2,0,4,ip);
-	+tablero(celda(2,1,0),ficha(2,ip));
-	put(2,1,2,ip);
-	+tablero(celda(2,2,0),ficha(0,ip));
-	put(2,2,0,ip);
-	+tablero(celda(2,3,0),ficha(0,ip));
-	put(2,3,0,ip);
-	+tablero(celda(2,4,0),ficha(4,ip));
-	put(2,4,4,ip);
-	+tablero(celda(2,5,0),ficha(5,ip));
-	put(2,5,5,ip);
-	+tablero(celda(2,6,0),ficha(1,ip));
-	put(2,6,1,ip);
-	+tablero(celda(2,7,0),ficha(2,ip));
-	put(2,7,2,ip);
-	+tablero(celda(2,8,0),ficha(0,ip));
-	put(2,8,0,ip);
-	+tablero(celda(2,9,0),ficha(5,ip));
-	put(2,9,5,ip);
-	+tablero(celda(3,0,0),ficha(0,ip));
-	put(3,0,0,ip);
-	+tablero(celda(3,1,0),ficha(5,ip));
-	put(3,1,5,ip);
-	+tablero(celda(3,2,0),ficha(2,ip));
-	put(3,2,2,ip);
-	+tablero(celda(3,3,0),ficha(2,ip));
-	put(3,3,2,ip);
-	+tablero(celda(3,4,0),ficha(3,ip));
-	put(3,4,3,ip);
-	+tablero(celda(3,5,0),ficha(1,ip));
-	put(3,5,1,ip);
-	+tablero(celda(3,6,0),ficha(5,ip));
-	put(3,6,5,ip);
-	+tablero(celda(3,7,0),ficha(5,ip));
-	put(3,7,5,ip);
-	+tablero(celda(3,8,0),ficha(1,ip));
-	put(3,8,1,ip);
-	+tablero(celda(3,9,0),ficha(3,ip));
-	put(3,9,3,ip);
-	+tablero(celda(4,0,0),ficha(0,ip));
-	put(4,0,0,ip);
-	+tablero(celda(4,1,0),ficha(5,ip));
-	put(4,1,5,ip);
-	+tablero(celda(4,2,0),ficha(1,ip));
-	put(4,2,1,ip);
-	+tablero(celda(4,3,0),ficha(5,ip));
-	put(4,3,5,ip);
-	+tablero(celda(4,4,0),ficha(2,ip));
-	put(4,4,2,ip);
-	+tablero(celda(4,5,0),ficha(5,ip));
-	put(4,5,5,ip);
-	+tablero(celda(4,6,0),ficha(3,ip));
-	put(4,6,3,ip);
-	+tablero(celda(4,7,0),ficha(4,ip));
-	put(4,7,4,ip);
-	+tablero(celda(4,8,0),ficha(2,ip));
-	put(4,8,2,ip);
-	+tablero(celda(4,9,0),ficha(5,ip));
-	put(4,9,5,ip);
-	+tablero(celda(5,0,0),ficha(2,ip));
-	put(5,0,2,ip);
-	+tablero(celda(5,1,0),ficha(5,ip));
-	put(5,1,5,ip);
-	+tablero(celda(5,2,0),ficha(1,ip));
-	put(5,2,1,ip);
-	+tablero(celda(5,3,0),ficha(2,ip));
-	put(5,3,2,ip);
-	+tablero(celda(5,4,0),ficha(5,ip));
-	put(5,4,5,ip);
-	+tablero(celda(5,5,0),ficha(2,ip));
-	put(5,5,2,ip);
-	+tablero(celda(5,6,0),ficha(3,ip));
-	put(5,6,3,ip);
-	+tablero(celda(5,7,0),ficha(5,ip));
-	put(5,7,5,ip);
-	+tablero(celda(5,8,0),ficha(0,ip));
-	put(5,8,0,ip);
-	+tablero(celda(5,9,0),ficha(4,ip));
-	put(5,9,4,ip);
-	+tablero(celda(6,0,0),ficha(2,ip));
-	put(6,0,2,ip);
-	+tablero(celda(6,1,0),ficha(2,ip));
-	put(6,1,2,ip);
-	+tablero(celda(6,2,0),ficha(4,ip));
-	put(6,2,4,ip);
-	+tablero(celda(6,3,0),ficha(1,ip));
-	put(6,3,1,ip);
-	+tablero(celda(6,4,0),ficha(4,ip));
-	put(6,4,4,ip);
-	+tablero(celda(6,5,0),ficha(3,ip));
-	put(6,5,3,ip);
-	+tablero(celda(6,6,0),ficha(1,ip));
-	put(6,6,1,ip);
-	+tablero(celda(6,7,0),ficha(5,ip));
-	put(6,7,5,ip);
-	+tablero(celda(6,8,0),ficha(0,ip));
-	put(6,8,0,ip);
-	+tablero(celda(6,9,0),ficha(2,ip));
-	put(6,9,2,ip);
-	+tablero(celda(7,0,0),ficha(1,ip));
-	put(7,0,1,ip);
-	+tablero(celda(7,1,0),ficha(2,ip));
-	put(7,1,2,ip);
-	+tablero(celda(7,2,0),ficha(0,ip));
-	put(7,2,0,ip);
-	+tablero(celda(7,3,0),ficha(0,ip));
-	put(7,3,0,ip);
-	+tablero(celda(7,4,0),ficha(2,ip));
-	put(7,4,2,ip);
-	+tablero(celda(7,5,0),ficha(0,ip));
-	put(7,5,0,ip);
-	+tablero(celda(7,6,0),ficha(3,ip));
-	put(7,6,3,ip);
-	+tablero(celda(7,7,0),ficha(1,ip));
-	put(7,7,1,ip);
-	+tablero(celda(7,8,0),ficha(1,ip));
-	put(7,8,1,ip);
-	+tablero(celda(7,9,0),ficha(5,ip));
-	put(7,9,5,ip);
-	+tablero(celda(8,0,0),ficha(4,ip));
-	put(8,0,4,ip);
-	+tablero(celda(8,1,0),ficha(5,ip));
-	put(8,1,5,ip);
-	+tablero(celda(8,2,0),ficha(4,ip));
-	put(8,2,4,ip);
-	+tablero(celda(8,3,0),ficha(3,ip));
-	put(8,3,3,ip);
-	+tablero(celda(8,4,0),ficha(2,ip));
-	put(8,4,2,ip);
-	+tablero(celda(8,5,0),ficha(0,ip));
-	put(8,5,0,ip);
-	+tablero(celda(8,6,0),ficha(5,ip));
-	put(8,6,5,ip);
-	+tablero(celda(8,7,0),ficha(4,ip));
-	put(8,7,4,ip);
-	+tablero(celda(8,8,0),ficha(4,ip));
-	put(8,8,4,ip);
-	+tablero(celda(8,9,0),ficha(1,ip));
-	put(8,9,1,ip);
-	+tablero(celda(9,0,0),ficha(1,ip));
-	put(9,0,1,ip);
-	+tablero(celda(9,1,0),ficha(2,ip));
-	put(9,1,2,ip);
-	+tablero(celda(9,2,0),ficha(0,ip));
-	put(9,2,0,ip);
-	+tablero(celda(9,3,0),ficha(1,ip));
-	put(9,3,1,ip);
-	+tablero(celda(9,4,0),ficha(4,ip));
-	put(9,4,4,ip);
-	+tablero(celda(9,5,0),ficha(4,ip));
-	put(9,5,4,ip);
-	+tablero(celda(9,6,0),ficha(0,ip));
-	put(9,6,0,ip);
-	+tablero(celda(9,7,0),ficha(2,ip));
-	put(9,7,2,ip);
-	+tablero(celda(9,8,0),ficha(0,ip));
-	put(9,8,0,ip);
-	+tablero(celda(9,9,0),ficha(0,ip));
-	put(9,9,0,ip).
-	
-
-
-
-
-	/*for ( .range(I,0,(N-1)) ) {
+	for ( .range(I,0,(N-1)) ) {
 			for ( .range(J,0,(N-1)) ) {
 				?eligeColor(Real,Color);
-				//.random(Color,10);
-				.random(Ficha,10);
-				+crearCeldaTablero(I,J,Real,math.round(4*Ficha));
-				-crearCeldaTablero(I,J,Real,math.round(4*Ficha));
-				//Añade una ficha al tablero gráfico
-				put(I,J,Color);
+				.print(Real,"-------,",Veces);
+					+tablero(celda(J,I,0),ficha(Real,ip));
+					//Añade una ficha al tablero gráfico
+					put(J,I,Color,ip);
+				
 			};
-		 }.*/
+		 };
+		 !eliminarGrupos.
+		 
++!eliminarGrupos: size(N) <- 
+	for ( .range(I,0,(N-1)) ) {
+			for ( .range(J,0,(N-1)) ) {
+				?datos(J,I,Color,Tipo,Prop);
+				if(hayAgrupacion(J,I,Color)){
+					?repetirColor(Color,Nuevo);
+					?color(Color,C1);
+					?color(Nuevo,N1);
+					-tablero(celda(J,I,0),ficha(Color,ip));
+					+tablero(celda(J,I,0),ficha(Nuevo,ip));
+					.print("he detectado una agrupacion y procedo a eliminarla");
+					deleteSteak(C1,J,I,Prop,Tipo);
+					put(J,I,N1,Tipo);
+				}
+			}
+	};.wait(300000).
+	
 +crearCeldaTablero(I,J,Color,Ficha) :  randomFicha(Ficha, TipoFicha) <-
 		+tablero(celda(I,J,0),ficha(Color,TipoFicha)).
 
@@ -516,17 +367,51 @@ nextMove(P1,P2,P1-1,P2,"left").
 	?color(Color2,C2);
 	exchange(C1,X,NX,C2,Y,NY,Tipo1,Tipo2);
 	.print("Se han intercambiado las fichas entre las posiciones (",X,",",Y,") y (",NX,",",NY,")");
-	//comprobacion de grupos
 	!findGroups(X,Y,Color2);
+	.print("X-Y: ",X," ",Y," ",Color2);
+	.print("NX-NY: ",NX," ",NY," ",Color1);
 	!findGroups(NX,NY,Color1);
 	.wait(200).
 	
-//Grupo 5 por filas
-+!findGroups(OX,OY,Color): grupo5Fil(OX,OY,Color)<-.print("Agrupacion de 5 en fila en ",OX,OY).
-//Grupo 5 por columnas
-+!findGroups(OX,OY,Color): grupo5Col(OX,OY,Color)<-.print("Agrupacion de 5 en Columna en ",OX,OY).
+//Grupo 5 
+//por filas
++!findGroups(OX,OY,Color): grupo5Fil(OX,OY,Color)<-.print("Agrupacion de 5 en fila en ",OX,OY);!clearNhorizontal(OX-2,OX+2,OY).
+//por columnas
++!findGroups(OX,OY,Color): grupo5Col(OX,OY,Color)<-.print("Agrupacion de 5 en Columna en ",OX,OY);!clearNvertical(OY-2,OY+2,OX).
+//Grupo 5 T
++!findGroups(OX,OY,Color): grupo5TN(OX,OY,Color)<-.print("Agrupacion de 5 en T normal en ",OX,OY);!clearNvertical(OY+1,OY+2,OX);!clearNhorizontal(OX-1,OX+1,OY).
++!findGroups(OX,OY,Color): grupo5TI(OX,OY,Color)<-.print("Agrupacion de 5 en T invertida en ",OX,OY);!clearNvertical(OY-2,OY-1,OX);!clearNhorizontal(OX-1,OX+1,OY).
++!findGroups(OX,OY,Color): grupo5TR(OX,OY,Color)<-.print("Agrupacion de 5 en T derecha en ",OX,OY);!clearNvertical(OY-1,OY+1,OX);!clearNhorizontal(OX-2,OX-1,OY).
++!findGroups(OX,OY,Color): grupo5TL(OX,OY,Color)<-.print("Agrupacion de 5 en T izquierda en ",OX,OY);!clearNvertical(OY-1,OY+1,OX);!clearNhorizontal(OX+1,OX+2,OY).
+//Grupo 4 por filas
+//A
++!findGroups(OX,OY,Color): grupo4FilA(OX,OY,Color)<-.print("Agrupacion de 4 en fila en ",OX,OY);!clearNhorizontal(OX-1,OX+2,OY).
++!findGroups(OX,OY,Color): grupo4FilA(OX-1,OY,Color)<-.print("Agrupacion de 4 en fila en ",OX,OY);!clearNhorizontal((OX-1)-1,(OX-1)+2,OY).
++!findGroups(OX,OY,Color): grupo4FilA(OX+1,OY,Color)<-.print("Agrupacion de 4 en fila en ",OX,OY);!clearNhorizontal((OX+1)-1,(OX+1)+2,OY).
++!findGroups(OX,OY,Color): grupo4FilA(OX+2,OY,Color)<-.print("Agrupacion de 4 en fila en ",OX,OY);!clearNhorizontal((OX+2)-1,(OX+2)+2,OY).
+//B
++!findGroups(OX,OY,Color): grupo4FilB(OX,OY,Color)<-.print("Agrupacion de 4 en fila en ",OX,OY);!clearNhorizontal(OX-2,OX+1,OY).
++!findGroups(OX,OY,Color): grupo4FilB(OX-1,OY,Color)<-.print("Agrupacion de 4 en fila en ",OX,OY);!clearNhorizontal((OX-1)-2,(OX-1)+1,OY).
++!findGroups(OX,OY,Color): grupo4FilB(OX-2,OY,Color)<-.print("Agrupacion de 4 en fila en ",OX,OY);!clearNhorizontal((OX-2)-2,(OX-2)+1,OY).
++!findGroups(OX,OY,Color): grupo4FilB(OX+1,OY,Color)<-.print("Agrupacion de 4 en fila en ",OX,OY);!clearNhorizontal((OX+1)-2,(OX+1)+1,OY).
+//Grupo 4 Cuadrado
++!findGroups(OX,OY,Color): grupo4SquareA(OX,OY,Color)<-.print("Agrupacion de 4 en fila en ",OX,OY);!clearNhorizontal(OX,OX+1,OY);!clearNhorizontal(OX,OX+1,OY+1).
++!findGroups(OX,OY,Color): grupo4SquareB(OX,OY,Color)<-.print("Agrupacion de 4 en fila en ",OX,OY);!clearNhorizontal(OX-1,OX,OY);!clearNhorizontal(OX-1,OX,OY+1).
++!findGroups(OX,OY,Color): grupo4SquareC(OX,OY,Color)<-.print("Agrupacion de 4 en fila en ",OX,OY);!clearNhorizontal(OX,OX+1,OY);!clearNhorizontal(OX,OX+1,OY-1).
++!findGroups(OX,OY,Color): grupo4SquareD(OX,OY,Color)<-.print("Agrupacion de 4 en fila en ",OX,OY);!clearNhorizontal(OX-1,OX,OY);!clearNhorizontal(OX-1,OX,OY-1).
+//Grupo 4 por columnas
+//A
++!findGroups(OX,OY,Color): grupo4ColA(OX,OY,Color)<-.print("Agrupacion de 4 en columna en ",OX,OY);!clearNvertical(OY-1,OY+2,OX).
++!findGroups(OX,OY,Color): grupo4ColA(OX,OY-1,Color)<-.print("Agrupacion de 4 en columna en ",OX,OY);!clearNvertical((OY-1)-1,(OY-1)+2,OX).
++!findGroups(OX,OY,Color): grupo4ColA(OX,OY+1,Color)<-.print("Agrupacion de 4 en columna en ",OX,OY);!clearNvertical((OY+1)-1,(OY+1)+2,OX).
++!findGroups(OX,OY,Color): grupo4ColA(OX,OY+2,Color)<-.print("Agrupacion de 4 en columna en ",OX,OY);!clearNvertical((OY+2)-1,(OY+2)+2,OX).
+//B
++!findGroups(OX,OY,Color): grupo4ColB(OX,OY,Color)<-.print("Agrupacion de 4 en columna en ",OX,OY);!clearNvertical(OY-2,OY+1,OX).
++!findGroups(OX,OY,Color): grupo4ColB(OX,OY-1,Color)<-.print("Agrupacion de 4 en columna en ",OX,OY);!clearNvertical((OY-1)-2,(OY-1)+1,OX).
++!findGroups(OX,OY,Color): grupo4ColB(OX,OY-2,Color)<-.print("Agrupacion de 4 en columna en ",OX,OY);!clearNvertical((OY-2)-2,(OY-2)+1,OX).
++!findGroups(OX,OY,Color): grupo4ColB(OX,OY+1,Color)<-.print("Agrupacion de 4 en columna en ",OX,OY);!clearNvertical((OY+1)-2,(OY+1)+1,OX).
 //Grupo 3 por filas
-+!findGroups(OX,OY,Color): grupo3Fil(OX,OY,Color)<-	.print("Agrupacion de 3 en fila en ",OX,OY);!clearNhorizontal(OX-1,OX+1,OY).
++!findGroups(OX,OY,Color): grupo3Fil(OX,OY,Color)<-.print("Agrupacion de 3 en fila en ",OX,OY);!clearNhorizontal(OX-1,OX+1,OY).
 +!findGroups(OX,OY,Color): grupo3Fil(OX+1,OY,Color)<-.print("Agrupacion de 3 en fila en ",OX,OY+1);!clearNhorizontal((OX+1)-1,(OX+1)+1,OY).
 +!findGroups(OX,OY,Color): grupo3Fil(OX-1,OY,Color)<-.print("Agrupacion de 3 en fila en ",OX,OY-1);!clearNhorizontal((OX-1)-1,(OX-1)+1,OY).
 //Grupo 3 por columnas
@@ -539,7 +424,7 @@ nextMove(P1,P2,P1-1,P2,"left").
 //Borrar en vertical desde un rango
 +!clearNvertical(Inicio,Fin,Col) <-
 	for (.range(I,Inicio,Fin)) {
-		if (getFichaProp(Col,I,Color,Tipo,Prop)) {
+		if (datos(Col,I,Color,Tipo,Prop)) {
 			-tablero(celda(Col,I,Prop),ficha(Color,Tipo));
 			.send(player1,untell,tablero(celda(Col,I,Prop),ficha(Color,Tipo)));
 			.send(player1,untell,tablero(celda(Col,I,Prop),ficha(Color,Tipo)));
@@ -552,26 +437,17 @@ nextMove(P1,P2,P1-1,P2,"left").
 //Borrar en horizontal desde un rando
 +!clearNhorizontal(Inicio,Fin,Fil) <-
 	for (.range(I,Inicio,Fin)) {
-		if (getFichaProp(I,Fil,Color,Tipo,Prop)) {	
+		if (datos(I,Fil,Color,Tipo,Prop)) {	
 			-tablero(celda(I,Fil,Prop),ficha(Color,Tipo));
 			.send(player1,untell,tablero(celda(Col,I,Prop),ficha(Color,Tipo)));
 			.send(player1,untell,tablero(celda(Col,I,Prop),ficha(Color,Tipo)));
 			.print("Ficha(",I,"-",Fil,")color: ",Color,"-------------------------");
 			?color(Color,C);
 			deleteSteak(C,I,Fil,Prop,Tipo);
-			!downAndRollRight(I);
 		};
 	//put(I,Fil,1024," ");
 	}.
-	
-+!downAndRollRight(Col): size(Size) <-
-		for(.range(I,Size-1,0,-1)){
-		for(.range(J,0,Size-1)){
-		}
-		}
-}.
-
-	
 //Plan por defecto a ejecutar en caso desconocido.
 +Default[source(A)]: not A=self  <- .print("El agente ",A," se comunica conmigo, pero no lo entiendo!").
+
 
