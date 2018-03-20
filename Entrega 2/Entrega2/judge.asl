@@ -60,6 +60,11 @@ nivel(1).
 jugadorDescalificado(player1,0).
 jugadorDescalificado(player2,0).
 
+
+
+
+
+
 //(Añadida) color real y color en base 16 
 color(0,16).
 color(N,C) :- color(N-1,C1) & C = C1*2.
@@ -77,7 +82,6 @@ numVecesColor(3,0).
 numVecesColor(4,0).
 numVecesColor(5,0).
 colorLleno(Color):- size(N) & numVecesColor(Color,Veces) & Veces >= math.floor((N*N)/6)+1.
-
 
 repetirColor(Color,Nuevo):- Color+1 < 6 & Nuevo = Color+1.
 repetirColor(Color,Nuevo):- Color-1 >= 0 & Nuevo = Color-1.
@@ -252,16 +256,15 @@ nextMove(P1,P2,P1-1,P2,"left").
 	for ( .range(I,0,(N-1)) ) {
 			for ( .range(J,0,(N-1)) ) {
 				?eligeColor(Real,Color);
-				
 				-numVecesColor(Real,Veces);
 				.print(Real , " " , Veces);
 				+numVecesColor(Real,Veces+1);
 					+tablero(celda(J,I,0),ficha(Real,ip));
 					put(J,I,Color,ip);
-					
 			};
 		 };
-		 !eliminarGrupos.
+		 !eliminarGrupos;	 
+		 .
 
 		 
 +!eliminarGrupos: size(N) <- 
@@ -279,7 +282,7 @@ nextMove(P1,P2,P1-1,P2,"left").
 					put(J,I,N1,Tipo);
 				}
 			}
-	};.wait(300000).
+	}.
 	
 +crearCeldaTablero(I,J,Color,Ficha) :  randomFicha(Ficha, TipoFicha) <-
 		+tablero(celda(I,J,0),ficha(Color,TipoFicha)).
@@ -361,8 +364,6 @@ nextMove(P1,P2,P1-1,P2,"left").
 	exchange(C1,X,NX,C2,Y,NY,Tipo1,Tipo2);
 	.print("Se han intercambiado las fichas entre las posiciones (",X,",",Y,") y (",NX,",",NY,")");
 	!findGroups(X,Y,Color2);
-	.print("X-Y: ",X," ",Y," ",Color2);
-	.print("NX-NY: ",NX," ",NY," ",Color1);
 	!findGroups(NX,NY,Color1);
 	.wait(200).
 	
@@ -418,29 +419,72 @@ nextMove(P1,P2,P1-1,P2,"left").
 +!clearNvertical(Inicio,Fin,Col) <-
 	for (.range(I,Inicio,Fin)) {
 		if (datos(Col,I,Color,Tipo,Prop)) {
-			-tablero(celda(Col,I,Prop),ficha(Color,Tipo));
+			-tablero(celda(Col,I,_),_);
 			.send(player1,untell,tablero(celda(Col,I,Prop),ficha(Color,Tipo)));
 			.send(player1,untell,tablero(celda(Col,I,Prop),ficha(Color,Tipo)));
 			.print("Ficha(",Col,"-",I,")color: ",Color,"-------------------------");
 			?color(Color,C);
 			deleteSteak(C,Col,I,Prop,Tipo);
+			
 		};
 	//put(Col,I,1024," ");
-	}.
+	};
+	+downToken;
+	-downToken;
+	.
 //Borrar en horizontal desde un rando
 +!clearNhorizontal(Inicio,Fin,Fil) <-
 	for (.range(I,Inicio,Fin)) {
 		if (datos(I,Fil,Color,Tipo,Prop)) {	
-			-tablero(celda(I,Fil,Prop),ficha(Color,Tipo));
+			-tablero(celda(I,Fil,_),_);
 			.send(player1,untell,tablero(celda(Col,I,Prop),ficha(Color,Tipo)));
 			.send(player1,untell,tablero(celda(Col,I,Prop),ficha(Color,Tipo)));
 			.print("Ficha(",I,"-",Fil,")color: ",Color,"-------------------------");
 			?color(Color,C);
 			deleteSteak(C,I,Fil,Prop,Tipo);
+			
 		};
 	//put(I,Fil,1024," ");
-	}.
+	};
+	+downToken;
+	-downToken;
+	
+	.
 //Plan por defecto a ejecutar en caso desconocido.
+
++downToken : size(Size) <-
+	for(.range(X,0,Size-1)){
+		for(.range(Y,0,Size-2)){
+			+bajarColumna(X,Y);
+			-bajarColumna(X,Y);
+		}
+	};	.wait(2000);.
+	
++bajarColumna(X,Y) : not(tablero(celda(X,Y+1,Own),ficha(Color,Tipo))) <-
+	for(.range(I,Y,0,-1)){
+	.wait(100);
+		-tablero(celda(X,I,Own),ficha(Real,Tipo));
+	.print("\n\n",Real);
+		+tablero(celda(X,I+1,Own),ficha(Real,Tipo));
+	
+		?color(Real,Color);
+		put(X,I+1,Color,Tipo);
+		.wait(5);
+		deleteSteak(Color,X,I,Own,Tipo);
+	};
+	+colocarFichaArriba(X);
+	-colocarFichaArriba(X);
+.
+	
++bajarColumna(X,Y): not(tablero(celda(X,Y,Own),ficha(Color,Tipo))).
+
++colocarFichaArriba(X)<-
+	.random(Random);
+	Real1 = math.floor(Random*6);
+	?color(Real1,Color1);
+	put(X,0,Color1,Tipo);
+	+tablero(celda(X,0,0),ficha(Real1,in)).
+
 +Default[source(A)]: not A=self  <- .print("El agente ",A," se comunica conmigo, pero no lo entiendo!").
 
 
