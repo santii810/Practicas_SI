@@ -17,21 +17,12 @@ import java.util.logging.Logger;
 public class Tablero extends Environment {
 
     public static final int GSize = 10; // grid size
-<<<<<<< HEAD
-    public static final int STEAK  = 16; // steak code in grid model
-	public static final int REDSTEAK  = 32; // steak code in grid model
-	public static final int GREENSTEAK  = 64; // steak code in grid model
-	public static final int BLACKSTEAK  = 128; // steak code in grid model
-	public static final int ORANGESTEAK  = 256; // steak code in grid model
-	public static final int MAGENTASTEAK  = 512; // steak code in grid model
-=======
     public static final int FICHABLUE  = 16; // steak code in grid model
 	public static final int FICHARED  = 32; // steak code in grid model
 	public static final int FICHAGREEN  = 64; // steak code in grid model
 	public static final int FICHABLACK  = 128; // steak code in grid model
 	public static final int FICHAORANGE  = 256; // steak code in grid model
 	public static final int FICHAMAGENTA  = 512; // steak code in grid model
->>>>>>> Jony
 	
 
     private Logger logger = Logger.getLogger("Tablero.mas2j."+Tablero.class.getName());
@@ -39,11 +30,7 @@ public class Tablero extends Environment {
     private TableroModel model;
     private TableroView  view;
     
-<<<<<<< HEAD
-	String label = "  ";
-=======
 	String label = "";
->>>>>>> Jony
     /** Called before the MAS execution with the args informed in .mas2j */
     @Override
     public void init(String[] args) {
@@ -51,11 +38,7 @@ public class Tablero extends Environment {
         view  = new TableroView(model);
         model.setView(view);
         super.init(args);
-<<<<<<< HEAD
 		addPercept("judge",Literal.parseLiteral("sizeof(" + (GSize - 1) + ")"));
-=======
-		//addPercept("judge",Literal.parseLiteral("sizeof(" + (GSize - 1) + ")"));
->>>>>>> Jony
     }
 
     @Override
@@ -67,23 +50,14 @@ public class Tablero extends Environment {
 					 int x = (int)((NumberTerm)action.getTerm(0)).solve();
 					 int y = (int)((NumberTerm)action.getTerm(1)).solve();
 					 int c = (int)((NumberTerm)action.getTerm(2)).solve();
-<<<<<<< HEAD
-					 int steak = (int)((NumberTerm)action.getTerm(3)).solve();
-=======
 					 String l = action.getTerm(3).toString();
 					 
 					 /*int steak = (int)((NumberTerm)action.getTerm(3)).solve();
->>>>>>> Jony
 					 if (steak == 0) { label = "  ";} else
 					 if (steak == 1) { label = "ip";} else
 					 if (steak == 2) { label = "ct";} else
 					 if (steak == 3) { label = "gs";} else
 					 if (steak == 4) { label = "co";} else
-<<<<<<< HEAD
-					 {label = "TT";};
-					 //model.put(x,y,c);
-					 model.put(x,y,c,label);
-=======
 					 {label = "TT";};*/
 					 
 					//solo para pruebas
@@ -99,7 +73,6 @@ public class Tablero extends Environment {
 					 
 					 //model.put(x,y,c);
 					 model.put(x,y,c,l);
->>>>>>> Jony
 				 } else if(action.getFunctor().equals("exchange")){
 					 int c1 = (int)((NumberTerm)action.getTerm(0)).solve();
 					 int x1 = (int)((NumberTerm)action.getTerm(1)).solve();
@@ -107,26 +80,16 @@ public class Tablero extends Environment {
 					 int c2 = (int)((NumberTerm)action.getTerm(3)).solve();
 					 int y1 = (int)((NumberTerm)action.getTerm(4)).solve();
 					 int y2 = (int)((NumberTerm)action.getTerm(5)).solve();
-<<<<<<< HEAD
-					 model.exchange(c1,x1,x2,c2,y1,y2);
-=======
 					 String label1 = action.getTerm(6).toString();
 					 String label2 = action.getTerm(7).toString();
 					 model.exchange(c1,x1,x2,c2,y1,y2,label1,label2);
->>>>>>> Jony
 				 } else if(action.getFunctor().equals("deleteSteak")){
 					 int c = (int)((NumberTerm)action.getTerm(0)).solve();
 					 int x = (int)((NumberTerm)action.getTerm(1)).solve();
 					 int y = (int)((NumberTerm)action.getTerm(2)).solve();
-<<<<<<< HEAD
-					 model.deleteSteak(c,x,y);
-=======
 					 int o = (int)((NumberTerm)action.getTerm(3)).solve();
 					 String l = action.getTerm(4).toString();
-					 
-					 
 					 model.deleteSteak(c,x,y,o,l);
->>>>>>> Jony
 				 } else if(action.getFunctor().equals("moveSteaks")){
 					 model.moveSteaks();
 				 }
@@ -141,11 +104,7 @@ public class Tablero extends Environment {
         updatePercepts();
 
         try {
-<<<<<<< HEAD
-            Thread.sleep(100);
-=======
-            Thread.sleep(1);
->>>>>>> Jony
+            Thread.sleep(300);
         } catch (Exception e) {}
         informAgsEnvironmentChanged();
         return true;
@@ -166,64 +125,12 @@ public class Tablero extends Environment {
 
         private TableroModel() {
             super(GSize, GSize, 3);
-<<<<<<< HEAD
-			//String label = label;
-            // initial location of agents
-=======
 
->>>>>>> Jony
             try {
                 setAgPos(0, 0, 0);
             } catch (Exception e) {
                 e.printStackTrace();
             }
-<<<<<<< HEAD
-			//set(4,GSize/2,GSize/2);
-			int color = 16;
-			for(int i = 0; i < GSize; i++){
-				for(int j = 0; j < GSize; j++){
-					add(color,i,j);
-					addPercept("judge",Literal.parseLiteral("cell(" + color + ", pos(" + i + "," + j + "), in, 0)"));
-					if (color < 512) {color = color * 2;}
-					else {color = 16;};
-				};
-				if (color < 512) {color = color * 2;}
-				else {color = 16;};
-			};
-			addPercept("judge",Literal.parseLiteral("start"));
-        }
-
-		void put(int x, int y, int c, String steak) throws Exception {
-			removePerceptsByUnif("judge",Literal.parseLiteral("cell(Color, pos(" + x + "," + y + "), Type, Own)"));
-			if (isFreeOfObstacle(x,y)) {
-				set(c,x,y);
-				label = steak;
-				logger.info(" Percepcion eliminada..................................."+label+"...."+steak);				
-				if (steak == "  "){
-					addPercept("judge",Literal.parseLiteral("cell(" + c + ", pos(" + x + "," + y + "), in, 0)"));
-					logger.info(" Entro por aquiiiiiiiiiii...................");}
-				else {	
-				addPercept("judge",Literal.parseLiteral("cell(" + c + ", pos(" + x + "," + y + "),"+label+", 0)"));};
-				//addPercept("judge",Literal.parseLiteral("steak(" + c + "," + x + "," + y + ")"));
-			};
-        }
-		
-		void exchange(int c1, int x1, int x2, int c2, int y1, int y2) throws Exception {
-			remove(c1,new Location(x1,y1));
-		//	removePercept("judge",Literal.parseLiteral("steak("+ c1 +"," + x1 + "," + y1 + ")"));
-			remove(c2,new Location(x2,y2));
-		//	removePercept("judge",Literal.parseLiteral("steak(" + c2 + "," + x2 + "," + y2 + ")"));
-
-			set(c2,x1,y1);
-		//	addPercept("judge",Literal.parseLiteral("steak("+ c2 +"," + x1 + "," + y1 + ")"));
-			set(c1,x2,y2);
-		//	addPercept("judge",Literal.parseLiteral("steak(" + c1 + "," + x2 + "," + y2 + ")"));
-		}
-		
-		void deleteSteak(int c,int x, int y) throws Exception {
-			remove(c,new Location(x,y));
-			removePercept("judge",Literal.parseLiteral("steak("+ c +"," + x + "," + y + ")"));
-=======
         }
 		
 		String getLabel(){
@@ -257,7 +164,7 @@ public class Tablero extends Environment {
 			//removePercept("judge",Literal.parseLiteral("tablero(celda("+ x1 +"," + y1 + "," + 0 + "),ficha(" + conversor(c1) + "," + label1 + "))"));
 			remove(c2,new Location(x2,y2));
 			//removePercept("judge",Literal.parseLiteral("tablero(celda("+ x2 +"," + y2 + "," + 0 + "),ficha(" + conversor(c2) + "," + label2 + "))"));
-			Thread.sleep(500);
+
 			set(c2,x1,y1);
 			//addPercept("judge",Literal.parseLiteral("tablero(celda("+ x2 +"," + y1 + "," + 0 + "),ficha(" + conversor(c2) + "," + label2 + "))"));
 			set(c1,x2,y2);
@@ -267,31 +174,11 @@ public class Tablero extends Environment {
 		void deleteSteak(int c,int x, int y,int o,String l) throws Exception {
 			remove(c,new Location(x,y));
 			//removePercept("judge",Literal.parseLiteral("tablero(celda("+ x +"," + y + "," + o + "),ficha(" + conversor(c) + "," + l + "))"));
->>>>>>> Jony
 		}
 		
 		void moveSteaks()throws Exception {
 			for(int i = 0; i < GSize; i++){
 				for(int j = 0; j < GSize; j++){
-<<<<<<< HEAD
-					if(	!(hasObject(STEAK,i,j) || hasObject(REDSTEAK,i,j) ||
-						hasObject(GREENSTEAK,i,j) || hasObject(BLACKSTEAK,i,j) ||
-			        	hasObject(ORANGESTEAK,i,j) || hasObject(MAGENTASTEAK,i,j))){
-						for(int k = j - 1; k >= 0;k--){
-							int c = 0;
-							if(hasObject(STEAK,i,k)){
-								c = STEAK;
-							}else if(hasObject(REDSTEAK,i,k)){
-								c = REDSTEAK;
-							}else if(hasObject(GREENSTEAK,i,k)){
-								c = GREENSTEAK;
-							}else if(hasObject(BLACKSTEAK,i,k)){
-								c = BLACKSTEAK;
-							}else if(hasObject(ORANGESTEAK,i,k)){
-								c = ORANGESTEAK;
-							}else if(hasObject(MAGENTASTEAK,i,k)){
-								c = MAGENTASTEAK;
-=======
 					if(	!(hasObject(FICHABLUE,i,j) || hasObject(FICHARED,i,j) ||
 						hasObject(FICHAGREEN,i,j) || hasObject(FICHABLACK,i,j) ||
 			        	hasObject(FICHAORANGE,i,j) || hasObject(FICHAMAGENTA,i,j))){
@@ -309,7 +196,6 @@ public class Tablero extends Environment {
 								c = FICHAORANGE;
 							}else if(hasObject(FICHAMAGENTA,i,k)){
 								c = FICHAMAGENTA;
->>>>>>> Jony
 							}
 							if(c != 0){
 								remove(c,new Location(i,k));
@@ -334,13 +220,9 @@ public class Tablero extends Environment {
             super(model, "Tablero", 400);
             defaultFont = new Font("Arial", Font.BOLD, 18); // change default font
             setVisible(true);
-<<<<<<< HEAD
-			String label = model.label;
-=======
 			String label = model.getLabel();
 			
-		//	logger.info(" -----la etiqueta que debo dibujar es: "+ model.getLabel());
->>>>>>> Jony
+			logger.info(" -----la etiqueta que debo dibujar es: "+ model.getLabel());
 			/*
 			if (model.label == "CO" | model.label =="PP"){
 				logger.info(" la etiqueta que debo dibujar es: "+ label+" o quiza: "+model.label);		
@@ -353,16 +235,6 @@ public class Tablero extends Environment {
         public void draw(Graphics g, int x, int y, int object) {
 			if (label == "CO" | label =="PP"){
 				logger.info(" la etiqueta que debo dibujar es: "+ label);		
-<<<<<<< HEAD
-			};
-            switch (object) {
-                case Tablero.STEAK: drawSTEAK(g, x, y, Color.blue, label);  break;
-				case Tablero.REDSTEAK: drawSTEAK(g, x, y, Color.red, label);  break;
-				case Tablero.GREENSTEAK: drawSTEAK(g, x, y, Color.green, label);  break;
-				case Tablero.BLACKSTEAK: drawSTEAK(g, x, y, Color.lightGray, label);  break;
-				case Tablero.ORANGESTEAK: drawSTEAK(g, x, y, Color.orange, label);  break;
-				case Tablero.MAGENTASTEAK: drawSTEAK(g, x, y, Color.magenta, label);  break;
-=======
 			};	
             switch (object) {
                 case Tablero.FICHABLUE: drawFICHA(g, x, y, Color.blue, label);  break;
@@ -371,7 +243,6 @@ public class Tablero extends Environment {
 				case Tablero.FICHABLACK: drawFICHA(g, x, y, Color.lightGray, label);  break;
 				case Tablero.FICHAORANGE: drawFICHA(g, x, y, Color.orange, label);  break;
 				case Tablero.FICHAMAGENTA: drawFICHA(g, x, y, Color.magenta, label);  break;
->>>>>>> Jony
             };
         }
 
@@ -381,13 +252,13 @@ public class Tablero extends Environment {
             c = Color.white;
             //super.drawAgent(g, x, y, c, -1);
 			//drawGarb(g, x, y);
-<<<<<<< HEAD
 		}
 		
-		public void drawSTEAK(Graphics g, int x, int y, Color c, String label) {
+		public void drawFICHA(Graphics g, int x, int y, Color c, String label) {
 			g.setColor(c);
 			g.fillOval(x * cellSizeW + 2, y * cellSizeH + 2, cellSizeW - 4, cellSizeH - 4);
 			g.setColor(Color.black);
+			logger.info(" la etiqueta que debo dibujar es: "+ label);
 			drawString(g,x,y,defaultFont,label);
 		}
 
@@ -397,18 +268,6 @@ public class Tablero extends Environment {
             drawString(g, x, y, defaultFont, "G");
         }
 
-=======
-			logger.info("drawAgent");
-		}
-		
-		public void drawFICHA(Graphics g, int x, int y, Color c, String label) {
-			g.setColor(c);
-			g.fillOval(x * cellSizeW + 2, y * cellSizeH + 2, cellSizeW - 4, cellSizeH - 4);
-			g.setColor(Color.black);
-		//	logger.info(" la etiqueta que debo dibujar es: "+ label);
-			drawString(g,x,y,defaultFont,label);
-		}
->>>>>>> Jony
     }    
 
     /** Called before the end of MAS execution */

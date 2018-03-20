@@ -1,5 +1,4 @@
 // Agent judge in project ESEI_SAGA.mas2j
-
 /* ----- Initial beliefs and rules ------ */
 //Recopilar datos de posicion y color de una ficha
 datos(X,Y,Color):- tablero(celda(X,Y,_),ficha(Color,_)).
@@ -8,19 +7,19 @@ datos(X,Y,Color,Tipo,Prop):- tablero(celda(X,Y,Prop),ficha(Color,Tipo)).
 hayAgrupacion(X,Y,C):- grupo3Fil(X,Y,C)|grupo3Col(X,Y,C)|grupo4FilA(X,Y,C)|grupo4FilB(X,Y,C)|grupo4ColA(X,Y,C)|grupo4ColB(X,Y,C)| 
 					  grupo4SquareA(X,Y,C)|grupo4SquareB(X,Y,C)|grupo4SquareC(X,Y,C)|grupo4SquareD(X,Y,C)|grupo5Fil(X,Y,C)|grupo5Col(X,Y,C)|
 					  grupo5TN(X,Y,C)|grupo5TI(X,Y,C)|grupo5TR(X,Y,C)|grupo5TL(X,Y,C).
-
+//hayAgrupacion(X,Y,C):- grupo3Fil(X,Y,C) | grupo3Col(X,Y,C).
 
 //Agrupaciones de 3
 grupo3Fil(X,Y,C) :- // #_#
 	size(N) & X-1 >= 0 & X+1 < N & datos(X-1,Y,C) & datos(X,Y,C) & datos(X+1,Y,C).
 grupo3Col(X,Y,C) :- // #_# (ficha desde medio)
 		size(N) & Y-1 >= 0 & Y+1 < N & datos(X,Y-1,C) & datos(X,Y,C) & datos(X,Y+1,C).
+
 //Agrupaciones de 4
 grupo4FilA(X,Y,C) :- // #_##
 	size(N) & X-1 >= 0 & X+2 < N & datos(X-1,Y,C) & datos(X,Y,C) & datos(X+1,Y,C) & datos(X+2,Y,C).
 grupo4FilB(X,Y,C) :- // ##_#
 	size(N) & X-2 >= 0 & X+1 < N & datos(X-1,Y,C) & datos(X-2,Y,C) & datos(X,Y,C) & datos(X+1,Y,C).	
-
 grupo4ColA(X,Y,C) :- // #_## (Vertical)
 	size(N) & Y-1 >= 0 & Y+2 < N & datos(X,Y-1,C) & datos(X,Y,C) & datos(X,Y+1,C) & datos(X,Y+2,C).
 grupo4ColB(X,Y,C) :- // ##_# (Vertical)
@@ -35,6 +34,7 @@ grupo4SquareC(X,Y,C) :- // hueco abajo-izquierda
 	size(N) & X+1 < N & Y-1 >= 0 & datos(X,Y,C) & datos(X+1,Y,C) & datos(X,Y-1,C) & datos(X+1,Y-1,C).
 grupo4SquareD(X,Y,C) :- // hueco abajo-derecha
 	size(N) & X-1 >= 0 & Y+1 < N & datos(X,Y,C) & datos(X-1,Y,C) & datos(X,Y+1,C) & datos(X-1,Y+1,C).	
+
 //Agrupación de 5
 //##_##
 grupo5Fil(X,Y,C) :- size(N) & X+2 < N & X-2 >= 0 & datos(X+1,Y,C) & datos(X+2,Y,C) & datos(X,Y,C) & datos(X-1,Y,C) & datos(X-2,Y,C).
@@ -47,22 +47,16 @@ grupo5TR(X,Y,C) :- size(N) & X-2 >=0 & Y+1 < N & Y-1 >=0 & datos(X-1,Y,C) & dato
 grupo5TL(X,Y,C) :- size(N) & X+1 < N & Y+1 < N & Y-1 >=0 & datos(X+1,Y,C) & datos(X+2,Y,C) & datos(X,Y,C) & datos(X,Y+1,C) & datos(X,Y-1,C).
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 size(10).
 jugadasRestantes(100).
-
 jugadasPlayer(player1,0).
 jugadasPlayer(player2,0).
-
 turnoActual(player1).
-
 turnoActivado(0).
-
 fueraTablero(0).
-
 fueraTurno(player1,0).
 fueraTurno(player2,0).
-
+nivel(1).
 jugadorDescalificado(player1,0).
 jugadorDescalificado(player2,0).
 
@@ -115,11 +109,6 @@ randomFicha(Rand,Ficha):-
 plNumb(player1,1).
 plNumb(player2,2).
 
-
-color(0,16).
-color(N,C) :- color(N-1,C1) & C = C1*2.
-
-
 //Calculo de coordenadas para un movimiento
 nextMove(P1,P2,P1,P2-1,"up").
 nextMove(P1,P2,P1,P2+1,"down").
@@ -136,6 +125,7 @@ nextMove(P1,P2,P1-1,P2,"left").
 
 
 /* COMIENZO INTOCABLE */
+
 //Comienzo del turno de un jugador.
 +!comienzoTurno : jugadorDescalificado(player1,1) & jugadorDescalificado(player2,1) <-
 			.print("FIN DE LA PARTIDA: Ambos jugadores han sido descalificados. TRAMPOSOS!!!").
@@ -149,7 +139,9 @@ nextMove(P1,P2,P1-1,P2,"left").
 
 +!comienzoTurno : jugadasRestantes(N) & N=0 <- .print("FIN DE LA PARTIDA: Se ha realizado el numero maximo de jugadas").
 
+
 +!comienzoTurno : turnoActual(P) & jugadasPlayer(P,J) & J>=50 <- .print("FIN DE LA PARTIDA: ",P," ha realizado el maximo de jugadas por jugador (50)").
+
 
 +!comienzoTurno <- .print("DEBUG: Error en +!comienzoTurno"). //Salvaguarda
 
@@ -256,7 +248,7 @@ nextMove(P1,P2,P1-1,P2,"left").
 				!comienzoTurno.
 
 //Generacion aleatoria del tablero y fichas.
-+generacionTablero : size(N)<-
++generacionTablero : size(N) & nivel(1)<-
 	for ( .range(I,0,(N-1)) ) {
 			for ( .range(J,0,(N-1)) ) {
 				?eligeColor(Real,Color);
@@ -264,10 +256,10 @@ nextMove(P1,P2,P1-1,P2,"left").
 					+tablero(celda(J,I,0),ficha(Real,ip));
 					//Añade una ficha al tablero gráfico
 					put(J,I,Color,ip);
-				
 			};
 		 };
 		 !eliminarGrupos.
+
 		 
 +!eliminarGrupos: size(N) <- 
 	for ( .range(I,0,(N-1)) ) {
@@ -284,9 +276,8 @@ nextMove(P1,P2,P1-1,P2,"left").
 					put(J,I,N1,Tipo);
 				}
 			}
-	};
-	.wait(300000).
-
+	};.wait(300000).
+	
 +crearCeldaTablero(I,J,Color,Ficha) :  randomFicha(Ficha, TipoFicha) <-
 		+tablero(celda(I,J,0),ficha(Color,TipoFicha)).
 
@@ -350,13 +341,13 @@ nextMove(P1,P2,P1-1,P2,"left").
 	.send(player1,untell,tablero(celda(NX,NY,Own2),ficha(Color2,Tipo2)));
 	.send(player2,untell,tablero(celda(X,Y,Own1),ficha(Color1,Tipo1)));
 	.send(player2,untell,tablero(celda(NX,NY,Own2),ficha(Color2,Tipo2)));
+	
 	//+tablero(celda(NX,NY,PlNumb),ficha(Color1,Tipo1));
 	//+tablero(celda(X,Y,PlNumb),ficha(Color2,Tipo2));
 	
 	+tablero(celda(NX,NY,Own1),ficha(Color1,Tipo1));
 	+tablero(celda(X,Y,Own2),ficha(Color2,Tipo2));
 	
-
 	.send(player1,tell,tablero(celda(NX,NY,PlNumb),ficha(Color1,Tipo1)));
 	.send(player1,tell,tablero(celda(X,Y,PlNumb),ficha(Color2,Tipo2)));
 	.send(player2,tell,tablero(celda(NX,NY,PlNumb),ficha(Color1,Tipo1)));
@@ -448,4 +439,5 @@ nextMove(P1,P2,P1-1,P2,"left").
 	}.
 //Plan por defecto a ejecutar en caso desconocido.
 +Default[source(A)]: not A=self  <- .print("El agente ",A," se comunica conmigo, pero no lo entiendo!").
+
 
