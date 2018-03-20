@@ -1,3 +1,12 @@
 *.asl~
+<<<<<<< HEAD
 *.stop___MAS
 *build.xml
+=======
+*.class
+*.java~
+*.asl#
+*.xml
+>>>>>>> Jony
+*.xml
+*.xml
