@@ -257,7 +257,6 @@ nextMove(P1,P2,P1-1,P2,"left").
 			for ( .range(J,0,(N-1)) ) {
 				?eligeColor(Real,Color);
 				-numVecesColor(Real,Veces);
-				.print(Real , " " , Veces);
 				+numVecesColor(Real,Veces+1);
 					+tablero(celda(J,I,0),ficha(Real,ip));
 					put(J,I,Color,ip);
@@ -422,7 +421,6 @@ nextMove(P1,P2,P1-1,P2,"left").
 			-tablero(celda(Col,I,_),_);
 			.send(player1,untell,tablero(celda(Col,I,Prop),ficha(Color,Tipo)));
 			.send(player1,untell,tablero(celda(Col,I,Prop),ficha(Color,Tipo)));
-			.print("Ficha(",Col,"-",I,")color: ",Color,"-------------------------");
 			?color(Color,C);
 			deleteSteak(C,Col,I,Prop,Tipo);
 			
@@ -439,7 +437,6 @@ nextMove(P1,P2,P1-1,P2,"left").
 			-tablero(celda(I,Fil,_),_);
 			.send(player1,untell,tablero(celda(Col,I,Prop),ficha(Color,Tipo)));
 			.send(player1,untell,tablero(celda(Col,I,Prop),ficha(Color,Tipo)));
-			.print("Ficha(",I,"-",Fil,")color: ",Color,"-------------------------");
 			?color(Color,C);
 			deleteSteak(C,I,Fil,Prop,Tipo);
 			
@@ -462,21 +459,20 @@ nextMove(P1,P2,P1-1,P2,"left").
 	
 +bajarColumna(X,Y) : not(tablero(celda(X,Y+1,Own),ficha(Color,Tipo))) <-
 	for(.range(I,Y,0,-1)){
-	.wait(100);
+		.wait(100);
 		-tablero(celda(X,I,Own),ficha(Real,Tipo));
-	.print("\n\n",Real);
 		+tablero(celda(X,I+1,Own),ficha(Real,Tipo));
-	
 		?color(Real,Color);
 		put(X,I+1,Color,Tipo);
 		.wait(5);
 		deleteSteak(Color,X,I,Own,Tipo);
 	};
 	+colocarFichaArriba(X);
-	-colocarFichaArriba(X);
-.
+	-colocarFichaArriba(X).
 	
-+bajarColumna(X,Y): not(tablero(celda(X,Y,Own),ficha(Color,Tipo))).
++bajarColumna(X,Y): not(tablero(celda(X,Y,Own),ficha(Color,Tipo)))<-
+	+colocarFichaArriba(X);
+	-colocarFichaArriba(X).
 
 +colocarFichaArriba(X)<-
 	.random(Random);
