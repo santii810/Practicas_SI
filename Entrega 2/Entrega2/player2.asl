@@ -19,6 +19,7 @@ pensarJugada(X1,Y1,Dir):-
 	(Color1 \== Color2 & Dir = "right")) | Dir = "up")
 	).
 
+
 /* Initial goals */
 
 

@@ -1,17 +1,20 @@
 // Agent player in project ESEI_SAGA.mas2j
 //Roi Pérez López, Martín Puga Egea
 /* Initial beliefs and rules */
-direccion(0,up).
-direccion(1,down).
-direccion(2,right).
-direccion(3,left).
+
+direccion(0,"up").
+direccion(1,"down").
+direccion(2,"right").
+direccion(3,"left").
+
 
 randomMov(Mov):-
 	size(Size) &
 	.random(R1) & .random(R2) & .random(R3) & 
 	direccion(4 * math.floor(R1), Dir) &
 	Mov = moverDesdeEnDireccion(pos(math.floor(R2*Size) ,math.floor(R3 * Size)),Dir).
-	
+
+movPrueba(Mov) :- Mov = moverDesdeEnDireccion(pos(1,0),"left").
 	
 /* Initial goals */
 
@@ -25,11 +28,11 @@ randomMov(Mov):-
 
 //Realizacion de la jugada
 +!realizarMovimiento <-
-	?randomMov(moverDesdeEnDireccion(pos(P1,P2),Dir));					
+	//?randomMov(moverDesdeEnDireccion(pos(P1,P2),Dir));					
+	?movPrueba(moverDesdeEnDireccion(pos(P1,P2),Dir));
 	.print("Intentando mover desde la posicion (",P1,",",P2,") en direccion ",Dir)
 	.send(judge,tell,moverDesdeEnDireccion(pos(P1,P2),Dir));
 	.send(judge,untell,moverDesdeEnDireccion(pos(P1,P2),Dir)).
-
 
 //Movimiento realizado correctamente
 +valido[source(judge)] <- 
