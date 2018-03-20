@@ -63,7 +63,12 @@ jugadorDescalificado(player2,0).
 //(Añadida) color real y color en base 16 
 color(0,16).
 color(N,C) :- color(N-1,C1) & C = C1*2.
-eligeColor(Real,Color):- .random(Random) & Real = math.floor(Random*6) & color(Real,Color).
+eligeColor(Real,Color):- 
+	.random(Random) &
+	Real = math.floor(Random*6) & 
+	not(colorLleno(Real)) &
+	color(Real,Color).
+eligeColor(Real,Color):- eligeColor(Real,Color).
 
 numVecesColor(0,0).
 numVecesColor(1,0).
@@ -71,13 +76,8 @@ numVecesColor(2,0).
 numVecesColor(3,0).
 numVecesColor(4,0).
 numVecesColor(5,0).
-colorLleno(Color):- size(N) & numVecesColor(Color,Veces) & Veces >= math.floor((N*N)/6).
-otroColor(0):- not colorLleno(0).
-otroColor(1):- not colorLleno(1).
-otroColor(2):- not colorLleno(2).
-otroColor(3):- not colorLleno(3).
-otroColor(4):- not colorLleno(4).
-otroColor(5):- not colorLleno(5).
+colorLleno(Color):- size(N) & numVecesColor(Color,Veces) & Veces >= math.floor((N*N)/6)+1.
+
 
 repetirColor(Color,Nuevo):- Color+1 < 6 & Nuevo = Color+1.
 repetirColor(Color,Nuevo):- Color-1 >= 0 & Nuevo = Color-1.
@@ -252,10 +252,13 @@ nextMove(P1,P2,P1-1,P2,"left").
 	for ( .range(I,0,(N-1)) ) {
 			for ( .range(J,0,(N-1)) ) {
 				?eligeColor(Real,Color);
-				.print(Real,"-------,",Veces);
+				
+				-numVecesColor(Real,Veces);
+				.print(Real , " " , Veces);
+				+numVecesColor(Real,Veces+1);
 					+tablero(celda(J,I,0),ficha(Real,ip));
-					//Añade una ficha al tablero gráfico
 					put(J,I,Color,ip);
+					
 			};
 		 };
 		 !eliminarGrupos.
