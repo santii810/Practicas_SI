@@ -8,33 +8,36 @@ direccion(2,right).
 direccion(3,left).
 
 randomMov(Mov):-
-	R1 = math.floor(math.random(4)) &
-	R2 = math.floor(math.random(10)) &
-	R3 = math.floor(math.random(10)) &
-	direccion(R1,Dir) &
-	Mov = moverDesdeEnDireccion(pos(R2,R3),Dir).
-	
-	
-	
-	
+	.random(Random) &
+	direccion(math.floor(Random*4), Direccion)&
+	.random(X) &
+	.random(Y) &
+	Mov = moverDesdeEnDireccion(pos(math.floor(X*10),math.floor(Y*10)),D).
 
-/* Initial goals */		
-!start.
+/* Initial goals */
 
-
-+!start<-
-	.print("Moviendo Jugador 2");
-	?randomMov(Mov);
-	.print(Mov);	
+//!start.
++!start <-
+	.wait(5);
+	.print("Inicio forzado jugador2");
+	.random(Random);
+	?direccion(math.floor(Random*4), Direccion);
+	.random(X);
+	.random(Y);
+	Mov = moverDesdeEnDireccion(pos(math.floor(X*10),math.floor(Y*10)),Direccion);
+	.print(Mov);
 	.send(judge,tell,Mov);
-	.wait(100);
-	!start.
+	!start.	
 
 /* Plans */
 //Si es el primer movimiento, entonces viene a partir de un correcto
-+puedesMover[source(judge)]<- 
-	.print("Moviendo Jugador 2");
-	?randomMov(Mov);
++puedesMover[source(judge)] <- 
+	.print("Inicio Jugador 2");
+	.random(Random);
+	?direccion(math.floor(Random*4), Direccion);
+	.random(X);
+	.random(Y);
+	Mov = moverDesdeEnDireccion(pos(math.floor(X*10),math.floor(Y*10)),Direccion);
 	.print(Mov);	
 	.send(judge,tell,Mov).
 	
@@ -47,7 +50,11 @@ randomMov(Mov):-
 //Si recibe un invalido de tipo fueraTablero el jugador debe rectificar el movimiento
 +invalido(fueraTablero,Veces) [source(judge)] <-
 	.print("Corrigiendo movimiento");
-	?randomMov(Mov);
+	.random(Random);
+	?direccion(math.floor(Random*4), Direccion);
+	.random(X);
+	.random(Y);
+	Mov = moverDesdeEnDireccion(pos(math.floor(X*10),math.floor(Y*10)),Direccion);
 	.print(Mov);	
 	.send(judge,tell,Mov).
 		
@@ -55,11 +62,13 @@ randomMov(Mov):-
 	//Si recibe un invalido de tipo fueraTablero el jugador debe rectificar el movimiento
 +invalido(mismoColor) [source(judge)] <-
 	.print("Corrigiendo movimiento");
-	?randomMov(Mov);
+	.random(Random);
+	?direccion(math.floor(Random*4), Direccion);
+	.random(X);
+	.random(Y);
+	Mov = moverDesdeEnDireccion(pos(math.floor(X*10),math.floor(Y*10)),Direccion);
 	.print(Mov);	
 	.send(judge,tell,Mov).
-	
-	
 	
 //Significa que el juez ha aceptado el movimiento  por lo que lo registramos
 +valido[source(judge)]<- 
