@@ -1,3 +1,5 @@
 
 *.asl~
 *.asl~
+*.class
+*.java~
