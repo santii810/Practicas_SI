@@ -370,54 +370,86 @@ nextMove(P1,P2,P1-1,P2,"left").
 	
 //Grupo 5 
 //por filas
-+findGroups(OX,OY,Color): grupo5Fil(OX,OY,Color)<-.print("Agrupacion de 5 en fila en ",OX,OY);!clearNhorizontal(OX-2,OX+2,OY).
++findGroups(OX,OY,Color): grupo5Fil(OX,OY,Color)<-.print("Agrupacion de 5 en fila en ",OX,OY);
+	+clearNhorizontal(OX-2,OX+2,OY);-clearNhorizontal(OX-2,OX+2,OY).
 //por columnas
-+findGroups(OX,OY,Color): grupo5Col(OX,OY,Color)<-.print("Agrupacion de 5 en Columna en ",OX,OY);!clearNvertical(OY-2,OY+2,OX).
++findGroups(OX,OY,Color): grupo5Col(OX,OY,Color)<-.print("Agrupacion de 5 en Columna en ",OX,OY);
+	+clearNvertical(OY-2,OY+2,OX);-clearNvertical(OY-2,OY+2,OX).
 //Grupo 5 T
-+findGroups(OX,OY,Color): grupo5TN(OX,OY,Color)<-.print("Agrupacion de 5 en T normal en ",OX,OY);!clearNvertical(OY+1,OY+2,OX);!clearNhorizontal(OX-1,OX+1,OY).
-+findGroups(OX,OY,Color): grupo5TI(OX,OY,Color)<-.print("Agrupacion de 5 en T invertida en ",OX,OY);!clearNvertical(OY-2,OY-1,OX);!clearNhorizontal(OX-1,OX+1,OY).
-+findGroups(OX,OY,Color): grupo5TR(OX,OY,Color)<-.print("Agrupacion de 5 en T derecha en ",OX,OY);!clearNvertical(OY-1,OY+1,OX);!clearNhorizontal(OX-2,OX-1,OY).
-+findGroups(OX,OY,Color): grupo5TL(OX,OY,Color)<-.print("Agrupacion de 5 en T izquierda en ",OX,OY);!clearNvertical(OY-1,OY+1,OX);!clearNhorizontal(OX+1,OX+2,OY).
++findGroups(OX,OY,Color): grupo5TN(OX,OY,Color)<-.print("Agrupacion de 5 en T normal en ",OX,OY);
+	+clearNvertical(OY+1,OY+2,OX);-clearNvertical(OY+1,OY+2,OX);+clearNhorizontal(OX-1,OX+1,OY);-clearNhorizontal(OX-1,OX+1,OY).
++findGroups(OX,OY,Color): grupo5TI(OX,OY,Color)<-.print("Agrupacion de 5 en T invertida en ",OX,OY);
+	+clearNvertical(OY-2,OY-1,OX);-clearNvertical(OY-2,OY-1,OX);+clearNhorizontal(OX-1,OX+1,OY);-clearNhorizontal(OX-1,OX+1,OY).
++findGroups(OX,OY,Color): grupo5TR(OX,OY,Color)<-.print("Agrupacion de 5 en T derecha en ",OX,OY);
+	+clearNvertical(OY-1,OY+1,OX);-clearNvertical(OY-1,OY+1,OX);+clearNhorizontal(OX-2,OX-1,OY);-clearNhorizontal(OX-2,OX-1,OY).
++findGroups(OX,OY,Color): grupo5TL(OX,OY,Color)<-.print("Agrupacion de 5 en T izquierda en ",OX,OY);
+	+clearNvertical(OY-1,OY+1,OX);-clearNvertical(OY-1,OY+1,OX);+clearNhorizontal(OX+1,OX+2,OY);-clearNhorizontal(OX+1,OX+2,OY).
 //Grupo 4 por filas
 //A
-+findGroups(OX,OY,Color): grupo4FilA(OX,OY,Color)<-.print("Agrupacion de 4 en fila en ",OX,OY);!clearNhorizontal(OX-1,OX+2,OY).
-+findGroups(OX,OY,Color): grupo4FilA(OX-1,OY,Color)<-.print("Agrupacion de 4 en fila en ",OX,OY);!clearNhorizontal((OX-1)-1,(OX-1)+2,OY).
-+findGroups(OX,OY,Color): grupo4FilA(OX+1,OY,Color)<-.print("Agrupacion de 4 en fila en ",OX,OY);!clearNhorizontal((OX+1)-1,(OX+1)+2,OY).
-+findGroups(OX,OY,Color): grupo4FilA(OX+2,OY,Color)<-.print("Agrupacion de 4 en fila en ",OX,OY);!clearNhorizontal((OX+2)-1,(OX+2)+2,OY).
++findGroups(OX,OY,Color): grupo4FilA(OX,OY,Color)<-.print("Agrupacion de 4 en fila en ",OX,OY);
+	+clearNhorizontal(OX-1,OX+2,OY);-clearNhorizontal(OX-1,OX+2,OY).
++findGroups(OX,OY,Color): grupo4FilA(OX-1,OY,Color)<-.print("Agrupacion de 4 en fila en ",OX,OY);
+	+clearNhorizontal((OX-1)-1,(OX-1)+2,OY);-clearNhorizontal((OX-1)-1,(OX-1)+2,OY).
++findGroups(OX,OY,Color): grupo4FilA(OX+1,OY,Color)<-.print("Agrupacion de 4 en fila en ",OX,OY);
+	+clearNhorizontal((OX+1)-1,(OX+1)+2,OY);-clearNhorizontal((OX+1)-1,(OX+1)+2,OY).
++findGroups(OX,OY,Color): grupo4FilA(OX+2,OY,Color)<-.print("Agrupacion de 4 en fila en ",OX,OY);
+	+clearNhorizontal((OX+2)-1,(OX+2)+2,OY);-clearNhorizontal((OX+2)-1,(OX+2)+2,OY).
 //B
-+findGroups(OX,OY,Color): grupo4FilB(OX,OY,Color)<-.print("Agrupacion de 4 en fila en ",OX,OY);!clearNhorizontal(OX-2,OX+1,OY).
-+findGroups(OX,OY,Color): grupo4FilB(OX-1,OY,Color)<-.print("Agrupacion de 4 en fila en ",OX,OY);!clearNhorizontal((OX-1)-2,(OX-1)+1,OY).
-+findGroups(OX,OY,Color): grupo4FilB(OX-2,OY,Color)<-.print("Agrupacion de 4 en fila en ",OX,OY);!clearNhorizontal((OX-2)-2,(OX-2)+1,OY).
-+findGroups(OX,OY,Color): grupo4FilB(OX+1,OY,Color)<-.print("Agrupacion de 4 en fila en ",OX,OY);!clearNhorizontal((OX+1)-2,(OX+1)+1,OY).
++findGroups(OX,OY,Color): grupo4FilB(OX,OY,Color)<-.print("Agrupacion de 4 en fila en ",OX,OY);
+	+clearNhorizontal(OX-2,OX+1,OY);-clearNhorizontal(OX-2,OX+1,OY).
++findGroups(OX,OY,Color): grupo4FilB(OX-1,OY,Color)<-.print("Agrupacion de 4 en fila en ",OX,OY);
+	+clearNhorizontal((OX-1)-2,(OX-1)+1,OY);-clearNhorizontal((OX-1)-2,(OX-1)+1,OY).
++findGroups(OX,OY,Color): grupo4FilB(OX-2,OY,Color)<-.print("Agrupacion de 4 en fila en ",OX,OY);
+	+clearNhorizontal((OX-2)-2,(OX-2)+1,OY);-clearNhorizontal((OX-2)-2,(OX-2)+1,OY).
++findGroups(OX,OY,Color): grupo4FilB(OX+1,OY,Color)<-.print("Agrupacion de 4 en fila en ",OX,OY);
+	+clearNhorizontal((OX+1)-2,(OX+1)+1,OY);-clearNhorizontal((OX+1)-2,(OX+1)+1,OY).
 //Grupo 4 Cuadrado
-+findGroups(OX,OY,Color): grupo4SquareA(OX,OY,Color)<-.print("Agrupacion de 4 en fila en ",OX,OY);!clearNhorizontal(OX,OX+1,OY);!clearNhorizontal(OX,OX+1,OY+1).
-+findGroups(OX,OY,Color): grupo4SquareB(OX,OY,Color)<-.print("Agrupacion de 4 en fila en ",OX,OY);!clearNhorizontal(OX-1,OX,OY);!clearNhorizontal(OX-1,OX,OY+1).
-+findGroups(OX,OY,Color): grupo4SquareC(OX,OY,Color)<-.print("Agrupacion de 4 en fila en ",OX,OY);!clearNhorizontal(OX,OX+1,OY);!clearNhorizontal(OX,OX+1,OY-1).
-+findGroups(OX,OY,Color): grupo4SquareD(OX,OY,Color)<-.print("Agrupacion de 4 en fila en ",OX,OY);!clearNhorizontal(OX-1,OX,OY);!clearNhorizontal(OX-1,OX,OY-1).
++findGroups(OX,OY,Color): grupo4SquareA(OX,OY,Color)<-.print("Agrupacion de 4 en fila en ",OX,OY);
+	+clearNhorizontal(OX,OX+1,OY);-clearNhorizontal(OX,OX+1,OY+1);+clearNhorizontal(OX,OX+1,OY);-clearNhorizontal(OX,OX+1,OY+1).
++findGroups(OX,OY,Color): grupo4SquareB(OX,OY,Color)<-.print("Agrupacion de 4 en fila en ",OX,OY);
+	+clearNhorizontal(OX-1,OX,OY);-clearNhorizontal(OX-1,OX,OY+1);+clearNhorizontal(OX-1,OX,OY);-clearNhorizontal(OX-1,OX,OY+1).
++findGroups(OX,OY,Color): grupo4SquareC(OX,OY,Color)<-.print("Agrupacion de 4 en fila en ",OX,OY);
+	+clearNhorizontal(OX,OX+1,OY);-clearNhorizontal(OX,OX+1,OY-1);+clearNhorizontal(OX,OX+1,OY);-clearNhorizontal(OX,OX+1,OY-1).
++findGroups(OX,OY,Color): grupo4SquareD(OX,OY,Color)<-.print("Agrupacion de 4 en fila en ",OX,OY);
+	+clearNhorizontal(OX-1,OX,OY);-clearNhorizontal(OX-1,OX,OY-1);+clearNhorizontal(OX-1,OX,OY);-clearNhorizontal(OX-1,OX,OY-1).
 //Grupo 4 por columnas
 //A
-+findGroups(OX,OY,Color): grupo4ColA(OX,OY,Color)<-.print("Agrupacion de 4 en columna en ",OX,OY);!clearNvertical(OY-1,OY+2,OX).
-+findGroups(OX,OY,Color): grupo4ColA(OX,OY-1,Color)<-.print("Agrupacion de 4 en columna en ",OX,OY);!clearNvertical((OY-1)-1,(OY-1)+2,OX).
-+findGroups(OX,OY,Color): grupo4ColA(OX,OY+1,Color)<-.print("Agrupacion de 4 en columna en ",OX,OY);!clearNvertical((OY+1)-1,(OY+1)+2,OX).
-+findGroups(OX,OY,Color): grupo4ColA(OX,OY+2,Color)<-.print("Agrupacion de 4 en columna en ",OX,OY);!clearNvertical((OY+2)-1,(OY+2)+2,OX).
++findGroups(OX,OY,Color): grupo4ColA(OX,OY,Color)<-.print("Agrupacion de 4 en columna en ",OX,OY);
+	+clearNvertical(OY-1,OY+2,OX);-clearNvertical(OY-1,OY+2,OX).
++findGroups(OX,OY,Color): grupo4ColA(OX,OY-1,Color)<-.print("Agrupacion de 4 en columna en ",OX,OY);
+	+clearNvertical((OY-1)-1,(OY-1)+2,OX);-clearNvertical((OY-1)-1,(OY-1)+2,OX).
++findGroups(OX,OY,Color): grupo4ColA(OX,OY+1,Color)<-.print("Agrupacion de 4 en columna en ",OX,OY);
+	+clearNvertical((OY+1)-1,(OY+1)+2,OX);-clearNvertical((OY+1)-1,(OY+1)+2,OX).
++findGroups(OX,OY,Color): grupo4ColA(OX,OY+2,Color)<-.print("Agrupacion de 4 en columna en ",OX,OY);
+	+clearNvertical((OY+2)-1,(OY+2)+2,OX);-clearNvertical((OY+2)-1,(OY+2)+2,OX).
 //B
-+findGroups(OX,OY,Color): grupo4ColB(OX,OY,Color)<-.print("Agrupacion de 4 en columna en ",OX,OY);!clearNvertical(OY-2,OY+1,OX).
-+findGroups(OX,OY,Color): grupo4ColB(OX,OY-1,Color)<-.print("Agrupacion de 4 en columna en ",OX,OY);!clearNvertical((OY-1)-2,(OY-1)+1,OX).
-+findGroups(OX,OY,Color): grupo4ColB(OX,OY-2,Color)<-.print("Agrupacion de 4 en columna en ",OX,OY);!clearNvertical((OY-2)-2,(OY-2)+1,OX).
-+findGroups(OX,OY,Color): grupo4ColB(OX,OY+1,Color)<-.print("Agrupacion de 4 en columna en ",OX,OY);!clearNvertical((OY+1)-2,(OY+1)+1,OX).
++findGroups(OX,OY,Color): grupo4ColB(OX,OY,Color)<-.print("Agrupacion de 4 en columna en ",OX,OY);
+	+clearNvertical(OY-2,OY+1,OX);-clearNvertical(OY-2,OY+1,OX).
++findGroups(OX,OY,Color): grupo4ColB(OX,OY-1,Color)<-.print("Agrupacion de 4 en columna en ",OX,OY);
+	+clearNvertical((OY-1)-2,(OY-1)+1,OX);-clearNvertical((OY-1)-2,(OY-1)+1,OX).
++findGroups(OX,OY,Color): grupo4ColB(OX,OY-2,Color)<-.print("Agrupacion de 4 en columna en ",OX,OY);
+	+clearNvertical((OY-2)-2,(OY-2)+1,OX);-clearNvertical((OY-2)-2,(OY-2)+1,OX).
++findGroups(OX,OY,Color): grupo4ColB(OX,OY+1,Color)<-.print("Agrupacion de 4 en columna en ",OX,OY);
+	+clearNvertical((OY+1)-2,(OY+1)+1,OX);-clearNvertical((OY+1)-2,(OY+1)+1,OX).
 //Grupo 3 por filas
-+findGroups(OX,OY,Color): grupo3Fil(OX,OY,Color)<-.print("Agrupacion de 3 en fila en ",OX,OY);!clearNhorizontal(OX-1,OX+1,OY).
-+findGroups(OX,OY,Color): grupo3Fil(OX+1,OY,Color)<-.print("Agrupacion de 3 en fila en ",OX,OY+1);!clearNhorizontal((OX+1)-1,(OX+1)+1,OY).
-+findGroups(OX,OY,Color): grupo3Fil(OX-1,OY,Color)<-.print("Agrupacion de 3 en fila en ",OX,OY-1);!clearNhorizontal((OX-1)-1,(OX-1)+1,OY).
++findGroups(OX,OY,Color): grupo3Fil(OX,OY,Color)<-.print("Agrupacion de 3 en fila en ",OX,OY);
+	+clearNhorizontal(OX-1,OX+1,OY);-clearNhorizontal(OX-1,OX+1,OY).
++findGroups(OX,OY,Color): grupo3Fil(OX+1,OY,Color)<-.print("Agrupacion de 3 en fila en ",OX,OY+1);
+	+clearNhorizontal((OX+1)-1,(OX+1)+1,OY);-clearNhorizontal((OX+1)-1,(OX+1)+1,OY).
++findGroups(OX,OY,Color): grupo3Fil(OX-1,OY,Color)<-.print("Agrupacion de 3 en fila en ",OX,OY-1);
+	+clearNhorizontal((OX-1)-1,(OX-1)+1,OY);-clearNhorizontal((OX-1)-1,(OX-1)+1,OY).
 //Grupo 3 por columnas
-+findGroups(OX,OY,Color): grupo3Col(OX,OY,Color)<-.print("Agrupacion de 3 en columna en ",OX,OY);!clearNvertical(OY-1,OY+1,OX).
-+findGroups(OX,OY,Color): grupo3Col(OX,OY+1,Color)<-.print("Agrupacion de 3 en columna en ",OX,OY+1);!clearNvertical((OY+1)-1,(OY+1)+1,OX).
-+findGroups(OX,OY,Color): grupo3Col(OX,OY-1,Color)<-.print("Agrupacion de 3 en columna en ",OX,OY-1);!clearNvertical((OY-1)-1,(OY-1)+1,OX).
++findGroups(OX,OY,Color): grupo3Col(OX,OY,Color)<-.print("Agrupacion de 3 en columna en ",OX,OY);
+	+clearNvertical(OY-1,OY+1,OX);-clearNvertical(OY-1,OY+1,OX).
++findGroups(OX,OY,Color): grupo3Col(OX,OY+1,Color)<-.print("Agrupacion de 3 en columna en ",OX,OY+1);
+	+clearNvertical((OY+1)-1,(OY+1)+1,OX);-clearNvertical((OY+1)-1,(OY+1)+1,OX).
++findGroups(OX,OY,Color): grupo3Col(OX,OY-1,Color)<-.print("Agrupacion de 3 en columna en ",OX,OY-1);
+	+clearNvertical((OY-1)-1,(OY-1)+1,OX);-clearNvertical((OY-1)-1,(OY-1)+1,OX).
 
 +findGroups(OX,OY,Color)<- .print("No hay ninguna agrupación").
 
 //Borrar en vertical desde un rango
-+!clearNvertical(Inicio,Fin,Col) <-
++clearNvertical(Inicio,Fin,Col) <-
 	for (.range(I,Inicio,Fin)) {
 		if (datos(Col,I,Color,Tipo,Prop)) {
 			-tablero(celda(Col,I,_),_);
@@ -433,7 +465,7 @@ nextMove(P1,P2,P1-1,P2,"left").
 	-downToken;
 	.
 //Borrar en horizontal desde un rando
-+!clearNhorizontal(Inicio,Fin,Fil) <-
++clearNhorizontal(Inicio,Fin,Fil) <-
 	for (.range(I,Inicio,Fin)) {
 		if (datos(I,Fil,Color,Tipo,Prop)) {	
 			-tablero(celda(I,Fil,_),_);

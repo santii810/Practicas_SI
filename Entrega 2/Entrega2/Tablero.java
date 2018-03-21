@@ -215,7 +215,6 @@ public class Tablero extends Environment {
             setVisible(true);
 			String label = model.getLabel();
 			
-			logger.info(" -----la etiqueta que debo dibujar es: "+ model.getLabel());
 			/*
 			if (model.label == "CO" | model.label =="PP"){
 				logger.info(" la etiqueta que debo dibujar es: "+ label+" o quiza: "+model.label);		
@@ -251,7 +250,6 @@ public class Tablero extends Environment {
 			g.setColor(c);
 			g.fillOval(x * cellSizeW + 2, y * cellSizeH + 2, cellSizeW - 4, cellSizeH - 4);
 			g.setColor(Color.black);
-			logger.info(" la etiqueta que debo dibujar es: "+ label);
 			drawString(g,x,y,defaultFont,label);
 		}
 
