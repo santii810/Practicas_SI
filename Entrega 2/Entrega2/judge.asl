@@ -258,8 +258,8 @@ nextMove(P1,P2,P1-1,P2,"left").
 				?eligeColor(Real,Color);
 				-numVecesColor(Real,Veces);
 				+numVecesColor(Real,Veces+1);
-					+tablero(celda(J,I,0),ficha(Real,ip));
-					put(J,I,Color,ip);
+					+tablero(celda(J,I,0),ficha(Real,in));
+					put(J,I,Color,in);
 			};
 		 };
 		 !eliminarGrupos;	 
@@ -269,15 +269,14 @@ nextMove(P1,P2,P1-1,P2,"left").
 +!eliminarGrupos: size(N) <- 
 	for ( .range(I,0,(N-1)) ) {
 			for ( .range(J,0,(N-1)) ) {
-				?datos(J,I,Color,Tipo,Prop);
 				if(hayAgrupacion(J,I,Color)){
 					?repetirColor(Color,Nuevo);
 					?color(Color,C1);
 					?color(Nuevo,N1);
-					-tablero(celda(J,I,0),ficha(Color,ip));
-					+tablero(celda(J,I,0),ficha(Nuevo,ip));
+					-tablero(celda(J,I,Own),ficha(Color,Tipo));
+					+tablero(celda(J,I,Own),ficha(Nuevo,Tipo));
 					.print("he detectado una agrupacion y procedo a eliminarla");
-					deleteSteak(C1,J,I,Prop,Tipo);
+					deleteSteak(C1,J,I);
 					put(J,I,N1,Tipo);
 				}
 			}
@@ -425,7 +424,7 @@ nextMove(P1,P2,P1-1,P2,"left").
 			.send(player1,untell,tablero(celda(Col,I,Prop),ficha(Color,Tipo)));
 			.send(player1,untell,tablero(celda(Col,I,Prop),ficha(Color,Tipo)));
 			?color(Color,C);
-			deleteSteak(C,Col,I,Prop,Tipo);
+			deleteSteak(C,Col,I);
 			
 		};
 	//put(Col,I,1024," ");
@@ -441,7 +440,7 @@ nextMove(P1,P2,P1-1,P2,"left").
 			.send(player1,untell,tablero(celda(Col,I,Prop),ficha(Color,Tipo)));
 			.send(player1,untell,tablero(celda(Col,I,Prop),ficha(Color,Tipo)));
 			?color(Color,C);
-			deleteSteak(C,I,Fil,Prop,Tipo);
+			deleteSteak(C,I,Fil);
 			
 		};
 	//put(I,Fil,1024," ");
@@ -468,7 +467,7 @@ nextMove(P1,P2,P1-1,P2,"left").
 		?color(Real,Color);
 		put(X,I+1,Color,Tipo);
 		.wait(5);
-		deleteSteak(Color,X,I,Own,Tipo);
+		deleteSteak(Color,X,I);
 	};
 	+colocarFichaArriba(X);
 	-colocarFichaArriba(X).
@@ -481,7 +480,7 @@ nextMove(P1,P2,P1-1,P2,"left").
 	.random(Random);
 	Real1 = math.floor(Random*6);
 	?color(Real1,Color1);
-	put(X,0,Color1,Tipo);
+	put(X,0,Color1,in);
 	+tablero(celda(X,0,0),ficha(Real1,in)).
 
 +Default[source(A)]: not A=self  <- .print("El agente ",A," se comunica conmigo, pero no lo entiendo!").

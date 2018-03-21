@@ -60,17 +60,11 @@ public class Tablero extends Environment {
 					 if (steak == 4) { label = "co";} else
 					 {label = "TT";};*/
 					 
-					//solo para pruebas
-					switch (c) {
-					case 0: c=16;  break;
-					case 1: c=32;  break;
-					case 2: c=64;  break;
-					case 3: c=128;  break;
-					case 4: c=256;  break;
-					case 5: c=512;  break;
+					 if(l.equals("in")){
+						label="";
+					}else{
+						label=l;
 					}
-					 
-					 
 					 //model.put(x,y,c);
 					 model.put(x,y,c,l);
 				 } else if(action.getFunctor().equals("exchange")){
@@ -87,9 +81,8 @@ public class Tablero extends Environment {
 					 int c = (int)((NumberTerm)action.getTerm(0)).solve();
 					 int x = (int)((NumberTerm)action.getTerm(1)).solve();
 					 int y = (int)((NumberTerm)action.getTerm(2)).solve();
-					 int o = (int)((NumberTerm)action.getTerm(3)).solve();
-					 String l = action.getTerm(4).toString();
-					 model.deleteSteak(c,x,y,o,l);
+					 
+					 model.deleteSteak(c,x,y);
 				 } else if(action.getFunctor().equals("moveSteaks")){
 					 model.moveSteaks();
 				 }
@@ -171,7 +164,7 @@ public class Tablero extends Environment {
 			//addPercept("judge",Literal.parseLiteral("tablero(celda("+ x1 +"," + y2 + "," + 0 + "),ficha(" + conversor(c1) + "," + label1 + "))"));
 		}
 		
-		void deleteSteak(int c,int x, int y,int o,String l) throws Exception {
+		void deleteSteak(int c,int x, int y) throws Exception {
 			remove(c,new Location(x,y));
 			//removePercept("judge",Literal.parseLiteral("tablero(celda("+ x +"," + y + "," + o + "),ficha(" + conversor(c) + "," + l + "))"));
 		}
