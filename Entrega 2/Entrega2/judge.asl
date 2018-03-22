@@ -141,7 +141,7 @@ nextMove(P1,P2,P1-1,P2,"left").
 	.print(P,", puedes mover");
 	.send(P,tell,puedesMover);
 	.send(P,untell,puedesMover);
-				.wait(1000);.
+	.wait(1000);.
 
 +!comienzoTurno : jugadasRestantes(N) & N=0 <- .print("FIN DE LA PARTIDA: Se ha realizado el numero maximo de jugadas").
 
@@ -282,7 +282,6 @@ nextMove(P1,P2,P1-1,P2,"left").
 	};
 	+downToken;
 	-downToken;
-	.wait(2000);
 	+eliminarGrupos;
 	-eliminarGrupos;
 	
@@ -368,10 +367,9 @@ nextMove(P1,P2,P1-1,P2,"left").
 	?color(Color2,C2);
 	exchange(C1,X,NX,C2,Y,NY,Tipo1,Tipo2);
 	.print("Se han intercambiado las fichas entre las posiciones (",X,",",Y,") y (",NX,",",NY,")");
-	+findGroups(X,Y,Color2);
-	+findGroups(X,Y,Color2);
-	-findGroups(NX,NY,Color1);
-	-findGroups(NX,NY,Color1);
+	-+grupoEnUltimaEjecucion(1);
+	+eliminarGrupos;
+	-eliminarGrupos;
 	.
 	
 //Grupo 5 
