@@ -4,10 +4,11 @@
 datos(X,Y,Color):- tablero(celda(X,Y,_),ficha(Color,_)).
 datos(X,Y,Color,Tipo,Prop):- tablero(celda(X,Y,Prop),ficha(Color,Tipo)).
 
+
+//Unifica si la ficha posicionada en la celda X,Y pertenece a alguna agrupacion
 hayAgrupacion(X,Y,C):- grupo3Fil(X,Y,C)|grupo3Col(X,Y,C)|grupo4FilA(X,Y,C)|grupo4FilB(X,Y,C)|grupo4ColA(X,Y,C)|grupo4ColB(X,Y,C)| 
 					  grupo4SquareA(X,Y,C)|grupo4SquareB(X,Y,C)|grupo4SquareC(X,Y,C)|grupo4SquareD(X,Y,C)|grupo5Fil(X,Y,C)|grupo5Col(X,Y,C)|
 					  grupo5TN(X,Y,C)|grupo5TI(X,Y,C)|grupo5TR(X,Y,C)|grupo5TL(X,Y,C).
-//hayAgrupacion(X,Y,C):- grupo3Fil(X,Y,C) | grupo3Col(X,Y,C).
 
 //Agrupaciones de 3
 grupo3Fil(X,Y,C) :- // #_#
@@ -59,7 +60,7 @@ fueraTurno(player2,0).
 nivel(1).
 jugadorDescalificado(player1,0).
 jugadorDescalificado(player2,0).
-
+grupoEnUltimaEjecucion(1).
 
 
 
@@ -139,7 +140,8 @@ nextMove(P1,P2,P1-1,P2,"left").
 	-+turnoActivado(1);
 	.print(P,", puedes mover");
 	.send(P,tell,puedesMover);
-	.send(P,untell,puedesMover).
+	.send(P,untell,puedesMover);
+				.wait(1000);.
 
 +!comienzoTurno : jugadasRestantes(N) & N=0 <- .print("FIN DE LA PARTIDA: Se ha realizado el numero maximo de jugadas").
 
@@ -239,8 +241,6 @@ nextMove(P1,P2,P1-1,P2,"left").
 
 
 
-
-
 +!startGame <- +generacionTablero;
 				-generacionTablero;
 				.print("Tablero de juego generado!");
@@ -248,7 +248,9 @@ nextMove(P1,P2,P1-1,P2,"left").
 				-mostrarTablero(player1);
 				+mostrarTablero(player2);
 				-mostrarTablero(player2);
+				// ToDo Iniciar puntuacion
 				.print("EMPIEZA EL JUEGO!")
+				.wait(2000);
 				!comienzoTurno.
 
 //Generacion aleatoria del tablero y fichas.
@@ -258,29 +260,35 @@ nextMove(P1,P2,P1-1,P2,"left").
 				?eligeColor(Real,Color);
 				-numVecesColor(Real,Veces);
 				+numVecesColor(Real,Veces+1);
-					+tablero(celda(J,I,0),ficha(Real,in));
-					put(J,I,Color,in);
-			};
-		 };
-		 !eliminarGrupos;	 
-		 .
+				+tablero(celda(J,I,0),ficha(Real,in));
+				put(J,I,Color,in);
+		};
+	};
+	 +eliminarGrupos;	
+	 -eliminarGrupos;
+	 .
 
 		 
-+!eliminarGrupos: size(N) <- 
++eliminarGrupos: size(N) & grupoEnUltimaEjecucion(1) <- 
+	-+grupoEnUltimaEjecucion(0);
 	for ( .range(I,0,(N-1)) ) {
-			for ( .range(J,0,(N-1)) ) {
-				if(hayAgrupacion(J,I,Color)){
-					?repetirColor(Color,Nuevo);
-					?color(Color,C1);
-					?color(Nuevo,N1);
-					-tablero(celda(J,I,Own),ficha(Color,Tipo));
-					+tablero(celda(J,I,Own),ficha(Nuevo,Tipo));
-					.print("he detectado una agrupacion y procedo a eliminarla");
-					deleteSteak(C1,J,I);
-					put(J,I,N1,Tipo);
-				}
+		for ( .range(J,0,(N-1)) ) {
+			if(hayAgrupacion(J,I,Color)){
+				-+grupoEnUltimaEjecucion(1);
+				+findGroups(J,I,Color);
+				-findGroups(J,I,Color);
 			}
-	}.
+		}
+	};
+	+downToken;
+	-downToken;
+	.wait(2000);
+	+eliminarGrupos;
+	-eliminarGrupos;
+	
+	.
+
++eliminarGrupos.
 	
 +crearCeldaTablero(I,J,Color,Ficha) :  randomFicha(Ficha, TipoFicha) <-
 		+tablero(celda(I,J,0),ficha(Color,TipoFicha)).
@@ -291,7 +299,6 @@ nextMove(P1,P2,P1-1,P2,"left").
 			.send(P,tell,Estructure);
 		 };
 		 .send(P,tell,size(N)).
-
 
 
 
@@ -365,7 +372,6 @@ nextMove(P1,P2,P1-1,P2,"left").
 	+findGroups(X,Y,Color2);
 	-findGroups(NX,NY,Color1);
 	-findGroups(NX,NY,Color1);
-	//.wait(200)
 	.
 	
 //Grupo 5 
@@ -457,13 +463,10 @@ nextMove(P1,P2,P1-1,P2,"left").
 			.send(player1,untell,tablero(celda(Col,I,Prop),ficha(Color,Tipo)));
 			?color(Color,C);
 			deleteSteak(C,Col,I);
-			
 		};
-	//put(Col,I,1024," ");
 	};
-	+downToken;
-	-downToken;
-	.
+.
+	
 //Borrar en horizontal desde un rando
 +clearNhorizontal(Inicio,Fin,Fil) <-
 	for (.range(I,Inicio,Fin)) {
@@ -473,44 +476,59 @@ nextMove(P1,P2,P1-1,P2,"left").
 			.send(player1,untell,tablero(celda(Col,I,Prop),ficha(Color,Tipo)));
 			?color(Color,C);
 			deleteSteak(C,I,Fil);
-			
 		};
-	//put(I,Fil,1024," ");
 	};
-	+downToken;
-	-downToken;
 	
-	.
-//Plan por defecto a ejecutar en caso desconocido.
+.
 
+
+//baja una columna 
 +downToken : size(Size) <-
 	for(.range(X,0,Size-1)){
-		for(.range(Y,0,Size-2)){
+		for(.range(Y,-1,Size-2)){
 			+bajarColumna(X,Y);
 			-bajarColumna(X,Y);
 		}
-	};.
+	};
+	+eliminarGrupos;
+	-eliminarGrupos;
+	.wait(100);
+	.
 	
-+bajarColumna(X,Y) : not(tablero(celda(X,Y+1,Own),ficha(Color,Tipo))) <-
++bajarColumna(X,Y) : not(tablero(celda(X,Y+1,_),_)) & Y<0 <-
+	+colocarFichaArriba(X);
+	-colocarFichaArriba(X).
+			
++bajarColumna(X,Y): not(tablero(celda(X,Y+1,_),_)) <-
 	for(.range(I,Y,0,-1)){
 		.wait(100);
-		-tablero(celda(X,I,Own),ficha(Real,Tipo));
-		+tablero(celda(X,I+1,Own),ficha(Real,Tipo));
-		?color(Real,Color);
-		put(X,I+1,Color,Tipo);
-		.wait(5);
-		deleteSteak(Color,X,I);
+		+bajarFicha(X,I);
+		-bajarFicha(X,I);
 	};
 	+colocarFichaArriba(X);
 	-colocarFichaArriba(X).
 	
-+bajarColumna(X,Y): not(tablero(celda(X,Y,Own),ficha(Color,Tipo)))<-
-	+colocarFichaArriba(X);
-	-colocarFichaArriba(X).
 
++bajarFicha(X,I): not(tablero(celda(X,I,_),_)) <- 
+	+colocarFichaArriba(X);
+	-colocarFichaArriba(X);
+	+bajarFicha(X,I);
+	-bajarFicha(X,I);
+.
+
++bajarFicha(X,I) <-
+	-tablero(celda(X,I,Own),ficha(Real,Tipo));
+	+tablero(celda(X,I+1,Own),ficha(Real,Tipo));
+	?color(Real,Color);
+	deleteSteak(Color,X,I);
+	.wait(2);
+	put(X,I+1,Color,Tipo);
+.
+	
 +colocarFichaArriba(X)<-
 	.random(Random);
 	Real1 = math.floor(Random*6);
+//	Real1 = 3;
 	?color(Real1,Color1);
 	put(X,0,Color1,in);
 	+tablero(celda(X,0,0),ficha(Real1,in)).
