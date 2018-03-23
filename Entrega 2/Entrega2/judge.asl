@@ -142,7 +142,7 @@ nextMove(P1,P2,P1-1,P2,"left").
 	.print(P,", puedes mover");
 	.send(P,tell,puedesMover);
 	.send(P,untell,puedesMover);
-				.wait(1000);.
+	.wait(1000);.
 
 +!comienzoTurno : jugadasRestantes(N) & N=0 <- .print("FIN DE LA PARTIDA: Se ha realizado el numero maximo de jugadas").
 
@@ -523,6 +523,7 @@ nextMove(P1,P2,P1-1,P2,"left").
 		+bajarFicha(X,I);
 		-bajarFicha(X,I);
 	};
+	
 	+colocarFichaArriba(X);
 	-colocarFichaArriba(X).
 	
