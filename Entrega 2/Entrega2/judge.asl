@@ -36,13 +36,13 @@ grupo4SquareC(X,Y,C) :- // hueco abajo-izquierda
 grupo4SquareD(X,Y,C) :- // hueco abajo-derecha
 	size(N) & X-1 >= 0 & Y+1 < N & datos(X,Y,C) & datos(X-1,Y,C) & datos(X,Y+1,C) & datos(X-1,Y+1,C).	
 
-//Agrupación de 5
+//AgrupaciÃ³n de 5
 //##_##
 grupo5Fil(X,Y,C) :- size(N) & X+2 < N & X-2 >= 0 & datos(X+1,Y,C) & datos(X+2,Y,C) & datos(X,Y,C) & datos(X-1,Y,C) & datos(X-2,Y,C).
 //(Medio vertical)##_##
 grupo5Col(X,Y,C) :- size(N) & Y+2 < N & Y-2 >= 0 & datos(X,Y+1,C) & datos(X,Y+2,C) & datos(X,Y,C) & datos(X,Y-1,C) & datos(X,Y-2,C).
 
-//Agrupación 5 en T
+//AgrupaciÃ³n 5 en T
 grupo5TN(X,Y,C) :- size(N) & X-1 >=0 & X+1 < N & Y+2 < N & datos(X-1,Y,C) & datos(X,Y,C) & datos(X+1,Y,C) & datos(X,Y+1,C) & datos(X,Y+2,C).
 grupo5TI(X,Y,C) :- size(N) & X-1 >=0 & X+1 < N & Y-2 < N & datos(X-1,Y,C) & datos(X,Y,C) & datos(X+1,Y,C) & datos(X,Y-1,C) & datos(X,Y-2,C).
 grupo5TR(X,Y,C) :- size(N) & X-2 >=0 & Y+1 < N & Y-1 >=0 & datos(X-1,Y,C) & datos(X-2,Y,C) & datos(X,Y,C) & datos(X,Y+1,C) & datos(X,Y-1,C).
@@ -67,7 +67,7 @@ grupoEnUltimaEjecucion(1).
 
 
 
-//(Añadida) color real y color en base 16 
+//(AÃ±adida) color real y color en base 16 
 color(0,16).
 color(N,C) :- color(N-1,C1) & C = C1*2.
 eligeColor(Real,Color):- 
@@ -204,7 +204,7 @@ nextMove(P1,P2,P1-1,P2,"left").
 
 +moverDesdeEnDireccion(pos(X,Y),Dir)[source(P)] : 
 	not turnoActual(P) & not fueraTurno(P,N) <- // --- TODO ---
-		.print("El agente ",P," externo a la partida está intentando jugar.").
+		.print("El agente ",P," externo a la partida estÃ¡ intentando jugar.").
 
 // Esta regla la podeis adecuar a vuestras necesidades
 +moverDesdeEnDireccion(pos(X,Y),Dir)[source(P)] <- 
@@ -704,7 +704,7 @@ nextMove(P1,P2,P1-1,P2,"left").
 +findGroups(OX,OY,Color): grupo3Col(OX,OY-1,Color)<-.print("Agrupacion de 3 en columna en ",OX,OY-1);
 	+clearNvertical((OY-1)-1,(OY-1)+1,OX);-clearNvertical((OY-1)-1,(OY-1)+1,OX).
 
-+findGroups(OX,OY,Color)<- .print("No hay ninguna agrupación").
++findGroups(OX,OY,Color)<- .print("No hay ninguna agrupaciÃ³n").
 
 //Borrar en vertical desde un rango
 +clearNvertical(Inicio,Fin,Col) <-
@@ -737,5 +737,4 @@ nextMove(P1,P2,P1-1,P2,"left").
 
 
 +Default[source(A)]: not A=self  <- .print("El agente ",A," se comunica conmigo, pero no lo entiendo!").
-
 
