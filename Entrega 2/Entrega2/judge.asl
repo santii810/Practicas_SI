@@ -3,6 +3,9 @@
 //Recopilar datos de posicion y color de una ficha
 datos(X,Y,Color):- tablero(celda(X,Y,_),ficha(Color,_)).
 datos(X,Y,Color,Tipo,Prop):- tablero(celda(X,Y,Prop),ficha(Color,Tipo)).
+//Comprobacion de obstaculo
+esObstaculo(X,Y):-tablero(celda(X,Y,_),ficha(-1,_)).
+moveObstaculo(X,Y,Dir):-(nextMove(X,Y,DX,DY,Dir) & esObstaculo(DX,DY)) | esObstaculo(X,Y).
 
 
 //Unifica si la ficha posicionada en la celda X,Y pertenece a alguna agrupacion
@@ -58,7 +61,7 @@ turnoActivado(0).
 fueraTablero(0).
 fueraTurno(player1,0).
 fueraTurno(player2,0).
-nivel(1).
+nivel(2).
 jugadorDescalificado(player1,0).
 jugadorDescalificado(player2,0).
 grupoEnUltimaEjecucion(1).
@@ -68,6 +71,7 @@ grupoEnUltimaEjecucion(1).
 
 
 //(Añadida) color real y color en base 16 
+color(-1,4).
 color(0,16).
 color(N,C) :- color(N-1,C1) & C = C1*2.
 eligeColor(Real,Color):- 
@@ -89,7 +93,7 @@ repetirColor(Color,Nuevo):- Color+1 < 6 & Nuevo = Color+1.
 repetirColor(Color,Nuevo):- Color-1 >= 0 & Nuevo = Color-1.
 
 //Comprobacion completa de las condiciones de un movimiento correcto: Seleccion, movimiento y color
-movimientoValido(pos(X,Y),Dir):- tablero(celda(X,Y,_),ficha(COrigen,_)) & validacion(X,Y,Dir,COrigen).
+movimientoValido(pos(X,Y),Dir):- tablero(celda(X,Y,_),ficha(COrigen,_)) & validacion(X,Y,Dir,COrigen) & not moveObstaculo(X,Y,Dir).
 validacion(X,Y,"up",COrigen) :- tablero(celda(X,Y-1,_),ficha(CDestino,_)) & not mismoColor(COrigen,CDestino).
 validacion(X,Y,"down",COrigen) :- tablero(celda(X,Y+1,_),ficha(CDestino,_)) & not mismoColor(COrigen,CDestino).
 validacion(X,Y,"left",COrigen) :- tablero(celda(X-1,Y,_),ficha(CDestino,_)) & not mismoColor(COrigen,CDestino).
@@ -222,7 +226,7 @@ nextMove(P1,P2,P1-1,P2,"left").
 
 //Comprobacion de la falta cometida por intercambiar dos fichas del mismo color
 +movimientoInvalido(pos(X,Y),Dir,P) : 
-	not colorFichasDistintos(pos(X,Y),Dir) <-
+	not colorFichasDistintos(pos(X,Y),Dir) | moveObstaculo(X,Y,Dir) <-
 		-movimientoInvalido(pos(X,Y),Dir,P);
 		.print("Movimiento Invalido. Has intentado  intercambiar dos fichas del mismo color");
 		-+turnoActivado(1);
@@ -231,8 +235,10 @@ nextMove(P1,P2,P1-1,P2,"left").
 		.send(P,untell,tryAgain).
 
 // Esta regla la podeis adecuar a vuestras necesidades
-+movimientoInvalido(pos(X,Y),Dir,P) <- 
-	.print("DEBUG: Error en +movimientoInvalido").
++movimientoInvalido(pos(X,Y),Dir,P): moveObstaculo(X,Y,Dir) <- 
+	?datos(X,Y,Color);
+	
+	.print("DEBUG: Error en +movimientoInvalido------------------------------------------------------------------------------------------").
 
 
 //Recepcion del aviso de que un jugador pasa turno por haber realizado un movimiento fuera del tablero mas de 3 veces
@@ -261,212 +267,8 @@ nextMove(P1,P2,P1-1,P2,"left").
 				!comienzoTurno.
 
 //Generacion aleatoria del tablero y fichas.
-+generacionTablero : size(N) & nivel(1)<-
-	
-	
-	+tablero(celda(0,0,0),ficha(4,in));
-	put(0,0,256,in);
-	+tablero(celda(0,1,0),ficha(4,in));
-	put(0,1,256,in);
-	+tablero(celda(0,2,0),ficha(4,in));
-	put(0,2,256,in);
-	+tablero(celda(0,3,0),ficha(4,in));
-	put(0,3,256,in);
-	+tablero(celda(0,4,0),ficha(4,in));
-	put(0,4,256,in);
-	+tablero(celda(0,5,0),ficha(5,in));
-	put(0,5,512,in);
-	+tablero(celda(0,6,0),ficha(0,in));
-	put(0,6,16,in);
-	+tablero(celda(0,7,0),ficha(2,in));
-	put(0,7,64,in);
-	+tablero(celda(0,8,0),ficha(3,in));
-	put(0,8,128,in);
-	+tablero(celda(0,9,0),ficha(4,in));
-	put(0,9,256,in);
-	+tablero(celda(1,0,0),ficha(2,in));
-	put(1,0,64,in);
-	+tablero(celda(1,1,0),ficha(3,in));
-	put(1,1,128,in);
-	+tablero(celda(1,2,0),ficha(2,in));
-	put(1,2,64,in);
-	+tablero(celda(1,3,0),ficha(3,in));
-	put(1,3,128,in);
-	+tablero(celda(1,4,0),ficha(3,in));
-	put(1,4,128,in);
-	+tablero(celda(1,5,0),ficha(3,in));
-	put(1,5,128,in);
-	+tablero(celda(1,6,0),ficha(2,in));
-	put(1,6,64,in);
-	+tablero(celda(1,7,0),ficha(3,in));
-	put(1,7,128,in);
-	+tablero(celda(1,8,0),ficha(4,in));
-	put(1,8,256,in);
-	+tablero(celda(1,9,0),ficha(5,in));
-	put(1,9,512,in);
-	+tablero(celda(2,0,0),ficha(4,in));
-	put(2,0,256,in);
-	+tablero(celda(2,1,0),ficha(5,in));
-	put(2,1,512,in);
-	+tablero(celda(2,2,0),ficha(1,in));
-	put(2,2,32,in);
-	+tablero(celda(2,3,0),ficha(2,in));
-	put(2,3,64,in);
-	+tablero(celda(2,4,0),ficha(4,in));
-	put(2,4,256,in);
-	+tablero(celda(2,5,0),ficha(0,in));
-	put(2,5,16,in);
-	+tablero(celda(2,6,0),ficha(2,in));
-	put(2,6,64,in);
-	+tablero(celda(2,7,0),ficha(5,in));
-	put(2,7,512,in);
-	+tablero(celda(2,8,0),ficha(5,in));
-	put(2,8,512,in);
-	+tablero(celda(2,9,0),ficha(5,in));
-	put(2,9,512,in);
-	+tablero(celda(3,0,0),ficha(4,in));
-	put(3,0,256,in);
-	+tablero(celda(3,1,0),ficha(2,in));
-	put(3,1,64,in);
-	+tablero(celda(3,2,0),ficha(4,in));
-	put(3,2,256,in);
-	+tablero(celda(3,3,0),ficha(3,in));
-	put(3,3,128,in);
-	+tablero(celda(3,4,0),ficha(2,in));
-	put(3,4,64,in);
-	+tablero(celda(3,5,0),ficha(4,in));
-	put(3,5,256,in);
-	+tablero(celda(3,6,0),ficha(4,in));
-	put(3,6,256,in);
-	+tablero(celda(3,7,0),ficha(0,in));
-	put(3,7,16,in);
-	+tablero(celda(3,8,0),ficha(2,in));
-	put(3,8,64,in);
-	+tablero(celda(3,9,0),ficha(0,in));
-	put(3,9,16,in);
-	+tablero(celda(4,0,0),ficha(5,in));
-	put(4,0,512,in);
-	+tablero(celda(4,1,0),ficha(3,in));
-	put(4,1,128,in);
-	+tablero(celda(4,2,0),ficha(2,in));
-	put(4,2,64,in);
-	+tablero(celda(4,3,0),ficha(1,in));
-	put(4,3,32,in);
-	+tablero(celda(4,4,0),ficha(3,in));
-	put(4,4,128,in);
-	+tablero(celda(4,5,0),ficha(1,in));
-	put(4,5,32,in);
-	+tablero(celda(4,6,0),ficha(2,in));
-	put(4,6,64,in);
-	+tablero(celda(4,7,0),ficha(3,in));
-	put(4,7,128,in);
-	+tablero(celda(4,8,0),ficha(4,in));
-	put(4,8,256,in);
-	+tablero(celda(4,9,0),ficha(3,in));
-	put(4,9,128,in);
-	+tablero(celda(5,0,0),ficha(4,in));
-	put(5,0,256,in);
-	+tablero(celda(5,1,0),ficha(2,in));
-	put(5,1,64,in);
-	+tablero(celda(5,2,0),ficha(2,in));
-	put(5,2,64,in);
-	+tablero(celda(5,3,0),ficha(2,in));
-	put(5,3,64,in);
-	+tablero(celda(5,4,0),ficha(2,in));
-	put(5,4,64,in);
-	+tablero(celda(5,5,0),ficha(4,in));
-	put(5,5,256,in);
-	+tablero(celda(5,6,0),ficha(5,in));
-	put(5,6,512,in);
-	+tablero(celda(5,7,0),ficha(1,in));
-	put(5,7,32,in);
-	+tablero(celda(5,8,0),ficha(1,in));
-	put(5,8,32,in);
-	+tablero(celda(5,9,0),ficha(2,in));
-	put(5,9,64,in);
-	+tablero(celda(6,0,0),ficha(3,in));
-	put(6,0,128,in);
-	+tablero(celda(6,1,0),ficha(4,in));
-	put(6,1,256,in);
-	+tablero(celda(6,2,0),ficha(2,in));
-	put(6,2,64,in);
-	+tablero(celda(6,3,0),ficha(3,in));
-	put(6,3,128,in);
-	+tablero(celda(6,4,0),ficha(4,in));
-	put(6,4,256,in);
-	+tablero(celda(6,5,0),ficha(4,in));
-	put(6,5,256,in);
-	+tablero(celda(6,6,0),ficha(4,in));
-	put(6,6,256,in);
-	+tablero(celda(6,7,0),ficha(1,in));
-	put(6,7,32,in);
-	+tablero(celda(6,8,0),ficha(2,in));
-	put(6,8,64,in);
-	+tablero(celda(6,9,0),ficha(3,in));
-	put(6,9,128,in);
-	+tablero(celda(7,0,0),ficha(1,in));
-	put(7,0,32,in);
-	+tablero(celda(7,1,0),ficha(0,in));
-	put(7,1,16,in);
-	+tablero(celda(7,2,0),ficha(2,in));
-	put(7,2,64,in);
-	+tablero(celda(7,3,0),ficha(1,in));
-	put(7,3,32,in);
-	+tablero(celda(7,4,0),ficha(1,in));
-	put(7,4,32,in);
-	+tablero(celda(7,5,0),ficha(0,in));
-	put(7,5,16,in);
-	+tablero(celda(7,6,0),ficha(3,in));
-	put(7,6,128,in);
-	+tablero(celda(7,7,0),ficha(3,in));
-	put(7,7,128,in);
-	+tablero(celda(7,8,0),ficha(5,in));
-	put(7,8,512,in);
-	+tablero(celda(7,9,0),ficha(3,in));
-	put(7,9,128,in);
-	+tablero(celda(8,0,0),ficha(3,in));
-	put(8,0,128,in);
-	+tablero(celda(8,1,0),ficha(1,in));
-	put(8,1,32,in);
-	+tablero(celda(8,2,0),ficha(4,in));
-	put(8,2,256,in);
-	+tablero(celda(8,3,0),ficha(4,in));
-	put(8,3,256,in);
-	+tablero(celda(8,4,0),ficha(2,in));
-	put(8,4,64,in);
-	+tablero(celda(8,5,0),ficha(4,in));
-	put(8,5,256,in);
-	+tablero(celda(8,6,0),ficha(3,in));
-	put(8,6,128,in);
-	+tablero(celda(8,7,0),ficha(5,in));
-	put(8,7,512,in);
-	+tablero(celda(8,8,0),ficha(2,in));
-	put(8,8,64,in);
-	+tablero(celda(8,9,0),ficha(0,in));
-	put(8,9,16,in);
-	+tablero(celda(9,0,0),ficha(2,in));
-	put(9,0,64,in);
-	+tablero(celda(9,1,0),ficha(3,in));
-	put(9,1,128,in);
-	+tablero(celda(9,2,0),ficha(3,in));
-	put(9,2,128,in);
-	+tablero(celda(9,3,0),ficha(5,in));
-	put(9,3,512,in);
-	+tablero(celda(9,4,0),ficha(0,in));
-	put(9,4,16,in);
-	+tablero(celda(9,5,0),ficha(2,in));
-	put(9,5,64,in);
-	+tablero(celda(9,6,0),ficha(5,in));
-	put(9,6,512,in);
-	+tablero(celda(9,7,0),ficha(5,in));
-	put(9,7,512,in);
-	+tablero(celda(9,8,0),ficha(3,in));
-	put(9,8,128,in);
-	+tablero(celda(9,9,0),ficha(1,in));
-	put(9,9,32,in);
-
-
-	/*for ( .range(I,0,(N-1)) ) {
++generacionTablero : size(N) & nivel(1) <-
+	for ( .range(I,0,(N-1)) ) {
 			for ( .range(J,0,(N-1)) ) {
 				?eligeColor(Real,Color);
 				-numVecesColor(Real,Veces);
@@ -474,32 +276,56 @@ nextMove(P1,P2,P1-1,P2,"left").
 				+tablero(celda(J,I,0),ficha(Real,in));
 				put(J,I,Color,in);
 		};
-	};*/
+	};
 	 +eliminarGrupos;	
 	 -eliminarGrupos;
 	 .
 
-		 
++generacionTablero : size(N) & nivel(L) & L > 1 <-
+	for ( .range(I,0,(N-1)) ) {
+			for ( .range(J,0,(N-1)) ) {
+				.random(Random);
+				RND = math.floor(Random*(10));
+				if(RND = 6){
+					+tablero(celda(J,I,0),ficha(-1,in));
+					put(J,I,4,in);
+				}else{
+					?eligeColor(Real,Color);
+					-numVecesColor(Real,Veces);
+					+numVecesColor(Real,Veces+1);
+					+tablero(celda(J,I,0),ficha(Real,in));
+					put(J,I,Color,in);
+				}
+		};
+	};
+	 +eliminarGrupos;	
+	 -eliminarGrupos;
+	 .	 
+
+	 
+	 
 +eliminarGrupos: size(N) & grupoEnUltimaEjecucion(1) <- 
 	-+grupoEnUltimaEjecucion(0);
-	for ( .range(I,0,(N-1)) ) {
-		for ( .range(J,0,(N-1)) ) {
+	for ( .range(I,(N-1),0,-1) ) {
+		for ( .range(J,(N-1),0,-1) ) {
 			if(hayAgrupacion(J,I,Color)){
 				-+grupoEnUltimaEjecucion(1);
 				+findGroups(J,I,Color);
 				-findGroups(J,I,Color);
 			}
 		}
+		+downToken;
+		-downToken;
 	};
-	+downToken;
-	-downToken;
-	.wait(2000);
+	
+	.wait(200);
 	+eliminarGrupos;
 	-eliminarGrupos;
 	.
 
 +eliminarGrupos.
-
+	
+	
 //baja una columna 
 +downToken : size(Size) <-
 	for(.range(X,0,Size-1)){
@@ -513,44 +339,67 @@ nextMove(P1,P2,P1-1,P2,"left").
 	.wait(100);
 	.
 	
-+bajarColumna(X,Y) : not(tablero(celda(X,Y+1,_),_)) & Y<0 <-
++bajarColumna(X,Y) : not datos(X,Y+1,M1) & Y<0 <-
 	+colocarFichaArriba(X);
 	-colocarFichaArriba(X).
 			
-+bajarColumna(X,Y): not(tablero(celda(X,Y+1,_),_)) <-
++bajarColumna(X,Y): not esObstaculo(X,Y) & not datos(X,Y+1,M1) & datos(X,Y,M2) <-
+	.print("Bajando columna");
 	for(.range(I,Y,0,-1)){
 		.wait(100);
 		+bajarFicha(X,I);
 		-bajarFicha(X,I);
+		+rodar(X,I+1);
+		-rodar(X,I+1);
 	};
 	
-	+colocarFichaArriba(X);
-	-colocarFichaArriba(X).
-	
 
-+bajarFicha(X,I): not(tablero(celda(X,I,_),_)) <- 
+	
 	+colocarFichaArriba(X);
 	-colocarFichaArriba(X);
-	+bajarFicha(X,I);
-	-bajarFicha(X,I);
+	.
++rodar(X,Y): size(Size) & not datos(X-1,Y,M1) & not esObstaculo(X,Y) & X-1 >=0 <-
+	.print("Rodando");
+	-tablero(celda(X,Y,Own),ficha(Real,Tipo));
+	+tablero(celda(X-1,Y,Own),ficha(Real,Tipo));
+	?color(Real,Color);
+	deleteSteak(Color,X,Y);
+	put(X-1,Y,Color,Tipo);
+	+bajarColumna(X,Size-1);
+	+bajarColumna(X,Size-1);
+	+bajarColumna(X-1,Size-1);
+	+bajarColumna(X-1,Size-1);
+	
+.
++rodar(X,Y).
+	
++bajarFicha(X,Y): not datos(X,Y,M1) <- 
+	.print("Bajando ficha si no hay");
+	+colocarFichaArriba(X);
+	-colocarFichaArriba(X);
+	+bajarFicha(X,Y);
+	-bajarFicha(X,Y);
 .
 
-+bajarFicha(X,I) <-
-	-tablero(celda(X,I,Own),ficha(Real,Tipo));
-	+tablero(celda(X,I+1,Own),ficha(Real,Tipo));
++bajarFicha(X,Y): not esObstaculo(X,Y) & not datos(X,Y+1,M1) & datos(X,Y,M2) <-
+	.print("Bajando ficha si no es obstaculo");
+	-tablero(celda(X,Y,Own),ficha(Real,Tipo));
+	+tablero(celda(X,Y+1,Own),ficha(Real,Tipo));
 	?color(Real,Color);
-	deleteSteak(Color,X,I);
-	.wait(2);
-	put(X,I+1,Color,Tipo);
+	deleteSteak(Color,X,Y);
+	put(X,Y+1,Color,Tipo);
 .
-	
-+colocarFichaArriba(X)<-
++bajarFicha(X,Y).
+
++colocarFichaArriba(X): not datos(X,0,M1) <-
+	.print("Colocando ficha arriba");
 	.random(Random);
 	Real1 = math.floor(Random*6);
 //	Real1 = 3;
 	?color(Real1,Color1);
 	put(X,0,Color1,in);
 	+tablero(celda(X,0,0),ficha(Real1,in)).
++colocarFichaArriba(X).
 
 +crearCeldaTablero(I,J,Color,Ficha) :  randomFicha(Ficha, TipoFicha) <-
 		+tablero(celda(I,J,0),ficha(Color,TipoFicha)).
