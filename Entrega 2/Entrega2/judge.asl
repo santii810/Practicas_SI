@@ -13,7 +13,7 @@ maxObstaculos(6).
 dir("left").
 verificado(1).
 caido(0).
-cerrojo(0).
+
 //Unifica si la ficha posicionada en la celda X,Y pertenece a alguna agrupacion
 hayAgrupacion(X,Y,C):- grupo3Fil(X,Y,C)|grupo3Col(X,Y,C)|grupo4FilA(X,Y,C)|grupo4FilB(X,Y,C)|grupo4ColA(X,Y,C)|grupo4ColB(X,Y,C)| 
 					  grupo4SquareA(X,Y,C)|grupo4SquareB(X,Y,C)|grupo4SquareC(X,Y,C)|grupo4SquareD(X,Y,C)|grupo5Fil(X,Y,C)|grupo5Col(X,Y,C)|
@@ -76,7 +76,7 @@ turnoActivado(0).
 fueraTablero(0).
 fueraTurno(player1,0).
 fueraTurno(player2,0).
-nivel(2).
+nivel(1).
 jugadorDescalificado(player1,0).
 jugadorDescalificado(player2,0).
 
@@ -343,6 +343,7 @@ fin(1).
 	 //-prioridadAgrupaciones
 	 +quitarAgrupacionesIniciales;
 	 -quitarAgrupacionesIniciales;
+	 
 	 .	 
 
 +quitarAgrupacionesIniciales:size(Size) & fin(1) <-
@@ -695,12 +696,14 @@ fin(1).
 	-findGroups(OX,OY,Color);
 	//+detectarEspecialesHorizontal(OX,OX+1,OY);-detectarEspecialesHorizontal(OX,OX+1,OY);
 	//+detectarEspecialesHorizontal(OX,OX+1,OY+1);-detectarEspecialesHorizontal(OX,OX+1,OY+1);
-	-+cerrojo(1);
+	+agrupacionesContiguasSquare(OX,OX+1,OY,OX,OX+1,OY+1);
+	-agrupacionesContiguasSquare(OX,OX+1,OY,OX,OX+1,OY+1);
+	/*
 	+agrupacionesContiguas(-1,-1,-1,OX,OX+1,OY);
 	-agrupacionesContiguas(-1,-1,-1,OX,OX+1,OY);
 	+agrupacionesContiguas(-1,-1,-1,OX,OX+1,OY+1);
 	-agrupacionesContiguas(-1,-1,-1,OX,OX+1,OY+1);
-	-+cerrojo(0);
+	*/
 	+clearNhorizontal(OX,OX+1,OY);-clearNhorizontal(OX,OX+1,OY);+clearNhorizontal(OX,OX+1,OY+1);-clearNhorizontal(OX,OX+1,OY+1);
 	+tablero(celda(OX,OY,0),ficha(Color,gs));?color(Color,C1);put(OX,OY,C1,gs);
 	-+puntosMov(4);
@@ -712,12 +715,15 @@ fin(1).
 	-findGroups(OX,OY,Color);
 	//+detectarEspecialesHorizontal(OX-1,OX,OY);-detectarEspecialesHorizontal(OX-1,OX,OY);
 	//+detectarEspecialesHorizontal(OX-1,OX,OY+1);-detectarEspecialesHorizontal(OX-1,OX,OY+1);
-	-+cerrojo(1);
+	+agrupacionesContiguasSquare(OX-1,OX,OY,OX-1,OX,OY+1);
+	-agrupacionesContiguasSquare(OX-1,OX,OY,OX-1,OX,OY+1);
+	/*
 	+agrupacionesContiguas(-1,-1,-1,OX-1,OX,OY);
 	-agrupacionesContiguas(-1,-1,-1,OX-1,OX,OY);
 	+agrupacionesContiguas(-1,-1,-1,OX-1,OX,OY+1);
 	-agrupacionesContiguas(-1,-1,-1,OX-1,OX,OY+1);
-	-+cerrojo(0);
+	*/
+
 	+clearNhorizontal(OX-1,OX,OY);-clearNhorizontal(OX-1,OX,OY);+clearNhorizontal(OX-1,OX,OY+1);-clearNhorizontal(OX-1,OX,OY+1);
 	+tablero(celda(OX,OY,0),ficha(Color,gs));?color(Color,C1);put(OX,OY,C1,gs);
 	-+puntosMov(4);
@@ -729,12 +735,14 @@ fin(1).
 	-findGroups(OX,OY,Color);
 	//+detectarEspecialesHorizontal(OX,OX+1,OY-1);-detectarEspecialesHorizontal(OX,OX+1,OY-1);
 	//+detectarEspecialesHorizontal(OX,OX+1,OY);-detectarEspecialesHorizontal(OX,OX+1,OY);
-	-+cerrojo(1);
+	+agrupacionesContiguasSquare(OX,OX+1,OY-1,OX,OX+1,OY);
+	-agrupacionesContiguasSquare(OX,OX+1,OY-1,OX,OX+1,OY);
+	/*
 	+agrupacionesContiguas(-1,-1,-1,OX,OX+1,OY-1);
 	-agrupacionesContiguas(-1,-1,-1,OX,OX+1,OY-1);
 	+agrupacionesContiguas(-1,-1,-1,OX,OX+1,OY);
 	-agrupacionesContiguas(-1,-1,-1,OX,OX+1,OY);
-	-+cerrojo(0);
+	*/
 	+clearNhorizontal(OX,OX+1,OY-1);-clearNhorizontal(OX,OX+1,OY-1);+clearNhorizontal(OX,OX+1,OY);-clearNhorizontal(OX,OX+1,OY);
 	+tablero(celda(OX,OY,0),ficha(Color,gs));?color(Color,C1);put(OX,OY,C1,gs);
 	-+puntosMov(4);
@@ -746,12 +754,14 @@ fin(1).
 	-findGroups(OX,OY,Color);
 	//+detectarEspecialesHorizontal(OX-1,OX,OY-1);-detectarEspecialesHorizontal(OX-1,OX,OY-1);
 	//+detectarEspecialesHorizontal(OX-1,OX,OY);-detectarEspecialesHorizontal(OX-1,OX,OY);
-	-+cerrojo(1);
+	+agrupacionesContiguasSquare(OX-1,OX,OY-1,OX-1,OX,OY);
+	-agrupacionesContiguasSquare(OX-1,OX,OY-1,OX-1,OX,OY);
+	/*
 	+agrupacionesContiguas(-1,-1,-1,OX-1,OX,OY-1);
 	-agrupacionesContiguas(-1,-1,-1,OX-1,OX,OY-1);
 	+agrupacionesContiguas(-1,-1,-1,OX-1,OX,OY);
 	-agrupacionesContiguas(-1,-1,-1,OX-1,OX,OY);
-	-+cerrojo(0);
+	*/
 	+clearNhorizontal(OX-1,OX,OY-1);-clearNhorizontal(OX-1,OX,OY-1);+clearNhorizontal(OX-1,OX,OY);-clearNhorizontal(OX-1,OX,OY);
 	+tablero(celda(OX,OY,0),ficha(Color,gs));?color(Color,C1);put(OX,OY,C1,gs);
 	-+puntosMov(4);
@@ -915,7 +925,115 @@ fin(1).
 	};
 	.wait(15);
 .
++agrupacionesContiguasSquare(InicioH1,FinH1,Fil1,InicioH2,FinH2,Fil2) <-
+	-agrupacionesContiguasSquare(InicioH1,FinH1,Fil1,InicioH2,FinH2,Fil2);
 
+		for(.range(X1,InicioH1,FinH1)){
+			if(datos(X1,Fil1,C)){
+				if(grupo5Fil(X1,Fil1,C)){+grupoFil1(X1,Fil1,C);}
+				if(grupo5Col(X1,Fil1,C)){+grupoCol1(X1,Fil1,C);}
+				
+				if(grupo5TN(X1,Fil1,C)){+grupo5TN1(X1,Fil1,C);}	
+				if(grupo5TI(X1,Fil1,C)){+grupo5TI1(X1,Fil1,C);}
+				if(grupo5TR(X1,Fil1,C)){+grupo5TR1(X1,Fil1,C);}
+				if(grupo5TL(X1,Fil1,C)){+grupo5TL1(X1,Fil1,C);}
+				
+				if(grupo4FilA(X1,Fil1,C)){+grupo4FilA1(X1,Fil1,C);}
+				if(grupo4FilA(X1+1,Fil1,C)){+grupo4FilA1(X1+1,Fil1,C);}
+				if(grupo4FilA(X1-1,Fil1,C)){+grupo4FilA1(X1-1,Fil1,C);}
+				
+				if(grupo4FilB(X1,Fil1,C)){+grupo4FilB1(X1,Fil1,C);}
+				if(grupo4FilB(X1+1,Fil1,C)){+grupo4FilB1(X1+1,Fil1,C);}
+				if(grupo4FilB(X1-1,Fil1,C)){+grupo4FilB1(X1-1,Fil1,C);}
+				
+				if(grupo4ColA(X1,Fil1,C)){+grupo4ColA1(X1,Fil1,C);}
+				if(grupo4ColA(X1,Fil1+1,C)){+grupo4ColA1(X1,Fil1+1,C);}
+				if(grupo4ColA(X1,Fil1-1,C)){+grupo4ColA1(X1,Fil1-1,C);}
+				
+				if(grupo4ColB(X1,Fil1,C)){+grupo4ColB1(X1,Fil1,C);}
+				if(grupo4ColB(X1,Fil1+1,C)){+grupo4ColB1(X1,Fil1+1,C);}
+				if(grupo4ColB(X1,Fil1-1,C)){+grupo4ColB1(X1,Fil1-1,C);}
+				
+				if(grupo4SquareA(X1,Fil1,C)){+grupoSquareA1(X1,Fil1,C);}
+				if(grupo4SquareB(X1,Fil1,C)){+grupoSquareB1(X1,Fil1,C);}
+				if(grupo4SquareC(X1,Fil1,C)){+grupoSquareC1(X1,Fil1,C);}
+				if(grupo4SquareD(X1,Fil1,C)){+grupoSquareD1(X1,Fil1,C);}
+				
+				if(grupo3Fil(X1,Fil1,C)){+grupo3Fil1(X1,Fil1,C);}
+				if(grupo3Fil(X1+1,Fil1,C)){+grupo3Fil1(X1+1,Fil1,C);}
+				if(grupo3Fil(X1-1,Fil1,C)){+grupo3Fil1(X1-1,Fil1,C);}
+				
+				if(grupo3Col(X1,Fil1,C)){+grupo3Col1(X1,Fil1,C);}
+				if(grupo3Col(X1,Fil1+1,C)){+grupo3Col1(X1,Fil1+1,C);}
+				if(grupo3Col(X1,Fil1-1,C)){+grupo3Col1(X1,Fil1-1,C);}
+			}
+		}
+	
+		for(.range(X2,InicioH2,FinH2)){
+			if(datos(X2,Fil2,C)){
+				if(grupo5Fil(X2,Fil2,C)){+grupoFil1(X2,Fil2,C);}
+				if(grupo5Col(X2,Fil2,C)){+grupoCol1(X2,Fil2,C);}
+				
+				if(grupo5TN(X2,Fil2,C)){+grupo5TN1(X2,Fil2,C);}	
+				if(grupo5TI(X2,Fil2,C)){+grupo5TI1(X2,Fil2,C);}
+				if(grupo5TR(X2,Fil2,C)){+grupo5TR1(X2,Fil2,C);}
+				if(grupo5TL(X2,Fil2,C)){+grupo5TL1(X2,Fil2,C);}
+				
+				if(grupo4FilA(X2,Fil2,C)){+grupo4FilA1(X2,Fil2,C);}
+				if(grupo4FilA(X2+1,Fil2,C)){+grupo4FilA1(X2+1,Fil2,C);}
+				if(grupo4FilA(X2-1,Fil2,C)){+grupo4FilA1(X2-1,Fil2,C);}
+				
+				if(grupo4FilB(X2,Fil2,C)){+grupo4FilB1(X2,Fil2,C);}
+				if(grupo4FilB(X2+1,Fil2,C)){+grupo4FilB1(X2+1,Fil2,C);}
+				if(grupo4FilB(X2-1,Fil2,C)){+grupo4FilB1(X2-1,Fil2,C);}
+				
+				if(grupo4ColA(X2,Fil2,C)){+grupo4ColA1(X2,Fil2,C);}
+				if(grupo4ColA(X2,Fil2-1,C)){+grupo4ColA1(X2,Fil2-1,C);}
+				if(grupo4ColA(X2,Fil2+1,C)){+grupo4ColA1(X2,Fil2+1,C);}
+				
+				if(grupo4ColB(X2,Fil2,C)){+grupo4ColB1(X2,Fil2,C);}
+				if(grupo4ColB(X2,Fil2-1,C)){+grupo4ColB1(X2,Fil2-1,C);}
+				if(grupo4ColB(X2,Fil2+1,C)){+grupo4ColB1(X2,Fil2+1,C);}
+				
+				if(grupo4SquareA(X2,Fil2,C)){+grupoSquareA1(X2,Fil2,C);}
+				if(grupo4SquareB(X2,Fil2,C)){+grupoSquareB1(X2,Fil2,C);}
+				if(grupo4SquareC(X2,Fil2,C)){+grupoSquareC1(X2,Fil2,C);}
+				if(grupo4SquareD(X2,Fil2,C)){+grupoSquareD1(X2,Fil2,C);}
+				
+				
+				if(grupo3Fil(X2,Fil2,C)){+grupo3Fil1(X2,Fil2,C);}
+				if(grupo3Fil(X2+1,Fil2,C)){+grupo3Fil1(X2+1,Fil2,C);}
+				if(grupo3Fil(X2-1,Fil2,C)){+grupo3Fil1(X2-1,Fil2,C);}
+				
+				if(grupo3Col(X2,Fil2,C)){+grupo3Col1(X2,Fil2,C);}
+				if(grupo3Col(X2,Fil2+1,C)){+grupo3Col1(X2,Fil2+1,C);}
+				if(grupo3Col(X2,Fil2-1,C)){+grupo3Col1(X2,Fil2-1,C);}
+			}
+		}
+		
+	.findall(eliminarGrupo5Fil(A1,B1,Cor1),grupoFil1(A1,B1,Cor1),L1);for ( .member(K1,L1) ) {+K1;-K1;};
+	.findall(eliminarGrupo5Col(A2,B2,Cor2),grupoCol1(A2,B2,Cor2),L2);for ( .member(K2,L2) ) {+K2;-K2;};
+	
+	.findall(eliminarGrupo5TN(A3,B3,Cor3),grupo5TN1(A3,B3,Cor3),L3);for ( .member(K3,L3) ) {+K3;-K3;};
+	.findall(eliminarGrupo5TI(A4,B4,Cor4),grupo5TI1(A4,B4,Cor4),L4);for ( .member(K4,L4) ) {+K4;-K4;};
+	.findall(eliminarGrupo5TR(A5,B5,Cor5),grupo5TR1(A5,B5,Cor5),L5);for ( .member(K5,L5) ) {+K5;-K5;};
+	.findall(eliminarGrupo5TL(A6,B6,Cor6),grupo5TL1(A6,B6,Cor6),L6);for ( .member(K6,L6) ) {+K6;-K6;};
+	
+	.findall(eliminarGrupo4FilA(A7,B7,Cor7),grupo4FilA1(A7,B7,Cor7),L7);for ( .member(K7,L7) ) {+K7;-K7;};
+	.findall(eliminarGrupo4FilB(A8,B8,Cor8),grupo4FilB1(A8,B8,Cor8),L8);for ( .member(K8,L8) ) {+K8;-K8;};
+	.findall(eliminarGrupo4ColA(A9,B9,Cor9),grupo4ColA1(A9,B9,Cor9),L9);for ( .member(K9,L9) ) {+K9;-K9;};
+	.findall(eliminarGrupo4ColB(A10,B10,Cor10),grupo4ColB1(A10,B10,Cor10),L10);for ( .member(K10,L10) ) {+K10;-K10;};
+		
+	.findall(eliminarGrupoSquareA(A11,B11,Cor11),grupoSquareA1(A11,B11,Cor11),L11);for ( .member(K11,L11) ) {+K11;-K11;};
+	.findall(eliminarGrupoSquareB(A12,B12,Cor12),grupoSquareB1(A12,B12,Cor12),L12);for ( .member(K12,L12) ) {+K12;-K12;};
+	.findall(eliminarGrupoSquareC(A13,B13,Cor13),grupoSquareC1(A13,B13,Cor13),L13);for ( .member(K13,L13) ) {+K13;-K13;};
+	.findall(eliminarGrupoSquareD(A14,B14,Cor14),grupoSquareD1(A14,B14,Cor14),L14);for ( .member(K14,L14) ) {+K14;-K14;};
+	
+	.findall(eliminarGrupo3Fil(A15,B15,Cor15),grupo3Fil1(A15,B15,Cor15),L15);for ( .member(K15,L15) ) {+K15;-K15;};
+	.findall(eliminarGrupo3Col(A16,B16,Cor16),grupo3Col1(A16,B16,Cor16),L16);for ( .member(K16,L16) ) {+K16;-K16;};
+	
+	+borrarBanderas;
+	-borrarBanderas.
 
 +agrupacionesContiguas(InicioV,FinV,Col,InicioH,FinH,Fil):size(Size) <-
 	-agrupacionesContiguas(InicioV,FinV,Col,InicioH,FinH,Fil);
@@ -934,9 +1052,20 @@ fin(1).
 				if(grupo5TL(Col,Y,C)){+grupo5TL1(Col,Y,C);}
 				
 				if(grupo4FilA(Col,Y,C)){+grupo4FilA1(Col,Y,C);}
+				if(grupo4FilA(Col+1,Y,C)){+grupo4FilA1(Col+1,Y,C);}
+				if(grupo4FilA(Col-1,Y,C)){+grupo4FilA1(Col-1,Y,C);}
+				
 				if(grupo4FilB(Col,Y,C)){+grupo4FilB1(Col,Y,C);}
+				if(grupo4FilB(Col+1,Y,C)){+grupo4FilB1(Col+1,Y,C);}
+				if(grupo4FilB(Col-1,Y,C)){+grupo4FilB1(Col-1,Y,C);}
+				
 				if(grupo4ColA(Col,Y,C)){+grupo4ColA1(Col,Y,C);}
+				if(grupo4ColA(Col,Y+1,C)){+grupo4ColA1(Col,Y+1,C);}
+				if(grupo4ColA(Col,Y-1,C)){+grupo4ColA1(Col,Y-1,C);}
+				
 				if(grupo4ColB(Col,Y,C)){+grupo4ColB1(Col,Y,C);}
+				if(grupo4ColB(Col,Y+1,C)){+grupo4ColB1(Col,Y+1,C);}
+				if(grupo4ColB(Col,Y-1,C)){+grupo4ColB1(Col,Y-1,C);}
 				
 				if(grupo4SquareA(Col,Y,C)){+grupoSquareA1(Col,Y,C);}
 				if(grupo4SquareB(Col,Y,C)){+grupoSquareB1(Col,Y,C);}
@@ -945,7 +1074,12 @@ fin(1).
 				
 				
 				if(grupo3Fil(Col,Y,C)){+grupo3Fil1(Col,Y,C);}
+				if(grupo3Fil(Col+1,Y,C)){+grupo3Fil1(Col+1,Y,C);}
+				if(grupo3Fil(Col-1,Y,C)){+grupo3Fil1(Col-1,Y,C);}
+				
 				if(grupo3Col(Col,Y,C)){+grupo3Col1(Col,Y,C);}
+				if(grupo3Col(Col,Y+1,C)){+grupo3Col1(Col,Y+1,C);}
+				if(grupo3Col(Col,Y-1,C)){+grupo3Col1(Col,Y-1,C);}
 				
 			}
 		}
@@ -962,9 +1096,20 @@ fin(1).
 				if(grupo5TL(X,Fil,C)){+grupo5TL1(X,Fil,C);}
 				
 				if(grupo4FilA(X,Fil,C)){+grupo4FilA1(X,Fil,C);}
+				if(grupo4FilA(X+1,Fil,C)){+grupo4FilA1(X+1,Fil,C);}
+				if(grupo4FilA(X-1,Fil,C)){+grupo4FilA1(X-1,Fil,C);}
+				
 				if(grupo4FilB(X,Fil,C)){+grupo4FilB1(X,Fil,C);}
+				if(grupo4FilB(X+1,Fil,C)){+grupo4FilB1(X+1,Fil,C);}
+				if(grupo4FilB(X-1,Fil,C)){+grupo4FilB1(X-1,Fil,C);}
+				
 				if(grupo4ColA(X,Fil,C)){+grupo4ColA1(X,Fil,C);}
+				if(grupo4ColA(X,Fil+1,C)){+grupo4ColA1(X,Fil+1,C);}
+				if(grupo4ColA(X,Fil-1,C)){+grupo4ColA1(X,Fil-1,C);}
+				
 				if(grupo4ColB(X,Fil,C)){+grupo4ColB1(X,Fil,C);}
+				if(grupo4ColB(X,Fil+1,C)){+grupo4ColB1(X,Fil+1,C);}
+				if(grupo4ColB(X,Fil-1,C)){+grupo4ColB1(X,Fil-1,C);}
 				
 				if(grupo4SquareA(X,Fil,C)){+grupoSquareA1(X,Fil,C);}
 				if(grupo4SquareB(X,Fil,C)){+grupoSquareB1(X,Fil,C);}
@@ -973,7 +1118,12 @@ fin(1).
 				
 				
 				if(grupo3Fil(X,Fil,C)){+grupo3Fil1(X,Fil,C);}
+				if(grupo3Fil(X+1,Fil,C)){+grupo3Fil1(X+1,Fil,C);}
+				if(grupo3Fil(X-1,Fil,C)){+grupo3Fil1(X-1,Fil,C);}
+				
 				if(grupo3Col(X,Fil,C)){+grupo3Col1(X,Fil,C);}
+				if(grupo3Col(X,Fil+1,C)){+grupo3Col1(X,Fil+1,C);}
+				if(grupo3Col(X,Fil-1,C)){+grupo3Col1(X,Fil-1,C);}
 			}
 		}
 	}
@@ -990,12 +1140,12 @@ fin(1).
 	.findall(eliminarGrupo4FilB(A8,B8,Cor8),grupo4FilB1(A8,B8,Cor8),L8);for ( .member(K8,L8) ) {+K8;-K8;};
 	.findall(eliminarGrupo4ColA(A9,B9,Cor9),grupo4ColA1(A9,B9,Cor9),L9);for ( .member(K9,L9) ) {+K9;-K9;};
 	.findall(eliminarGrupo4ColB(A10,B10,Cor10),grupo4ColB1(A10,B10,Cor10),L10);for ( .member(K10,L10) ) {+K10;-K10;};
-	if(cerrojo(0)){//Para que no elimine creencias dado que comprobamos este metodo dos veces para cuadrado
-		.findall(eliminarGrupoSquareA(A11,B11,Cor11),grupoSquareA1(A11,B11,Cor11),L11);for ( .member(K11,L11) ) {+K11;-K11;};
-		.findall(eliminarGrupoSquareB(A12,B12,Cor12),grupoSquareB1(A12,B12,Cor12),L12);for ( .member(K12,L12) ) {+K12;-K12;};
-		.findall(eliminarGrupoSquareC(A13,B13,Cor13),grupoSquareC1(A13,B13,Cor13),L13);for ( .member(K13,L13) ) {+K13;-K13;};
-		.findall(eliminarGrupoSquareD(A14,B14,Cor14),grupoSquareD1(A14,B14,Cor14),L14);for ( .member(K14,L14) ) {+K14;-K14;};
-	}
+	
+	.findall(eliminarGrupoSquareA(A11,B11,Cor11),grupoSquareA1(A11,B11,Cor11),L11);for ( .member(K11,L11) ) {+K11;-K11;};
+	.findall(eliminarGrupoSquareB(A12,B12,Cor12),grupoSquareB1(A12,B12,Cor12),L12);for ( .member(K12,L12) ) {+K12;-K12;};
+	.findall(eliminarGrupoSquareC(A13,B13,Cor13),grupoSquareC1(A13,B13,Cor13),L13);for ( .member(K13,L13) ) {+K13;-K13;};
+	.findall(eliminarGrupoSquareD(A14,B14,Cor14),grupoSquareD1(A14,B14,Cor14),L14);for ( .member(K14,L14) ) {+K14;-K14;};
+	
 	.findall(eliminarGrupo3Fil(A15,B15,Cor15),grupo3Fil1(A15,B15,Cor15),L15);for ( .member(K15,L15) ) {+K15;-K15;};
 	.findall(eliminarGrupo3Col(A16,B16,Cor16),grupo3Col1(A16,B16,Cor16),L16);for ( .member(K16,L16) ) {+K16;-K16;};
 	
