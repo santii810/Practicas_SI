@@ -164,6 +164,10 @@ fin(1).
 +!comienzoTurno : turnoActual(P) & jugadasRestantes(N) & N>0 & jugadasPlayer(P,J) & J<50 <-
 	.print("Turno de: ",P,"!");
 	-+turnoActivado(1);
+	+mostrarTablero(player1);
+	-mostrarTablero(player1);
+	+mostrarTablero(player2);
+	-mostrarTablero(player2);
 	.print(P,", puedes mover");
 	.send(P,tell,puedesMover);
 	.send(P,untell,puedesMover);
@@ -285,10 +289,6 @@ fin(1).
 				+mostrarTablero(player2);
 				-mostrarTablero(player2);
 				?nivel(Nivel);
-				-+puntos(player1,Nivel,0);
-				-+puntos(player2,Nivel,0);
-				
-				// ToDo Iniciar puntuacion
 				.print("EMPIEZA EL JUEGO!")
 				.wait(2000);
 				!comienzoTurno.
@@ -836,8 +836,6 @@ fin(1).
 		if (datos(Col,I,Color,Tipo,Prop) & not esObstaculo(Col,I)) {
 			
 			-tablero(celda(Col,I,_),_);
-			.send(player1,untell,tablero(celda(Col,I,Prop),ficha(Color,Tipo)));
-			.send(player1,untell,tablero(celda(Col,I,Prop),ficha(Color,Tipo)));
 			?color(Color,C);
 			deleteSteak(C,Col,I);
 			if(Tipo=ct){
@@ -884,8 +882,6 @@ fin(1).
 	for (.range(I,Inicio,Fin)) {
 		if (datos(I,Fil,Color,Tipo,Prop) & not esObstaculo(I,Fil)) {	
 			-tablero(celda(I,Fil,_),_);
-			.send(player1,untell,tablero(celda(Col,I,Prop),ficha(Color,Tipo)));
-			.send(player1,untell,tablero(celda(Col,I,Prop),ficha(Color,Tipo)));
 			?color(Color,C);
 			deleteSteak(C,I,Fil);
 			-+verificado(1);
