@@ -44,7 +44,7 @@ grupo4SquareB(X,Y,C) :- // hueco arriba-derecha
 grupo4SquareC(X,Y,C) :- // hueco abajo-izquierda
 	size(N) & X+1 < N & Y-1 >= 0 & datos(X,Y,C) & datos(X+1,Y,C) & datos(X,Y-1,C) & datos(X+1,Y-1,C).
 grupo4SquareD(X,Y,C) :- // hueco abajo-derecha
-	size(N) & X-1 >= 0 & Y+1 < N & datos(X,Y,C) & datos(X-1,Y,C) & datos(X,Y-1,C) & datos(X-1,Y-1,C).	
+	size(N) & X-1 >= 0 & Y+1 < N & datos(X,Y,C) & datos(X-1,Y,C) & datos(X,Y+1,C) & datos(X-1,Y+1,C).	
 
 //Agrupación de 5
 //##_##
