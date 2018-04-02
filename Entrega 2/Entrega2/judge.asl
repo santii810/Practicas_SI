@@ -44,7 +44,7 @@ grupo4SquareB(X,Y,C) :- // hueco arriba-derecha
 grupo4SquareC(X,Y,C) :- // hueco abajo-izquierda
 	size(N) & X+1 < N & Y-1 >= 0 & datos(X,Y,C) & datos(X+1,Y,C) & datos(X,Y-1,C) & datos(X+1,Y-1,C).
 grupo4SquareD(X,Y,C) :- // hueco abajo-derecha
-	size(N) & X-1 >= 0 & Y+1 < N & datos(X,Y,C) & datos(X-1,Y,C) & datos(X,Y+1,C) & datos(X-1,Y+1,C).	
+	size(N) & X-1 >= 0 & Y+1 < N & datos(X,Y,C) & datos(X-1,Y,C) & datos(X,Y-1,C) & datos(X-1,Y-1,C).	
 
 //Agrupación de 5
 //##_##
@@ -315,7 +315,7 @@ fin(1).
 
 +generacionTablero : size(N) & nivel(L) & L > 1 <-
 	-generacionTablero;
-	/*for ( .range(I,0,(N-1)) ) {
+	for ( .range(I,0,(N-1)) ) {
 			for ( .range(J,0,(N-1)) ) {
 				.random(Random);
 				RND = math.floor(Random*(10));
@@ -341,210 +341,8 @@ fin(1).
 	 //+prioridadAgrupaciones;
 	 //-prioridadAgrupaciones
 	 +quitarAgrupacionesIniciales;
-	 -quitarAgrupacionesIniciales;*/
-	 +tablero(celda(0,0,0),ficha(4,in));
-	put(0,0,256,in);
-	+tablero(celda(0,1,0),ficha(0,in));
-	put(0,1,16,in);
-	+tablero(celda(0,2,0),ficha(5,in));
-	put(0,2,512,in);
-	+tablero(celda(0,3,0),ficha(0,in));
-	put(0,3,16,in);
-	+tablero(celda(0,4,0),ficha(2,in));
-	put(0,4,64,in);
-	+tablero(celda(0,5,0),ficha(5,in));
-	put(0,5,512,in);
-	+tablero(celda(0,6,0),ficha(0,in));
-	put(0,6,16,in);
-	+tablero(celda(0,7,0),ficha(2,in));
-	put(0,7,64,in);
-	+tablero(celda(0,8,0),ficha(3,in));
-	put(0,8,128,in);
-	+tablero(celda(0,9,0),ficha(4,in));
-	put(0,9,256,in);
-	+tablero(celda(1,0,0),ficha(2,in));
-	put(1,0,64,in);
-	+tablero(celda(1,1,0),ficha(3,in));
-	put(1,1,128,in);
-	+tablero(celda(1,2,0),ficha(2,in));
-	put(1,2,64,in);
-	+tablero(celda(1,3,0),ficha(3,in));
-	put(1,3,128,in);
-	+tablero(celda(1,4,0),ficha(3,in));
-	put(1,4,128,in);
-	+tablero(celda(1,5,0),ficha(3,in));
-	put(1,5,128,in);
-	+tablero(celda(1,6,0),ficha(2,in));
-	put(1,6,64,in);
-	+tablero(celda(1,7,0),ficha(3,in));
-	put(1,7,128,in);
-	+tablero(celda(1,8,0),ficha(4,in));
-	put(1,8,256,in);
-	+tablero(celda(1,9,0),ficha(5,in));
-	put(1,9,512,in);
-	+tablero(celda(2,0,0),ficha(-1,in));
-	put(2,0,4,in);
-	+tablero(celda(2,1,0),ficha(5,in));
-	put(2,1,512,in);
-	+tablero(celda(2,2,0),ficha(1,in));
-	put(2,2,32,in);
-	+tablero(celda(2,3,0),ficha(2,in));
-	put(2,3,64,in);
-	+tablero(celda(2,4,0),ficha(4,in));
-	put(2,4,256,in);
-	+tablero(celda(2,5,0),ficha(0,in));
-	put(2,5,16,in);
-	+tablero(celda(2,6,0),ficha(5,in));
-	put(2,6,512,in);
-	+tablero(celda(2,7,0),ficha(5,in));
-	put(2,7,512,in);
-	+tablero(celda(2,8,0),ficha(5,in));
-	put(2,8,512,in);
-	+tablero(celda(2,9,0),ficha(5,in));
-	put(2,9,512,in);
-	+tablero(celda(3,0,0),ficha(4,in));
-	put(3,0,256,in);
-	+tablero(celda(3,1,0),ficha(2,in));
-	put(3,1,64,in);
-	+tablero(celda(3,2,0),ficha(4,in));
-	put(3,2,256,in);
-	+tablero(celda(3,3,0),ficha(3,in));
-	put(3,3,128,in);
-	+tablero(celda(3,4,0),ficha(2,in));
-	put(3,4,64,in);
-	+tablero(celda(3,5,0),ficha(4,in));
-	put(3,5,256,in);
-	+tablero(celda(3,6,0),ficha(4,in));
-	put(3,6,256,in);
-	+tablero(celda(3,7,0),ficha(4,in));
-	put(3,7,256,in);
-	+tablero(celda(3,8,0),ficha(2,in));
-	put(3,8,64,in);
-	+tablero(celda(3,9,0),ficha(0,in));
-	put(3,9,16,in);
-	+tablero(celda(4,0,0),ficha(5,in));
-	put(4,0,512,in);
-	+tablero(celda(4,1,0),ficha(3,in));
-	put(4,1,128,in);
-	+tablero(celda(4,2,0),ficha(2,in));
-	put(4,2,64,in);
-	+tablero(celda(4,3,0),ficha(1,in));
-	put(4,3,32,in);
-	+tablero(celda(4,4,0),ficha(3,in));
-	put(4,4,128,in);
-	+tablero(celda(4,5,0),ficha(1,in));
-	put(4,5,32,in);
-	+tablero(celda(4,6,0),ficha(2,in));
-	put(4,6,64,in);
-	+tablero(celda(4,7,0),ficha(3,in));
-	put(4,7,128,in);
-	+tablero(celda(4,8,0),ficha(3,in));
-	put(4,8,128,in);
-	+tablero(celda(4,9,0),ficha(3,in));
-	put(4,9,128,in);
-	+tablero(celda(5,0,0),ficha(4,in));
-	put(5,0,256,in);
-	+tablero(celda(5,1,0),ficha(2,in));
-	put(5,1,64,in);
-	+tablero(celda(5,2,0),ficha(2,in));
-	put(5,2,64,in);
-	+tablero(celda(5,3,0),ficha(2,in));
-	put(5,3,64,in);
-	+tablero(celda(5,4,0),ficha(2,in));
-	put(5,4,64,in);
-	+tablero(celda(5,5,0),ficha(4,in));
-	put(5,5,256,in);
-	+tablero(celda(5,6,0),ficha(5,in));
-	put(5,6,512,in);
-	+tablero(celda(5,7,0),ficha(1,in));
-	put(5,7,32,in);
-	+tablero(celda(5,8,0),ficha(1,in));
-	put(5,8,32,in);
-	+tablero(celda(5,9,0),ficha(2,in));
-	put(5,9,64,in);
-	+tablero(celda(6,0,0),ficha(3,in));
-	put(6,0,128,in);
-	+tablero(celda(6,1,0),ficha(4,in));
-	put(6,1,256,in);
-	+tablero(celda(6,2,0),ficha(2,in));
-	put(6,2,64,in);
-	+tablero(celda(6,3,0),ficha(3,in));
-	put(6,3,128,in);
-	+tablero(celda(6,4,0),ficha(4,in));
-	put(6,4,256,in);
-	+tablero(celda(6,5,0),ficha(4,ct));/////////////
-	put(6,5,256,ct);
-	+tablero(celda(6,6,0),ficha(4,in));
-	put(6,6,256,in);
-	+tablero(celda(6,7,0),ficha(1,in));
-	put(6,7,32,in);
-	+tablero(celda(6,8,0),ficha(2,in));
-	put(6,8,64,in);
-	+tablero(celda(6,9,0),ficha(3,in));
-	put(6,9,128,in);
-	+tablero(celda(7,0,0),ficha(1,in));
-	put(7,0,32,in);
-	+tablero(celda(7,1,0),ficha(0,in));
-	put(7,1,16,in);
-	+tablero(celda(7,2,0),ficha(2,in));
-	put(7,2,64,in);
-	+tablero(celda(7,3,0),ficha(1,in));
-	put(7,3,32,in);
-	+tablero(celda(7,4,0),ficha(1,in));/////
-	put(7,4,32,in);
-	+tablero(celda(7,5,0),ficha(0,in));
-	put(7,5,16,in);
-	+tablero(celda(7,6,0),ficha(3,in));
-	put(7,6,128,in);
-	+tablero(celda(7,7,0),ficha(5,in));/******/
-	put(7,7,512,in);
-	+tablero(celda(7,8,0),ficha(5,in));
-	put(7,8,512,in);
-	+tablero(celda(7,9,0),ficha(3,in));
-	put(7,9,128,in);
-	+tablero(celda(8,0,0),ficha(3,ip));
-	put(8,0,128,ip);
-	+tablero(celda(8,1,0),ficha(1,in));
-	put(8,1,32,in);
-	+tablero(celda(8,2,0),ficha(4,in));
-	put(8,2,256,in);
-	+tablero(celda(8,3,0),ficha(4,ct));
-	put(8,3,256,ct);
-	+tablero(celda(8,4,0),ficha(2,in));
-	put(8,4,64,in);
-	+tablero(celda(8,5,0),ficha(4,in));
-	put(8,5,256,in);
-	+tablero(celda(8,6,0),ficha(3,in));
-	put(8,6,128,in);
-	+tablero(celda(8,7,0),ficha(5,in));
-	put(8,7,512,in);
-	+tablero(celda(8,8,0),ficha(2,in));
-	put(8,8,64,in);
-	+tablero(celda(8,9,0),ficha(0,co));
-	put(8,9,16,co);
-	+tablero(celda(9,0,0),ficha(2,in));
-	put(9,0,64,in);
-	+tablero(celda(9,1,0),ficha(3,in));
-	put(9,1,128,in);
-	+tablero(celda(9,2,0),ficha(3,in));
-	put(9,2,128,in);
-	+tablero(celda(9,3,0),ficha(5,in));
-	put(9,3,512,in);
-	+tablero(celda(9,4,0),ficha(0,in));
-	put(9,4,16,in);
-	+tablero(celda(9,5,0),ficha(2,in));
-	put(9,5,64,in);
-	+tablero(celda(9,6,0),ficha(5,in));
-	put(9,6,512,in);
-	+tablero(celda(9,7,0),ficha(5,in));
-	put(9,7,512,in);
-	+tablero(celda(9,8,0),ficha(3,in));
-	put(9,8,128,in);
-	+tablero(celda(9,9,0),ficha(1,in));
-	put(9,9,32,in);
+	 -quitarAgrupacionesIniciales;
 	
-	+quitarAgrupacionesIniciales;
-	-quitarAgrupacionesIniciales;
 	 .	 
 
 +quitarAgrupacionesIniciales:size(Size) & fin(1) <-

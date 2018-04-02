@@ -5,7 +5,7 @@ igual(X,Y,X,Y).
 igualColor(X,Y,C,C):-datos(X,Y,C).
 datos(X,Y,Color,Tipo,Prop):- tablero(celda(X,Y,Prop),ficha(Color,Tipo)).
 fichaEspecial(X,Y):-datos(X,Y,_,Tipo,_) & (Tipo = ct | Tipo = co | Tipo = gs | Tipo = ip).
-
+esObstaculo(X,Y):-tablero(celda(X,Y,_),ficha(-1,_)).
 //Agrupaciones de 3
 grupo3FilA(X,Y,C,A,B) :- // #_#
 	size(N) & X-1 >= 0 & X+1 < N & datos(X-1,Y,C) & datos(X,Y,_) & datos(X+1,Y,C) &
@@ -187,55 +187,55 @@ movPrueba(Mov) :- Mov = moverDesdeEnDireccion(pos(1,0),"left").
 	for(.range(X,0,N-1)){
 		for(.range(Y,0,N-1)){
 			if(datos(X,Y,C)){
-				if(grupo5Especial(X,Y-1,C,X,Y) & not igualColor(X,Y-1,C,C)){-+grupo5Especial(X,Y,"up")};
-				if(grupo5Especial(X,Y+1,C,X,Y) & not igualColor(X,Y+1,C,C)){-+grupo5Especial(X,Y,"down")};
-				if(grupo5Especial(X-1,Y,C,X,Y) & not igualColor(X-1,Y,C,C)){-+grupo5Especial(X,Y,"left")};
-				if(grupo5Especial(X+1,Y,C,X,Y) & not igualColor(X+1,Y,C,C)){-+grupo5Especial(X,Y,"right")};
+				if(grupo5Especial(X,Y-1,C,X,Y) & not igualColor(X,Y-1,C,C) & not esObstaculo(X,Y-1)){-+grupo5Especial(X,Y,"up")};
+				if(grupo5Especial(X,Y+1,C,X,Y) & not igualColor(X,Y+1,C,C) & not esObstaculo(X,Y+1)){-+grupo5Especial(X,Y,"down")};
+				if(grupo5Especial(X-1,Y,C,X,Y) & not igualColor(X-1,Y,C,C) & not esObstaculo(X-1,Y)){-+grupo5Especial(X,Y,"left")};
+				if(grupo5Especial(X+1,Y,C,X,Y) & not igualColor(X+1,Y,C,C) & not esObstaculo(X+1,Y)){-+grupo5Especial(X,Y,"right")};
 				
-				if(grupoTEspecial(X,Y-1,C,X,Y) & not igualColor(X,Y-1,C,C)){-+grupoTEspecial(X,Y,"up")};
-				if(grupoTEspecial(X,Y+1,C,X,Y) & not igualColor(X,Y+1,C,C)){-+grupoTEspecial(X,Y,"down")};
-				if(grupoTEspecial(X-1,Y,C,X,Y) & not igualColor(X-1,Y,C,C)){-+grupoTEspecial(X,Y,"left")};
-				if(grupoTEspecial(X+1,Y,C,X,Y) & not igualColor(X+1,Y,C,C)){-+grupoTEspecial(X,Y,"right")};
+				if(grupoTEspecial(X,Y-1,C,X,Y) & not igualColor(X,Y-1,C,C) & not esObstaculo(X,Y-1)){-+grupoTEspecial(X,Y,"up")};
+				if(grupoTEspecial(X,Y+1,C,X,Y) & not igualColor(X,Y+1,C,C) & not esObstaculo(X,Y+1)){-+grupoTEspecial(X,Y,"down")};
+				if(grupoTEspecial(X-1,Y,C,X,Y) & not igualColor(X-1,Y,C,C) & not esObstaculo(X-1,Y)){-+grupoTEspecial(X,Y,"left")};
+				if(grupoTEspecial(X+1,Y,C,X,Y) & not igualColor(X+1,Y,C,C) & not esObstaculo(X+1,Y)){-+grupoTEspecial(X,Y,"right")};
 				
-				if(grupo4Especial(X,Y-1,C,X,Y) & not igualColor(X,Y-1,C,C)){-+grupo4Especial(X,Y,"up")};
-				if(grupo4Especial(X,Y+1,C,X,Y) & not igualColor(X,Y+1,C,C)){-+grupo4Especial(X,Y,"down")};
-				if(grupo4Especial(X-1,Y,C,X,Y) & not igualColor(X-1,Y,C,C)){-+grupo4Especial(X,Y,"left")};
-				if(grupo4Especial(X+1,Y,C,X,Y) & not igualColor(X+1,Y,C,C)){-+grupo4Especial(X,Y,"right")};
+				if(grupo4Especial(X,Y-1,C,X,Y) & not igualColor(X,Y-1,C,C) & not esObstaculo(X,Y-1)){-+grupo4Especial(X,Y,"up")};
+				if(grupo4Especial(X,Y+1,C,X,Y) & not igualColor(X,Y+1,C,C) & not esObstaculo(X,Y+1)){-+grupo4Especial(X,Y,"down")};
+				if(grupo4Especial(X-1,Y,C,X,Y) & not igualColor(X-1,Y,C,C) & not esObstaculo(X-1,Y)){-+grupo4Especial(X,Y,"left")};
+				if(grupo4Especial(X+1,Y,C,X,Y) & not igualColor(X+1,Y,C,C) & not esObstaculo(X+1,Y)){-+grupo4Especial(X,Y,"right")};
 				
-				if(grupoCuadradoEspecial(X,Y-1,C,X,Y) & not igualColor(X,Y-1,C,C)){-+grupoCuadradoEspecial(X,Y,"up")};
-				if(grupoCuadradoEspecial(X,Y+1,C,X,Y) & not igualColor(X,Y+1,C,C)){-+grupoCuadradoEspecial(X,Y,"down")};
-				if(grupoCuadradoEspecial(X-1,Y,C,X,Y) & not igualColor(X-1,Y,C,C)){-+grupoCuadradoEspecial(X,Y,"left")};
-				if(grupoCuadradoEspecial(X+1,Y,C,X,Y) & not igualColor(X+1,Y,C,C)){-+grupoCuadradoEspecial(X,Y,"right")};
+				if(grupoCuadradoEspecial(X,Y-1,C,X,Y) & not igualColor(X,Y-1,C,C) & not esObstaculo(X,Y-1)){-+grupoCuadradoEspecial(X,Y,"up")};
+				if(grupoCuadradoEspecial(X,Y+1,C,X,Y) & not igualColor(X,Y+1,C,C) & not esObstaculo(X,Y+1)){-+grupoCuadradoEspecial(X,Y,"down")};
+				if(grupoCuadradoEspecial(X-1,Y,C,X,Y) & not igualColor(X-1,Y,C,C) & not esObstaculo(X-1,Y)){-+grupoCuadradoEspecial(X,Y,"left")};
+				if(grupoCuadradoEspecial(X+1,Y,C,X,Y) & not igualColor(X+1,Y,C,C) & not esObstaculo(X+1,Y)){-+grupoCuadradoEspecial(X,Y,"right")};
 				
-				if(grupo3Especial(X,Y-1,C,X,Y) & not igualColor(X,Y-1,C,C)){-+grupo3Especial(X,Y,"up")};
-				if(grupo3Especial(X,Y+1,C,X,Y) & not igualColor(X,Y+1,C,C)){-+grupo3Especial(X,Y,"down")};
-				if(grupo3Especial(X-1,Y,C,X,Y) & not igualColor(X-1,Y,C,C)){-+grupo3Especial(X,Y,"left")};
-				if(grupo3Especial(X+1,Y,C,X,Y) & not igualColor(X+1,Y,C,C)){-+grupo3Especial(X,Y,"right")};
+				if(grupo3Especial(X,Y-1,C,X,Y) & not igualColor(X,Y-1,C,C) & not esObstaculo(X,Y-1)){-+grupo3Especial(X,Y,"up")};
+				if(grupo3Especial(X,Y+1,C,X,Y) & not igualColor(X,Y+1,C,C) & not esObstaculo(X,Y+1)){-+grupo3Especial(X,Y,"down")};
+				if(grupo3Especial(X-1,Y,C,X,Y) & not igualColor(X-1,Y,C,C) & not esObstaculo(X-1,Y)){-+grupo3Especial(X,Y,"left")};
+				if(grupo3Especial(X+1,Y,C,X,Y) & not igualColor(X+1,Y,C,C) & not esObstaculo(X+1,Y)){-+grupo3Especial(X,Y,"right")};
 							
-				if(grupo5(X,Y-1,C,X,Y) & not igualColor(X,Y-1,C,C)){-+grupo5(X,Y,"up")};
-				if(grupo5(X,Y+1,C,X,Y) & not igualColor(X,Y+1,C,C)){-+grupo5(X,Y,"down")};
-				if(grupo5(X-1,Y,C,X,Y) & not igualColor(X-1,Y,C,C)){-+grupo5(X,Y,"left")};
-				if(grupo5(X+1,Y,C,X,Y) & not igualColor(X+1,Y,C,C)){-+grupo5(X,Y,"right")};
+				if(grupo5(X,Y-1,C,X,Y) & not igualColor(X,Y-1,C,C) & not esObstaculo(X,Y-1)){-+grupo5(X,Y,"up")};
+				if(grupo5(X,Y+1,C,X,Y) & not igualColor(X,Y+1,C,C) & not esObstaculo(X,Y+1)){-+grupo5(X,Y,"down")};
+				if(grupo5(X-1,Y,C,X,Y) & not igualColor(X-1,Y,C,C) & not esObstaculo(X-1,Y)){-+grupo5(X,Y,"left")};
+				if(grupo5(X+1,Y,C,X,Y) & not igualColor(X+1,Y,C,C) & not esObstaculo(X+1,Y)){-+grupo5(X,Y,"right")};
 				
-				if(grupoT(X,Y-1,C,X,Y) & not igualColor(X,Y-1,C,C)){-+grupoT(X,Y,"up")};
-				if(grupoT(X,Y+1,C,X,Y) & not igualColor(X,Y+1,C,C)){-+grupoT(X,Y,"down")};
-				if(grupoT(X-1,Y,C,X,Y) & not igualColor(X-1,Y,C,C)){-+grupoT(X,Y,"left")};
-				if(grupoT(X+1,Y,C,X,Y) & not igualColor(X+1,Y,C,C)){-+grupoT(X,Y,"right")};
+				if(grupoT(X,Y-1,C,X,Y) & not igualColor(X,Y-1,C,C) & not esObstaculo(X,Y-1)){-+grupoT(X,Y,"up")};
+				if(grupoT(X,Y+1,C,X,Y) & not igualColor(X,Y+1,C,C) & not esObstaculo(X,Y+1)){-+grupoT(X,Y,"down")};
+				if(grupoT(X-1,Y,C,X,Y) & not igualColor(X-1,Y,C,C) & not esObstaculo(X-1,Y)){-+grupoT(X,Y,"left")};
+				if(grupoT(X+1,Y,C,X,Y) & not igualColor(X+1,Y,C,C) & not esObstaculo(X+1,Y)){-+grupoT(X,Y,"right")};
 				
-				if(grupo4(X,Y-1,C,X,Y) & not igualColor(X,Y-1,C,C)){-+grupo4(X,Y,"up")};
-				if(grupo4(X,Y+1,C,X,Y) & not igualColor(X,Y+1,C,C)){-+grupo4(X,Y,"down")};
-				if(grupo4(X-1,Y,C,X,Y) & not igualColor(X-1,Y,C,C)){-+grupo4(X,Y,"left")};
-				if(grupo4(X+1,Y,C,X,Y) & not igualColor(X+1,Y,C,C)){-+grupo4(X,Y,"right")};
+				if(grupo4(X,Y-1,C,X,Y) & not igualColor(X,Y-1,C,C) & not esObstaculo(X,Y-1)){-+grupo4(X,Y,"up")};
+				if(grupo4(X,Y+1,C,X,Y) & not igualColor(X,Y+1,C,C) & not esObstaculo(X,Y+1)){-+grupo4(X,Y,"down")};
+				if(grupo4(X-1,Y,C,X,Y) & not igualColor(X-1,Y,C,C) & not esObstaculo(X-1,Y)){-+grupo4(X,Y,"left")};
+				if(grupo4(X+1,Y,C,X,Y) & not igualColor(X+1,Y,C,C) & not esObstaculo(X+1,Y)){-+grupo4(X,Y,"right")};
 				
-				if(grupoCuadrado(X,Y-1,C,X,Y) & not igualColor(X,Y-1,C,C)){-+grupoCuadrado(X,Y,"up")};
-				if(grupoCuadrado(X,Y+1,C,X,Y) & not igualColor(X,Y+1,C,C)){-+grupoCuadrado(X,Y,"down")};
-				if(grupoCuadrado(X-1,Y,C,X,Y) & not igualColor(X-1,Y,C,C)){-+grupoCuadrado(X,Y,"left")};
-				if(grupoCuadrado(X+1,Y,C,X,Y) & not igualColor(X+1,Y,C,C)){-+grupoCuadrado(X,Y,"right")};
+				if(grupoCuadrado(X,Y-1,C,X,Y) & not igualColor(X,Y-1,C,C) & not esObstaculo(X,Y-1)){-+grupoCuadrado(X,Y,"up")};
+				if(grupoCuadrado(X,Y+1,C,X,Y) & not igualColor(X,Y+1,C,C) & not esObstaculo(X,Y+1)){-+grupoCuadrado(X,Y,"down")};
+				if(grupoCuadrado(X-1,Y,C,X,Y) & not igualColor(X-1,Y,C,C) & not esObstaculo(X-1,Y)){-+grupoCuadrado(X,Y,"left")};
+				if(grupoCuadrado(X+1,Y,C,X,Y) & not igualColor(X+1,Y,C,C) & not esObstaculo(X+1,Y)){-+grupoCuadrado(X,Y,"right")};
 				
-				if(grupo3(X,Y-1,C,X,Y) & not igualColor(X,Y-1,C,C)){-+grupo3(X,Y,"up")};
-				if(grupo3(X,Y+1,C,X,Y) & not igualColor(X,Y+1,C,C)){-+grupo3(X,Y,"down")};
-				if(grupo3(X-1,Y,C,X,Y) & not igualColor(X-1,Y,C,C)){-+grupo3(X,Y,"left")};
-				if(grupo3(X+1,Y,C,X,Y) & not igualColor(X+1,Y,C,C)){-+grupo3(X,Y,"right")};
+				if(grupo3(X,Y-1,C,X,Y) & not igualColor(X,Y-1,C,C) & not esObstaculo(X,Y-1)){-+grupo3(X,Y,"up")};
+				if(grupo3(X,Y+1,C,X,Y) & not igualColor(X,Y+1,C,C) & not esObstaculo(X,Y+1)){-+grupo3(X,Y,"down")};
+				if(grupo3(X-1,Y,C,X,Y) & not igualColor(X-1,Y,C,C) & not esObstaculo(X-1,Y)){-+grupo3(X,Y,"left")};
+				if(grupo3(X+1,Y,C,X,Y) & not igualColor(X+1,Y,C,C) & not esObstaculo(X+1,Y)){-+grupo3(X,Y,"right")};
 			}
 		}
 	}.
