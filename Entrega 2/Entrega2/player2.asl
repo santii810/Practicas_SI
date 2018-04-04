@@ -28,6 +28,8 @@ movPrueba(Mov) :- Mov = moverDesdeEnDireccion(pos(1,0),"left").
 
 //Realizacion de la jugada
 +!realizarMovimiento <-
+	.send(judge,tell,borrarTablero);
+	.send(judge,untell,borrarTablero);
 	?randomMov(moverDesdeEnDireccion(pos(P1,P2),Dir));					
 //	?movPrueba(moverDesdeEnDireccion(pos(P1,P2),Dir));
 	.print("Intentando mover desde la posicion (",P1,",",P2,") en direccion ",Dir)
