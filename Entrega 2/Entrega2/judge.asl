@@ -77,7 +77,7 @@ turnoActivado(0).
 fueraTablero(0).
 fueraTurno(player1,0).
 fueraTurno(player2,0).
-nivel(2).
+nivel(1).
 jugadorDescalificado(player1,0).
 jugadorDescalificado(player2,0).
 
@@ -164,6 +164,12 @@ fin(1).
 
 //La he puesto yo a mayores
 +!comienzoTurno : turnoActual(P) & nivel(L) & minPuntos(Min) & player1Puntos(P1) & player2Puntos(P2) & L < 3 & (P1 >= Min | P2 >= Min) <-
+	if(P1 >= Min){
+		.print("El jugador player1 a alcanzado los puntos del nivel",L);
+	}else{
+		.print("El jugador player2 a alcanzado los puntos del nivel",L);
+	}
+	
 	!ganador.
 			
 +!comienzoTurno : turnoActual(P) & jugadasRestantes(N) & N>0 & jugadasPlayer(P,J) & J<50 <-
@@ -1310,41 +1316,81 @@ fin(1).
 	}
 	-+puntosMov(0).
 	
-+!ganador:nivel(L) & L>=3 <-
++!ganador:nivel(L) & L>=2 <-
 	.wait(2000);
 	?player1Puntos(P1);
 	?player2Puntos(P2);
 	.print("player1 Puntos:",P1);
 	.print("player2 Puntos:",P2)
-	if(P1=P2){
-		.print("Empate");
+	if(P1 >= Min | P2 >= Min){
+		if(P1 >= Min){
+			.print("Ganador del nivel ",L," player1");
+			-+ganadorNivel2(player1);
+		}else{
+			.print("Ganador del nivel ",L," player2");
+			-+ganadorNivel2(player2);
+		}
 	}else{
 		if(P1>P2){
 			.print("Ganador del nivel ",L," player1");
+			-+ganadorNivel2(player1);
 		}else{
 			.print("Ganador del nivel ",L," player2");
+			-+ganadorNivel2(player2);
 		}
 	}
+	
+	?ganadorNivel1(GanadorNivel1);
+	?ganadorNivel2(GanadorNivel2);
+	?puntosJugador1Nivel1(Jugador1Nivel1Puntos);
+	?puntosJugador2Nivel1(Jugador2Nivel1Puntos);
+	if(GanadorNivel1 = GanadorNivel2){
+		if(GanadorNivel1 = player1){
+			.print("Ganador del juego: ",GanadorNivel1, "con una puntuacion total de: ",P1 + Jugador1Nivel1Puntos);
+		}else{
+			.print("Ganador del juego: ",GanadorNivel1, "con una puntuacion total de: ",P2 + Jugador2Nivel1Puntos);
+		}
+		
+	}else{
+		if(P1 + Jugador1Nivel1Puntos > P2 + Jugador1Nivel2Puntos){
+			.print("Ganador del juego: player1 con una puntuacion total de: ",P1 + Jugador1Nivel1Puntos);
+		}else{
+			.print("Ganador del juego: player2",P2 + Jugador2Nivel1Puntos);
+		}
+	}
+	
 	.
 
-+!ganador:nivel(L) <-
++!ganador:nivel(L) & turnoActual(P) <-
 	.print("Recopilando Puntos...");
 	.wait(2000);
 	?player1Puntos(P1);
 	?player2Puntos(P2);
+	?minPuntos(Min);
 	.print("player1 Puntos:",P1);
 	.print("player2 Puntos:",P2);
 	-+puntosPlayer1(L,P1);
 	-+puntosPlayer2(L,P2);
-	if(P1=P2){
-		.print("Empate");
+	if(P1 >= Min | P2 >= Min){
+		if(P1 >= Min){
+			.print("Ganador del nivel ",L," player1");
+			-+ganadorNivel1(player1);
+		}else{
+			.print("Ganador del nivel ",L," player2");
+			-+ganadorNivel1(player2);
+		}
 	}else{
 		if(P1>P2){
 			.print("Ganador del nivel ",L," player1");
+			-+ganadorNivel1(player1);
 		}else{
 			.print("Ganador del nivel ",L," player2");
+			-+ganadorNivel1(player2);
 		}
 	}
+	-+puntosJugador1Nivel1(P1);
+	-+puntosJugador2Nivel1(P2);
+	
 	-+player1Puntos(0);
 	-+player2Puntos(0);
 	.wait(1000);
