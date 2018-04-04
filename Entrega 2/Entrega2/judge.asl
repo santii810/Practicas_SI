@@ -13,6 +13,7 @@ maxObstaculos(6).
 dir("left").
 verificado(1).
 caido(0).
+minPuntos(20).
 fichaEspecial(X,Y):-datos(X,Y,_,Tipo,_) & (Tipo = ct | Tipo = co | Tipo = gs | Tipo = ip).
 //Unifica si la ficha posicionada en la celda X,Y pertenece a alguna agrupacion
 hayAgrupacion(X,Y,C):- grupo3Fil(X,Y,C)|grupo3Col(X,Y,C)|grupo4FilA(X,Y,C)|grupo4FilB(X,Y,C)|grupo4ColA(X,Y,C)|grupo4ColB(X,Y,C)| 
@@ -161,6 +162,10 @@ fin(1).
 +!comienzoTurno : jugadorDescalificado(player1,1) & jugadorDescalificado(player2,1) <-
 			.print("FIN DE LA PARTIDA: Ambos jugadores han sido descalificados. TRAMPOSOS!!!").
 
+//La he puesto yo a mayores
++!comienzoTurno : turnoActual(P) & nivel(L) & minPuntos(Min) & player1Puntos(P1) & player2Puntos(P2) & L < 3 & (P1 >= Min | P2 >= Min) <-
+	!ganador.
+			
 +!comienzoTurno : turnoActual(P) & jugadasRestantes(N) & N>0 & jugadasPlayer(P,J) & J<50 <-
 	.print("Turno de: ",P,"!");
 	-+turnoActivado(1);
@@ -173,6 +178,7 @@ fin(1).
 	.send(P,untell,puedesMover);
 	.wait(1000);.
 
+	
 +!comienzoTurno : jugadasRestantes(N) & N=0 <- .print("FIN DE LA PARTIDA: Se ha realizado el numero maximo de jugadas");
 	!ganador.//////////////////////
 
@@ -537,12 +543,7 @@ fin(1).
 	?color(Color2,C2);
 	exchange(C1,X,NX,C2,Y,NY,Tipo1,Tipo2);
 	//Para no perder las etiquetas
-	if(fichaEspecial(X,Y)){
-		put(X,Y,C2,Tipo2);
-	}
-	if(fichaEspecial(NX,NY)){
-		put(X,Y,C1,Tipo1);
-	}
+	
 	/*deleteSteak(C1,X,Y);
 	.wait(300);
 	deleteSteak(C2,NX,NY);
@@ -1262,10 +1263,37 @@ fin(1).
 	for (.range(I,N-1,0,-1) ) {
 		for ( .range(J,0,N-1) ) {
 			if(datos(I,J,Color)){
-				-tablero(celda(I,J,_),_);
+				-tablero(celda(I,J,_),ficha(_,Tipo));
 				deleteSteak(C1,I,J);
-				-+puntosMov(8);
-				!actualizarPuntos;
+				
+				if(Tipo=ct){
+					+explosionCT(Color);
+					-explosionCT(Color);
+					-+puntosMov(8);
+					!actualizarPuntos;
+				}
+				if(Tipo=co){
+					+explosionCO(I,Fil);
+					-explosionCO(I,Fil);
+					-+puntosMov(6);
+					!actualizarPuntos;
+				}
+				if(Tipo=gs){
+					+explosionGS;
+					-explosionGS;
+					-+puntosMov(4);
+					!actualizarPuntos;
+				}
+				if(Tipo=ip){
+					+explosionIP(I,Fil);
+					-explosionIP(I,Fil);
+					-+puntosMov(2);
+					!actualizarPuntos;
+				}else{
+					-+puntosMov(1);
+					!actualizarPuntos;
+				}
+				
 			}
 		}
 	}
@@ -1361,7 +1389,7 @@ fin(1).
 	.
 +!actualizarPuntos: turnoActual(P) & nivel(L) & puntosMov(Puntos) <- 
 	.print("actualizando..");
-	.wait(150);
+	.wait(50);
 	if(P=player1){
 		?player1Puntos(P1);
 		-+player1Puntos(P1+Puntos);
@@ -1371,7 +1399,7 @@ fin(1).
 		-+player2Puntos(P2+Puntos);
 		.print(P,"PUNTOS: ",Puntos+P2);
 	}
-	.wait(1000);
+	.wait(50);
 	//.send(P,tell,totalPoints(T));
 	-+puntosMov(0).
 	
