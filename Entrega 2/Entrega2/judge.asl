@@ -5,7 +5,7 @@ maxObstaculos(6).
 minPuntos(20).
 size(10).
 jugadasRestantes(20).
-nivel(2).
+nivel(1).
 
 
 //Recopilar datos de posicion y color de una ficha
