@@ -124,7 +124,7 @@ movimiento(X,Y,"left") :- tablero(celda(X-1,Y,_),_).
 movimiento(X,Y,"right") :- tablero(celda(X+1,Y,_),_).
 
 //Comprobacion de Color
-colorFichasDistintos(pos(X,Y),Dir):- tablero(celda(X,Y,_),ficha(COrigen,_)) & validacion(X,Y,Dir,COrigen).
+colorFichasDistintos(pos(X,Y),Dir):- tablero(celda(X,Y,_),ficha(COrigen,_)) & validacion(X,Y,Dir,COrigen) & not moveObstaculo(X,Y,Dir).
 
 //Parte de la generacion aleatoria del tipo de ficha
 randomFicha(Rand,Ficha):-
@@ -155,14 +155,9 @@ fin(1).
 
 /* ----- Plans ----- */
 
-
-/* COMIENZO INTOCABLE */
-
-//Comienzo del turno de un jugador.
 +!comienzoTurno : jugadorDescalificado(player1,1) & jugadorDescalificado(player2,1) <-
 			.print("FIN DE LA PARTIDA: Ambos jugadores han sido descalificados. TRAMPOSOS!!!").
 
-//La he puesto yo a mayores
 +!comienzoTurno : turnoActual(P) & nivel(L) & minPuntos(Min) & player1Puntos(P1) & player2Puntos(P2) & L < 3 & (P1 >= Min | P2 >= Min) <-
 	if(P1 >= Min){
 		.print("El jugador player1 a alcanzado los puntos del nivel",L);
@@ -171,7 +166,29 @@ fin(1).
 	}
 	
 	!ganador.
-			
+
+
++!comienzoTurno : size(Size) & turnoActual(P) & jugadasRestantes(N) & N>0 & jugadasPlayer(P,J) & J<Size/2 <-
+	.print("Turno de: ",P,"!");
+	-+turnoActivado(1);
+	+mostrarTablero(player1);
+	-mostrarTablero(player1);
+	+mostrarTablero(player2);
+	-mostrarTablero(player2);
+	.print(P,", puedes mover");
+	.send(P,tell,puedesMover);
+	.send(P,untell,puedesMover);
+	.wait(1000);.
+
++!comienzoTurno : jugadasRestantes(N) & N=0 <- .print("FIN DE LA PARTIDA: Se ha realizado el numero maximo de jugadas");
+	!ganador.
+	
+/* COMIENZO INTOCABLE */
+
+//Comienzo del turno de un jugador.
++!comienzoTurno : jugadorDescalificado(player1,1) & jugadorDescalificado(player2,1) <-
+			.print("FIN DE LA PARTIDA: Ambos jugadores han sido descalificados. TRAMPOSOS!!!").
+		
 +!comienzoTurno : turnoActual(P) & jugadasRestantes(N) & N>0 & jugadasPlayer(P,J) & J<50 <-
 	.print("Turno de: ",P,"!");
 	-+turnoActivado(1);
@@ -204,7 +221,7 @@ fin(1).
 			+intercambiarFichas(X,Y,Dir,P);
 			-intercambiarFichas(X,Y,Dir,P);
 			
-			-+dir(Dir);
+			
 			-+grupoEnUltimaEjecucion(1);
 			
 			+eliminarGrupos;	
@@ -265,7 +282,7 @@ fin(1).
 
 //Comprobacion de la falta cometida por intercambiar dos fichas del mismo color
 +movimientoInvalido(pos(X,Y),Dir,P) : 
-	not colorFichasDistintos(pos(X,Y),Dir) | moveObstaculo(X,Y,Dir) <-
+	not colorFichasDistintos(pos(X,Y),Dir)  <-
 		-movimientoInvalido(pos(X,Y),Dir,P);
 		.print("Movimiento Invalido. Has intentado  intercambiar dos fichas del mismo color");
 		-+turnoActivado(1);
@@ -389,12 +406,6 @@ fin(1).
 	
 	+borrarFlags;
 	-borrarFlags;
-	
-	/*-grupos5(_,_,_);
-	-gruposT(_,_,_);
-	-grupos4(_,_,_);
-	-gruposCuadrado(_,_,_);
-	-grupos3(_,_,_);*/
 
 	for(.range(X,0,Size-1)){
 		for(.range(Y,Size-1,0,-1)){
@@ -523,6 +534,7 @@ fin(1).
 
 +intercambiarFichas(X,Y,Dir,P)[source(self)]: nextMove(X,Y,NX,NY,Dir) & plNumb(P,PlNumb) <-
 	-intercambiarFichas(X,Y,Dir,P)[source(self)];
+	-+dir(Dir);
 	-tablero(celda(X,Y,Own1),ficha(Color1,Tipo1));
 	-tablero(celda(NX,NY,Own2),ficha(Color2,Tipo2));
 	.send(player1,untell,tablero(celda(X,Y,Own1),ficha(Color1,Tipo1)));
@@ -543,16 +555,16 @@ fin(1).
 	//Pasamos color de 0-5 a escala binaria
 	?color(Color1,C1);
 	?color(Color2,C2);
-	exchange(C1,X,NX,C2,Y,NY,Tipo1,Tipo2);
+	//exchange(C1,X,NX,C2,Y,NY,Tipo1,Tipo2);
 	//Para no perder las etiquetas
 	
-	/*deleteSteak(C1,X,Y);
-	.wait(300);
+	deleteSteak(C1,X,Y);
+	.wait(200);
 	deleteSteak(C2,NX,NY);
-	.wait(300);
+	.wait(200);
 	put(X,Y,C2,Tipo2);
-	.wait(300);
-	put(NX,NY,C1,Tipo1);*/
+	.wait(50);
+	put(NX,NY,C1,Tipo1);
 	.print("Se han intercambiado las fichas entre las posiciones (",X,",",Y,") y (",NX,",",NY,")");
 	+prioridadAgrupaciones;
 	-prioridadAgrupaciones.
