@@ -188,22 +188,15 @@ fin(1).
 //Comienzo del turno de un jugador.
 +!comienzoTurno : jugadorDescalificado(player1,1) & jugadorDescalificado(player2,1) <-
 			.print("FIN DE LA PARTIDA: Ambos jugadores han sido descalificados. TRAMPOSOS!!!").
-		
+
 +!comienzoTurno : turnoActual(P) & jugadasRestantes(N) & N>0 & jugadasPlayer(P,J) & J<50 <-
 	.print("Turno de: ",P,"!");
 	-+turnoActivado(1);
-	+mostrarTablero(player1);
-	-mostrarTablero(player1);
-	+mostrarTablero(player2);
-	-mostrarTablero(player2);
 	.print(P,", puedes mover");
 	.send(P,tell,puedesMover);
-	.send(P,untell,puedesMover);
-	.wait(1000);.
+	.send(P,untell,puedesMover).
 
-	
-+!comienzoTurno : jugadasRestantes(N) & N=0 <- .print("FIN DE LA PARTIDA: Se ha realizado el numero maximo de jugadas");
-	!ganador.//////////////////////
++!comienzoTurno : jugadasRestantes(N) & N=0 <- .print("FIN DE LA PARTIDA: Se ha realizado el numero maximo de jugadas").
 
 
 +!comienzoTurno : turnoActual(P) & jugadasPlayer(P,J) & J>=50 <- .print("FIN DE LA PARTIDA: ",P," ha realizado el maximo de jugadas por jugador (50)").
@@ -220,13 +213,6 @@ fin(1).
 			.send(P,untell,valido);
 			+intercambiarFichas(X,Y,Dir,P);
 			-intercambiarFichas(X,Y,Dir,P);
-			
-			
-			-+grupoEnUltimaEjecucion(1);
-			
-			+eliminarGrupos;	
-			-eliminarGrupos;
-			
 			-+turnoTerminado(P);
 			!comienzoTurno.
 
@@ -264,7 +250,7 @@ fin(1).
 
 +moverDesdeEnDireccion(pos(X,Y),Dir)[source(P)] : 
 	not turnoActual(P) & not fueraTurno(P,N) <- // --- TODO ---
-		.print("El agente ",P," externo a la partida estÃ¡ intentando jugar.").
+		.print("El agente ",P," externo a la partida está intentando jugar.").
 
 // Esta regla la podeis adecuar a vuestras necesidades
 +moverDesdeEnDireccion(pos(X,Y),Dir)[source(P)] <- 
@@ -282,7 +268,7 @@ fin(1).
 
 //Comprobacion de la falta cometida por intercambiar dos fichas del mismo color
 +movimientoInvalido(pos(X,Y),Dir,P) : 
-	not colorFichasDistintos(pos(X,Y),Dir)  <-
+	not colorFichasDistintos(pos(X,Y),Dir) <-
 		-movimientoInvalido(pos(X,Y),Dir,P);
 		.print("Movimiento Invalido. Has intentado  intercambiar dos fichas del mismo color");
 		-+turnoActivado(1);
@@ -291,10 +277,8 @@ fin(1).
 		.send(P,untell,tryAgain).
 
 // Esta regla la podeis adecuar a vuestras necesidades
-+movimientoInvalido(pos(X,Y),Dir,P): moveObstaculo(X,Y,Dir) <- 
-	?datos(X,Y,Color);
-	
-	.print("DEBUG: Error en +movimientoInvalido------------------------------------------------------------------------------------------").
++movimientoInvalido(pos(X,Y),Dir,P) <- 
+	.print("DEBUG: Error en +movimientoInvalido").
 
 
 //Recepcion del aviso de que un jugador pasa turno por haber realizado un movimiento fuera del tablero mas de 3 veces
@@ -334,10 +318,6 @@ fin(1).
 				put(J,I,Color,in);
 		};
 	};
-	 //+eliminarGrupos;	
-	 //-eliminarGrupos;
-	 //+prioridadAgrupaciones;
-	 //-prioridadAgrupaciones
 	 +quitarAgrupacionesIniciales;
 	 -quitarAgrupacionesIniciales;
 	 .
