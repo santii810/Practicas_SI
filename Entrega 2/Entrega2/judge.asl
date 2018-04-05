@@ -1,5 +1,13 @@
 // Agent judge in project ESEI_SAGA.mas2j
 /* ----- Initial beliefs and rules ------ */
+/* Configuration beliefs*/
+maxObstaculos(6).
+minPuntos(20).
+size(10).
+jugadasRestantes(20).
+nivel(2).
+
+
 //Recopilar datos de posicion y color de una ficha
 datos(X,Y,Color):- tablero(celda(X,Y,_),ficha(Color,_)).
 datos(X,Y,Color,Tipo,Prop):- tablero(celda(X,Y,Prop),ficha(Color,Tipo)).
@@ -9,11 +17,9 @@ obstaculosContiguos(X,Y):-datos(X-1,Y,-1) | datos(X+1,Y,-1) | datos(X,Y-1,-1) | 
 esObstaculo(X,Y):-tablero(celda(X,Y,_),ficha(-1,_)).
 moveObstaculo(X,Y,Dir):-(nextMove(X,Y,DX,DY,Dir) & esObstaculo(DX,DY)) | esObstaculo(X,Y).
 numObs(0).
-maxObstaculos(6).
 dir("left").
 verificado(1).
 caido(0).
-minPuntos(20).
 fichaEspecial(X,Y):-datos(X,Y,_,Tipo,_) & (Tipo = ct | Tipo = co | Tipo = gs | Tipo = ip).
 //Unifica si la ficha posicionada en la celda X,Y pertenece a alguna agrupacion
 hayAgrupacion(X,Y,C):- grupo3Fil(X,Y,C)|grupo3Col(X,Y,C)|grupo4FilA(X,Y,C)|grupo4FilB(X,Y,C)|grupo4ColA(X,Y,C)|grupo4ColB(X,Y,C)| 
@@ -68,8 +74,7 @@ grupo5(X,Y,C):- grupo5Fil(X,Y,C) | grupo5Col(X,Y,C).
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-size(10).
-jugadasRestantes(20).
+
 jugadasPlayer(player1,0).
 jugadasPlayer(player2,0).
 turnoActual(player1).
@@ -77,7 +82,7 @@ turnoActivado(0).
 fueraTablero(0).
 fueraTurno(player1,0).
 fueraTurno(player2,0).
-nivel(1).
+
 jugadorDescalificado(player1,0).
 jugadorDescalificado(player2,0).
 
@@ -85,6 +90,12 @@ grupoEnUltimaEjecucion(1).
 rodada(0).
 posRodar(-1).
 comprobarCT(1).
+
+ganadorNivel1(player2).
+puntosJugador1Nivel1(0).
+puntosJugador2Nivel1(0).
+player1Puntos(0).
+player2Puntos(0).
 
 //(Añadida) color real y color en base 16 
 color(-1,4).
@@ -1312,9 +1323,10 @@ fin(1).
 	.wait(2000);
 	?player1Puntos(P1);
 	?player2Puntos(P2);
-	.print("player1 Puntos:",P1);
-	.print("player2 Puntos:",P2)
-	if(P1 >= Min | P2 >= Min){
+	.print("player1 Puntos nivel" , L ,": ",P1);
+	.print("player1 Puntos nivel" , L ,": ",P2);
+	
+	if(P1 >= Min | P2 >= Min){ //Se acaba la ronda
 		if(P1 >= Min){
 			.print("Ganador del nivel ",L," player1");
 			-+ganadorNivel2(player1);
@@ -1344,10 +1356,11 @@ fin(1).
 		}
 		
 	}else{
-		if(P1 + Jugador1Nivel1Puntos > P2 + Jugador1Nivel2Puntos){
+	.print("Puntos totales: \n\tJugador1: ",P1 + Jugador1Nivel1Puntos,"\n\tJugador2: ",P2 + Jugador2Nivel1Puntos,".");
+		if(P1 + Jugador1Nivel1Puntos > P2 + Jugador2Nivel1Puntos){
 			.print("Ganador del juego: player1 con una puntuacion total de: ",P1 + Jugador1Nivel1Puntos);
 		}else{
-			.print("Ganador del juego: player2",P2 + Jugador2Nivel1Puntos);
+			.print("Ganador del juego: player2 con una puntuacion total de: ",P2 + Jugador2Nivel1Puntos);
 		}
 	}
 	

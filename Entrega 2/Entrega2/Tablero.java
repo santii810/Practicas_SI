@@ -52,20 +52,11 @@ public class Tablero extends Environment {
 					 int c = (int)((NumberTerm)action.getTerm(2)).solve();
 					 String l = action.getTerm(3).toString();
 					 
-					 /*int steak = (int)((NumberTerm)action.getTerm(3)).solve();
-					 if (steak == 0) { label = "  ";} else
-					 if (steak == 1) { label = "ip";} else
-					 if (steak == 2) { label = "ct";} else
-					 if (steak == 3) { label = "gs";} else
-					 if (steak == 4) { label = "co";} else
-					 {label = "TT";};*/
-					 
 					 if(l.equals("in")){
 						label="";
 					}else{
 						label=l;
 					}
-					 //model.put(x,y,c);
 					 model.put(x,y,c,l);
 				 } else if(action.getFunctor().equals("exchange")){
 					 int c1 = (int)((NumberTerm)action.getTerm(0)).solve();
@@ -76,7 +67,7 @@ public class Tablero extends Environment {
 					 int y2 = (int)((NumberTerm)action.getTerm(5)).solve();
 					 String label1 = action.getTerm(6).toString();
 					 String label2 = action.getTerm(7).toString();
-					 model.exchange(c1,x1,x2,c2,y1,y2,label1,label2);
+					 //model.exchange(c1,x1,x2,c2,y1,y2,label1,label2);
 				 } else if(action.getFunctor().equals("deleteSteak")){
 					 int c = (int)((NumberTerm)action.getTerm(0)).solve();
 					 int x = (int)((NumberTerm)action.getTerm(1)).solve();
@@ -93,9 +84,7 @@ public class Tablero extends Environment {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        
         updatePercepts();
-
         try {
             Thread.sleep(50);
         } catch (Exception e) {}
@@ -105,20 +94,15 @@ public class Tablero extends Environment {
 
     /** creates the agents perception based on the MarsModel */
     void updatePercepts() {
-        //Location r1Loc = model.getAgPos(0);
         Literal newMov = Literal.parseLiteral("done");
 		addPercept("judge",newMov);    
     }
 
     class TableroModel extends GridWorldModel {
-        
         Random random = new Random(System.currentTimeMillis());
-		
 		String label = "";
-
         private TableroModel() {
             super(GSize, GSize, 3);
-
             try {
                 setAgPos(0, 0, 0);
             } catch (Exception e) {
@@ -141,32 +125,8 @@ public class Tablero extends Environment {
 			};
         }
 		
-		int conversor(int color){
-			int n = 0;
-			if(color == 16){
-				return n;	
-			}else{
-				n++;
-				n += conversor(color/2);
-			}
-			return n;
-		}
-		
-		void exchange(int c1, int x1, int x2, int c2, int y1, int y2, String label1, String label2) throws Exception {
-			remove(c1,new Location(x1,y1));
-			//removePercept("judge",Literal.parseLiteral("tablero(celda("+ x1 +"," + y1 + "," + 0 + "),ficha(" + conversor(c1) + "," + label1 + "))"));
-			remove(c2,new Location(x2,y2));
-			//removePercept("judge",Literal.parseLiteral("tablero(celda("+ x2 +"," + y2 + "," + 0 + "),ficha(" + conversor(c2) + "," + label2 + "))"));
-
-			set(c2,x1,y1);
-			//addPercept("judge",Literal.parseLiteral("tablero(celda("+ x2 +"," + y1 + "," + 0 + "),ficha(" + conversor(c2) + "," + label2 + "))"));
-			set(c1,x2,y2);
-			//addPercept("judge",Literal.parseLiteral("tablero(celda("+ x1 +"," + y2 + "," + 0 + "),ficha(" + conversor(c1) + "," + label1 + "))"));
-		}
-		
 		void deleteSteak(int c,int x, int y) throws Exception {
 			remove(c,new Location(x,y));
-			//removePercept("judge",Literal.parseLiteral("tablero(celda("+ x +"," + y + "," + o + "),ficha(" + conversor(c) + "," + l + "))"));
 		}
 		
 		void moveSteaks()throws Exception {
@@ -214,12 +174,6 @@ public class Tablero extends Environment {
             defaultFont = new Font("Arial", Font.BOLD, 18); // change default font
             setVisible(true);
 			String label = model.getLabel();
-			
-			/*
-			if (model.label == "CO" | model.label =="PP"){
-				logger.info(" la etiqueta que debo dibujar es: "+ label+" o quiza: "+model.label);		
-			};			
-            *///repaint();
         }
 
         /** draw application objects */
@@ -240,10 +194,7 @@ public class Tablero extends Environment {
 
         @Override
         public void drawAgent(Graphics g, int x, int y, Color c, int id) {
-            //String label = "R"+(id+1);
             c = Color.white;
-            //super.drawAgent(g, x, y, c, -1);
-			//drawGarb(g, x, y);
 		}
 		
 		public void drawFICHA(Graphics g, int x, int y, Color c, String label) {
@@ -258,7 +209,6 @@ public class Tablero extends Environment {
             g.setColor(Color.blue);
             drawString(g, x, y, defaultFont, "G");
         }
-
     }    
 
     /** Called before the end of MAS execution */
