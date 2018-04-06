@@ -1,10 +1,15 @@
 // Agent judge in project ESEI_SAGA.mas2j
 /* ----- Initial beliefs and rules ------ */
 /* Configuration beliefs*/
+//maximo de obstaculos juego
 maxObstaculos(6).
-minPuntos(20).
+//Puntos a alcanzar por ronda
+minPuntos(500).
+//tamaño del tablero
 size(10).
-jugadasRestantes(20).
+//Numero de jugadas totales por nivel
+rondas(101).
+//Nivel de inicio
 nivel(1).
 
 
@@ -75,8 +80,20 @@ grupo5(X,Y,C):- grupo5Fil(X,Y,C) | grupo5Col(X,Y,C).
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-jugadasPlayer(player1,0).
-jugadasPlayer(player2,0).
+//jugadasPlayer(player1,0).
+//jugadasPlayer(player2,0).
+
+rondasPar :- rondas(Rondas) & Rondas mod 2 = 0.
+jugadasPlayer(player1,0):- rondas(Rondas) & rondasPar & rondasPlayer(player1,RondasP1) & RondasP1 < math.floor(Rondas/2).
+jugadasPlayer(player1,0):- rondas(Rondas) & not rondasPar & rondasPlayer(player1,RondasP1) & RondasP1 < math.floor(Rondas/2)+1.
+jugadasPlayer(player1,50).
+
+jugadasPlayer(player2,0):- rondas(Rondas) & rondasPlayer(player2,RondasP2) & RondasP2 < math.floor(Rondas/2).
+jugadasPlayer(player2,50).
+
+rondasPlayer(player1,0).
+rondasPlayer(player2,0).
+
 turnoActual(player1).
 turnoActivado(0).
 fueraTablero(0).
@@ -97,7 +114,7 @@ puntosJugador2Nivel1(0).
 player1Puntos(0).
 player2Puntos(0).
 
-//(AÃ±adida) color real y color en base 16 
+//reglas de color 
 color(-1,4).
 color(0,16).
 color(N,C) :- color(N-1,C1) & C = C1*2.
@@ -107,7 +124,7 @@ eligeColor(Real,Color):-
 	not(colorLleno(Real)) &
 	color(Real,Color).
 eligeColor(Real,Color):- eligeColor(Real,Color).
-
+//numero de veces que aparece cada color
 numVecesColor(0,0).
 numVecesColor(1,0).
 numVecesColor(2,0).
@@ -115,7 +132,7 @@ numVecesColor(3,0).
 numVecesColor(4,0).
 numVecesColor(5,0).
 colorLleno(Color):- size(N) & numVecesColor(Color,Veces) & Veces >= math.floor((N*N)/6)+1.
-
+//elegir otro color que el seleccionado
 repetirColor(Color,Nuevo):- Color+1 < 6 & Nuevo = Color+1.
 repetirColor(Color,Nuevo):- Color-1 >= 0 & Nuevo = Color-1.
 
@@ -167,7 +184,7 @@ fin(1).
 /* ----- Plans ----- */
 
 +!comienzoTurno : jugadorDescalificado(player1,1) & jugadorDescalificado(player2,1) <-
-			.print("FIN DE LA PARTIDA: Ambos jugadores han sido descalificados. TRAMPOSOS!!!").
+			.print("FIN DE LA PARTIDA: Ambos jugadores han sido descalificados").
 
 +!comienzoTurno : turnoActual(P) & nivel(L) & minPuntos(Min) & player1Puntos(P1) & player2Puntos(P2) & L < 3 & (P1 >= Min | P2 >= Min) <-
 	if(P1 >= Min){
@@ -178,20 +195,7 @@ fin(1).
 	
 	!ganador.
 
-
-+!comienzoTurno : size(Size) & turnoActual(P) & jugadasRestantes(N) & N>0 & jugadasPlayer(P,J) & J<Size/2 <-
-	.print("Turno de: ",P,"!");
-	-+turnoActivado(1);
-	+mostrarTablero(player1);
-	-mostrarTablero(player1);
-	+mostrarTablero(player2);
-	-mostrarTablero(player2);
-	.print(P,", puedes mover");
-	.send(P,tell,puedesMover);
-	.send(P,untell,puedesMover);
-	.wait(1000);.
-
-+!comienzoTurno : jugadasRestantes(N) & N=0 <- .print("FIN DE LA PARTIDA: Se ha realizado el numero maximo de jugadas");
++!comienzoTurno :nivel(L) & jugadasRestantes(N) & N=0 <- .print("FIN DEl nivel ",L," : Se ha realizado el numero maximo de jugadas");
 	!ganador.
 	
 /* COMIENZO INTOCABLE */
@@ -313,6 +317,8 @@ fin(1).
 				+mostrarTablero(player2);
 				-mostrarTablero(player2);
 				?nivel(Nivel);
+				?rondas(Rondas);
+				-+jugadasRestantes(Rondas);
 				.print("EMPIEZA EL JUEGO!")
 				.wait(2000);
 				!comienzoTurno.
@@ -329,10 +335,11 @@ fin(1).
 				put(J,I,Color,in);
 		};
 	};
-	 +quitarAgrupacionesIniciales;
-	 -quitarAgrupacionesIniciales;
+	 !quitarAgrupacionesIniciales;
+	 //-quitarAgrupacionesIniciales;
 	 .
 
+//generacion de tablero con obstaculos
 +generacionTablero[source(self)] : size(N) & nivel(L) & L > 1 <-
 	-generacionTablero[source(self)];
 	for ( .range(I,0,(N-1)) ) {
@@ -355,15 +362,15 @@ fin(1).
 				}
 		};
 	};
-	 +quitarAgrupacionesIniciales;
-	 -quitarAgrupacionesIniciales;
+	 !quitarAgrupacionesIniciales;
+	 //-quitarAgrupacionesIniciales;
 	
 	 .	 
-
-+quitarAgrupacionesIniciales[source(self)]:size(Size) & fin(1) <-
+//quitar las agrupaciones iniciales del tablero
++!quitarAgrupacionesIniciales[source(self)]:size(Size) & fin(1) <-
 	.print("Preparando...");
 	.wait(1000);
-	-quitarAgrupacionesIniciales[source(self)];
+	//-quitarAgrupacionesIniciales[source(self)];
 	-+fin(0);
 	for(.range(X,0,Size-1)){
 		for(.range(Y,0,Size-1)){
@@ -378,11 +385,11 @@ fin(1).
 			}
 		}
 	}
-	+quitarAgrupacionesIniciales;
-	-quitarAgrupacionesIniciales;
+	!quitarAgrupacionesIniciales;
+	//-quitarAgrupacionesIniciales;
 	.
-+quitarAgrupacionesIniciales[source(self)] <- .print("Tablero listo");-+fin(1).
-
++!quitarAgrupacionesIniciales[source(self)] <- .print("Tablero listo");-+fin(1).
+//borrar creencias de localización de grupos
 +borrarFlags[source(self)] <-
 	-borrarFlags[source(self)];
 	.findall(grupos5(A1,B1,Cor1),grupos5(A1,B1,Cor1),L1);for ( .member(K1,L1) ) {-K1;};
@@ -391,7 +398,8 @@ fin(1).
 	.findall(gruposCuadrado(A4,B4,Cor4),gruposCuadrado(A4,B4,Cor4),L4);for ( .member(K4,L4) ) {-K4;};
 	.findall(grupos3(A5,B5,Cor5),grupos3(A5,B5,Cor5),L5);for ( .member(K5,L5) ) {-K5;};
 	.
-	 
+
+//comprobar la agrupación más prioritaria	
 +prioridadAgrupaciones[source(self)]:size(Size) <-
 	-prioridadAgrupaciones[source(self)];
 	
@@ -427,7 +435,7 @@ fin(1).
 	+eliminarPrioritario;
 	-eliminarPrioritario.	
 	
-//Metodo de localizar las agrupaciones prioritarias
+//localizar las agrupaciones prioritarias
 +eliminarPrioritario[source(self)]:grupos5(X,Y,C) <-	 
 	-eliminarPrioritario[source(self)];
 	-grupos5(X,Y,C);
@@ -481,7 +489,7 @@ fin(1).
 
 
 //Cambio de turno de un jugador a otro
-+cambioTurno(P)[source(self)]: jugadasRestantes(N) & jugadasPlayer(P,J)<-
++cambioTurno(P)[source(self)]: jugadasRestantes(N) & rondasPlayer(P,J)<-
 				-cambioTurno(P)[source(self)];
 				+cambioTurno(P,N,J).
 
@@ -490,29 +498,35 @@ fin(1).
 					-cambioTurno(P,N,J)[source(self)];
 					-+turnoActual(player2);
 					-+jugadasRestantes(N-1);
-					-jugadasPlayer(player1,J);
-					+jugadasPlayer(player1,J+1);
+					//-jugadasPlayer(player1,J);
+					//+jugadasPlayer(player1,J+1);
+					-rondasPlayer(player1,J);
+					+rondasPlayer(player1,J+1);
 					.print("[ Jugadas restantes: ", N-1," || Jugadas completadas ",P,": ", J+1," ]").
 
 
-+cambioTurno(P,N,J)[source(self)]: P = player2 <-
++cambioTurno(P,N,J)[source(self)]: P = player2 | jugadorDescalificado(player1,2)<-
 					-cambioTurno(P,N,J)[source(self)];
 					-+turnoActual(player1);
 					-+jugadasRestantes(N-1);
-					-jugadasPlayer(player2,J);
-					+jugadasPlayer(player2,J+1);
+					//-jugadasPlayer(player2,J);
+					//+jugadasPlayer(player2,J+1);
+					-rondasPlayer(player2,J);
+					+rondasPlayer(player2,J+1);
 					.print("[ Jugadas restantes: ", N-1," || Jugadas completadas ",P,": ", J+1," ]").
 
 
 //Cambio de turno cuando hay un jugador descalificado
-+cambioTurnoMismoJugador(P)[source(self)]:jugadasRestantes(N) & jugadasPlayer(P,J)<-
++cambioTurnoMismoJugador(P)[source(self)]:jugadasRestantes(N) & rondasPlayer(P,J)<-
 				-cambioTurnoMismoJugador(P)[source(self)];
 				+cambioTurnoMismoJugador(P,N,J).
 +cambioTurnoMismoJugador(P,N,J)[source(self)]<-
 					-cambioTurnoMismoJugador(P,N,J)[source(self)];
 					-+jugadasRestantes(N-1);
-					-jugadasPlayer(P,J);
-					+jugadasPlayer(P,J+1);
+					//-jugadasPlayer(P,J);
+					//+jugadasPlayer(P,J+1);
+					-rondasPlayer(P,J);
+					+rondasPlayer(P,J+1);
 					.print("[ Jugadas restantes: ", N-1," || Jugadas completadas ",P,": ", J+1," ]").
 
 
@@ -558,7 +572,12 @@ fin(1).
 	put(NX,NY,C1,Tipo1);
 	.print("Se han intercambiado las fichas entre las posiciones (",X,",",Y,") y (",NX,",",NY,")");
 	+prioridadAgrupaciones;
-	-prioridadAgrupaciones.
+	-prioridadAgrupaciones;
+	+mostrarTablero(player1);
+	-mostrarTablero(player1);
+	+mostrarTablero(player2);
+	-mostrarTablero(player2);
+	.
 	
 	
 //Grupo 5 
@@ -854,6 +873,7 @@ fin(1).
 	};
 	.wait(15);
 .
+//plan para comprobar agrupaciones que se pueden producir a la vez con cuadrado
 +agrupacionesContiguasSquare(InicioH1,FinH1,Fil1,InicioH2,FinH2,Fil2)[source(self)] <-
 	-agrupacionesContiguasSquare(InicioH1,FinH1,Fil1,InicioH2,FinH2,Fil2)[source(self)];
 
@@ -966,8 +986,7 @@ fin(1).
 
 +agrupacionesContiguas(InicioV,FinV,Col,InicioH,FinH,Fil):size(Size)[source(self)] <-
 	-agrupacionesContiguas(InicioV,FinV,Col,InicioH,FinH,Fil)[source(self)];
-	//-g5(_,_,_);-gt(_,_,_);-gc(_,_,_);-g4(_,_,_);-g3(_,_,_);
-	.print(",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,");
+	
 	if(InicioV > 0){
 		for(.range(Y,InicioV,FinV)){
 			if(datos(Col,Y,C)){
@@ -1081,7 +1100,7 @@ fin(1).
 	+borrarBanderas;
 	-borrarBanderas;
 	.	
-
+//plan para borrar las creencias de agrupaciones complementarias encontradas
 +borrarBanderas[source(self)] <-
 	-borrarBanderas[source(self)];
 	.findall(grupoFil1(A1,B1,Cor1),grupoFil1(A1,B1,Cor1),L1);for ( .member(K1,L1) ) {-K1;};
@@ -1107,7 +1126,7 @@ fin(1).
 	.findall(grupo3Col1(A16,B16,Cor16),grupo3Col1(A16,B16,Cor16),L16);for ( .member(K16,L16) ) {-K16;};
 	.
 
-	
+//eliminación de los grupos complementarios	
 +eliminarGrupo5Fil(X,Y,C)[source(self)]<- -eliminarGrupo5Fil(X,Y,C)[source(self)];+clearNhorizontal(X-2,X+2,Y);-clearNhorizontal(X-2,X+2,Y).
 +eliminarGrupo5Col(X,Y,C)[source(self)]<- -eliminarGrupo5Col(X,Y,C)[source(self)];+clearNvertical(Y-2,Y+2,X);-clearNvertical(Y-2,Y+2,X).
 
@@ -1129,7 +1148,7 @@ fin(1).
 +eliminarGrupo3Fil(X,Y,C)[source(self)]<- -eliminarGrupo3Fil(X,Y,C)[source(self)];+clearNhorizontal(X-1,X+1,Y);-clearNhorizontal(X-1,X+1,Y).
 +eliminarGrupo3Col(X,Y,C)[source(self)]<- -eliminarGrupo3Col(X,Y,C)[source(self)];+clearNvertical(Y-1,Y+1,X);-clearNvertical(Y-1,Y+1,X).
 
-	
+//explosiones de fichas	
 +explosionIP(X,Y)[source(self)]:size(Size) <-
 	-explosionIP(X,Y)[source(self)];
 	?dir(D);
@@ -1165,7 +1184,7 @@ fin(1).
 		?color(Cor,C1);
 		deleteSteak(C1,A,B);
 	}.
-
+//buscador de ficha gs
 +buscarGs:size(N)[source(self)]<-
 	-buscarGs[source(self)];
 	-fichaGs(_,_,_);
@@ -1177,7 +1196,7 @@ fin(1).
 		}
 	}
 	.
-	
+//Eliminacion de fichas del mismo color	
 +eliminacionMismoColor(Color)[source(self)]:size(N) <-
 	-eliminacionMismoColor(Color)[source(self)];
 	?color(Color,C1);
@@ -1219,7 +1238,7 @@ fin(1).
 		}
 	}
 	.
-
+//caida de fichas con rodar a la izquierda
 +caidaFichas:size(Size)[source(self)]<-
 	-caidaFichas[source(self)];
 	for(.range(X,0,Size-1)){
@@ -1305,6 +1324,7 @@ fin(1).
 		}
 	}
 	.
+//plan de actualización de puntos	
 +!actualizarPuntos: turnoActual(P) & nivel(L) & puntosMov(Puntos) <- 
 	.print("actualizando..");
 	.wait(50);
@@ -1318,13 +1338,13 @@ fin(1).
 		.print(P,"PUNTOS: ",Puntos+P2);
 	}
 	-+puntosMov(0).
-	
+//plan para comprobar el ganador del nivel2	
 +!ganador:nivel(L) & L>=2 <-
 	.wait(2000);
 	?player1Puntos(P1);
 	?player2Puntos(P2);
 	.print("player1 Puntos nivel" , L ,": ",P1);
-	.print("player1 Puntos nivel" , L ,": ",P2);
+	.print("player2 Puntos nivel" , L ,": ",P2);
 	
 	if(P1 >= Min | P2 >= Min){ //Se acaba la ronda
 		if(P1 >= Min){
@@ -1365,7 +1385,7 @@ fin(1).
 	}
 	
 	.
-
+//plan para comprobar el ganador del nivel1
 +!ganador:nivel(L) & turnoActual(P) <-
 	.print("Recopilando Puntos...");
 	.wait(2000);
@@ -1400,7 +1420,8 @@ fin(1).
 	-+player2Puntos(0);
 	.wait(1000);
 	-+nivel(L+1);
-	-+jugadasRestantes(10);
+	
+	//-+jugadasRestantes(10);
 	-numVecesColor(0,_);
 	-numVecesColor(1,_);
 	-numVecesColor(2,_);
@@ -1413,16 +1434,17 @@ fin(1).
 	+numVecesColor(3,0);
 	+numVecesColor(4,0);
 	+numVecesColor(5,0);
-	-jugadasPlayer(player2,_);
-	+jugadasPlayer(player2,0);
-	-jugadasPlayer(player1,_);
-	+jugadasPlayer(player1,0);
-	
+	-rondasPlayer(player2,_);
+	+rondasPlayer(player2,0);
+	-rondasPlayer(player1,_);
+	+rondasPlayer(player1,0);
+	-+turnoActual(player1);
 	-+numObs(0);
 	+borrarTablero;
 	-borrarTablero;
 	!startGame;
 	.
+//borrar todo el tablero	
 +borrarTablero[source(self)]:size(N) <-
 	-borrarTablero[source(self)];
 	for (.range(I,0,N-1) ) {

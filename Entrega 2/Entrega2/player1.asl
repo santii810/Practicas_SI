@@ -181,7 +181,7 @@ movPrueba(Mov) :- Mov = moverDesdeEnDireccion(pos(1,0),"left").
 
 +buscarMejorJugada:size(N) <-
 	-buscarMejorJugada;
-	//-grupo5(_,_,_);-grupoT(_,_,_);-grupoCuadrado(_,_,_);-grupo4(_,_,_);-grupo3(_,_,_);
+	
 	+borrarBusqueda;
 	-borrarBusqueda;
 	for(.range(X,0,N-1)){
@@ -314,7 +314,7 @@ movPrueba(Mov) :- Mov = moverDesdeEnDireccion(pos(1,0),"left").
 	}
 	
 	.print("Intentando mover desde la posicion (",X,",",Y,") en direccion ",D);
-	.wait(3000);
+	.wait(20);
 	.send(judge,tell,moverDesdeEnDireccion(pos(X,Y),D));
 	.send(judge,untell,moverDesdeEnDireccion(pos(X,Y),D)).
 
