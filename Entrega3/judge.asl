@@ -1,7 +1,5 @@
 // Agent judge in project ESEI_SAGA.mas2j
 
-//Autores: Roi Perez Lopez, Martin Puga Egea
-
 /* ----- Initial beliefs and rules ------ */
 
 jugadasRestantes(100).
