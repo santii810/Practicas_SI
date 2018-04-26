@@ -184,13 +184,6 @@ movPrueba(Mov) :- Mov = moverDesdeEnDireccion(pos(1,0),"left").
 
 
 /* Plans */
-+buscarMejorJugada2:size(N) <-
-	for(.range(X,0,N-1)){
-		for(.range(Y,0,N-1)){
-		
-		}
-	}.
-	
 +!agrupacion:grupo5(X,Y,C,A,B) <-
 	!calcularPuntos(X,Y,C).
 +!agrupacion:grupoT(X,Y,C,A,B) <-
@@ -209,9 +202,8 @@ movPrueba(Mov) :- Mov = moverDesdeEnDireccion(pos(1,0),"left").
 +!calcularPuntos(X,Y,C): grupo5(X+1,Y,C,X,Y) & not igualColor(X,Y-1,C,C) & not esObstaculo(X,Y-1).
 
 
-+buscarMejorJugada: size(N) & level(L) & L < 3 <-
-	-buscarMejorJugada;
-	
++buscarJugadas: size(N) & level(L) & L < 3 <-
+	-buscarJugadas;
 	+borrarBusqueda;
 	-borrarBusqueda;
 	for(.range(X,0,N-1)){
@@ -296,8 +288,8 @@ movPrueba(Mov) :- Mov = moverDesdeEnDireccion(pos(1,0),"left").
 
 //Realizacion de la jugada
 +!realizarMovimiento <-				
-	+buscarMejorJugada;
-	-buscarMejorJugada;
+	+buscarJugadas;
+	-buscarJugadas;
 	if(grupo5Especial(A1,B1,D1)){
 		.print("Quiero eliminar un grupo de 5 Especial");X=A1;Y=B1;D=D1;
 	}else{
