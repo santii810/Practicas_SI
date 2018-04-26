@@ -711,14 +711,20 @@ aleatoria(X,Y):-aleatoria(X,Y).
 
 
 //Actualizacion de los BB tras todas las acciones ocurridas sobre el tablero despues de que el jugador realice movimiento
-+!updatePlayersTableroBB <-
++!updatePlayersTableroBB: level(L)<-
 			.send(player1,tell,deleteTableroBB);
 			.send(player2,tell,deleteTableroBB);
 			.wait(500);
 			.send(player1,untell,deleteTableroBB);
 			.send(player2,untell,deleteTableroBB);
 			!mostrarTablero(player1);
-			!mostrarTablero(player2).
+			!mostrarTablero(player2);
+			if(L > 1) {
+			.send(player1,untell,level(_));
+			.send(player2,untell,level(_));
+			}
+			.send(player1,tell,level(L));
+			.send(player2,tell,level(L)).
 
 //Comunicacion del tablero al jugador indicado.
 +!mostrarTablero(P) <- .findall(tablero(X,Y),tablero(X,Y),Lista);
