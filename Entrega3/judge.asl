@@ -29,9 +29,12 @@ level(1).
 
 obstacles(10). //Numero de obstaculos a generar
 
-limitPoints(1,50). //Puntuacion a obtener para ganar un nivel
-limitPoints(2,50).
-limitPoints(3,50).
+celdasPlayer(player1,0).
+celdasPlayer(player2,0).
+
+limitPoints(1,1). //Puntuacion a obtener para ganar un nivel
+limitPoints(2,1).
+limitPoints(3,1).
 
 points(1,player1,0). //Puntuacion de cada jugador en cada nivel [ points(nivel,jugador,puntos) ]
 points(1,player2,0).
@@ -241,6 +244,11 @@ levelWinner(P1,P2,Winner) :- P1 > P2 & Winner = player1.
 levelWinner(P1,P2,Winner) :- P2 > P1 & Winner = player2.
 levelWinner(P1,P2,Winner) :- P1 = P2 & Winner = draw.
 
+levelWinner(P1,P2,C1,C2,Winner) :- C1 > C2 & Winner = player1. 
+levelWinner(P1,P2,C1,C2,Winner) :- C1 < C2 & Winner = player2.
+levelWinner(P1,P2,C1,C1,Winner) :- P1 > P2 & Winner = player1.
+levelWinner(P1,P2,C1,C1,Winner) :- P1 < P2 & Winner = player2.
+
 //Asignar propietarios iniciales nivel 3
 esObstaculo(X,Y):- tablero(celda(X,Y,_),obstacle) | 
 				   tablero(celda(X,Y,1),_) |
@@ -266,7 +274,7 @@ aleatoria(X,Y):-aleatoria(X,Y).
 		.print(" * Ganador Nivel 1 -> ",W1);
 		.print(" * Ganador Nivel 2 -> ",W2);
 		.print(" * Ganador Nivel 3 -> ",W3);
-		!checkFinalWinner(W1,W2);
+		!checkFinalWinner(W1,W2,W3);
 		?finalWinner(FinalWinner);
 		.print(" *  *  *  *  *  *  *  *  * *  *  *  *  *  *  *  *  * *  *  *  *  *  *  *  *  *");
 		.print(" * Ganador de la partida -> ",FinalWinner," !!");
@@ -275,6 +283,7 @@ aleatoria(X,Y):-aleatoria(X,Y).
 
 +!comienzoTurno:endGame(1) <- .print("Fallo comienzoasdfasñdflkasddfañlsdfkjaslkdfjkals").		
 //Comprobacion del ganador de la partida
+/*
 +!checkFinalWinner(W1,W2) : W1=draw & W2=draw <- -+finalWinner(player1). //Si hay empate en ambos niveles, ganara el jugador uno por ser el que abre la partida
 
 +!checkFinalWinner(W1,W2) : W1=draw <- -+finalWinner(W2). //Empate en el primer nivel, por lo tanto gana el jugador que ha ganado el segundo nivel
@@ -287,7 +296,27 @@ aleatoria(X,Y):-aleatoria(X,Y).
 
 +!checkFinalWinner(W1,W2) <- .print("ERROR en !finalWinner").
 
-
+*/
++!checkFinalWinner(W1,W2,W3) : W1=draw & W2=draw & W3=draw & 
+	points(1,player1,PointsPlayer1Lvl1) & points(2,player1,PointsPlayer1Lvl2) & points(2,player1,PointsPlayer1Lvl3) &
+	points(1,player2,PointsPlayer2Lvl1) & points(2,player2,PointsPlayer2Lvl2) & points(2,player2,PointsPlayer1Lvl3) &
+	((PointsPlayer1Lvl1+PointsPlayer1Lvl2+PointsPlayer1Lvl3) > (PointsPlayer2Lvl1+PointsPlayer2Lvl2+PointsPlayer2Lvl3)) <-
+	-+finalWinner(player1).
++!checkFinalWinner(W1,W2,W3) : W1=draw & W2=draw & W3=draw & 
+	points(1,player1,PointsPlayer1Lvl1) & points(2,player1,PointsPlayer1Lvl2) & points(2,player1,PointsPlayer1Lvl3) &
+	points(1,player2,PointsPlayer2Lvl1) & points(2,player2,PointsPlayer2Lvl2) & points(2,player2,PointsPlayer1Lvl3) &
+	((PointsPlayer1Lvl1+PointsPlayer1Lvl2+PointsPlayer1Lvl3) < (PointsPlayer2Lvl1+PointsPlayer2Lvl2+PointsPlayer2Lvl3)) <-
+	-+finalWinner(player2).
++!checkFinalWinner(W1,W2,W3) : W1=draw & W2=draw & W3=draw <-
+	-+finalWinner(player2).
+	
++!checkFinalWinner(W1,W2,W3) : W1=W2 | W1=W3 <-
+	-+finalWinner(W1).
++!checkFinalWinner(W1,W2,W3) : W2=W1 | W2=W3 <-
+	-+finalWinner(W2).
+/*+!checkFinalWinner(W1,W2,W3) : W3=W1 | W3=W2 <-
+	-+finalWinner(W3).*/
+	
 /* ----------------------------------------------------- COMIENZO INTOCABLE ----------------------------------------------------- */
 
 //Comienzo del turno de un jugador.
@@ -422,7 +451,7 @@ aleatoria(X,Y):-aleatoria(X,Y).
 
 
 //Finalizacion de un turno
-+turnoTerminado(Player) : level(L) & L=1 & (limitPoints(1,LimitPoints)  & points(L,Player,Points) & Points>=LimitPoints) | (jugadasRestantes(N) & N=0) |  (jugadasPlayer(Player,J) & J>=15) <- //Final del Nivel 1
++turnoTerminado(Player) : level(L) & L=1 & ((limitPoints(1,LimitPoints)  & points(L,Player,Points) & Points>=LimitPoints) | (jugadasRestantes(N) & N=0) |  (jugadasPlayer(Player,J) & J>=15)) <- //Final del Nivel 1
 					.print("Alcanzado el numero maximo de puntos en el Nivel 1");
 					!showPoints;
 					!checkLevelWinner;
@@ -445,7 +474,7 @@ aleatoria(X,Y):-aleatoria(X,Y).
 					!updatePlayersTableroBB.
 
 
-+turnoTerminado(Player) : level(L) & L=2 & (limitPoints(2,LimitPoints)  & points(L,Player,Points) & Points>=LimitPoints) | (jugadasRestantes(N) & N=0) |  (jugadasPlayer(Player,J) & J>=20) <- //Final del Nivel 2
++turnoTerminado(Player) : level(L) & L=2 & ((limitPoints(2,LimitPoints)  & points(L,Player,Points) & Points>=LimitPoints) | (jugadasRestantes(N) & N=0) |  (jugadasPlayer(Player,J) & J>=20)) <- //Final del Nivel 2
 					.print("Alcanzado el numero maximo de puntos en el Nivel 2");
 					!showPoints;
 					!checkLevelWinner;
@@ -470,8 +499,10 @@ aleatoria(X,Y):-aleatoria(X,Y).
 					!updatePlayersTableroBB.					
 
 					
-+turnoTerminado(Player) : level(L) & L=3 & (limitPoints(3,LimitPoints)  & points(L,Player,Points) & Points>=LimitPoints) | (jugadasRestantes(N) & N=0) |  (jugadasPlayer(Player,J) & J>=20) <- //Final del Nivel 2
-					.print("Alcanzado el numero maximo de puntos en el Nivel 3");
++turnoTerminado(Player) : level(L) & L=3 & ((celdasPlayer(Player,C) & Celdas>=90 | jugadasRestantes(N) & N=0) |  (jugadasPlayer(Player,J) & J>=2)) <- //Final del Nivel 2
+					.print("Alcanzado el numero maximo de territorio en el Nivel 3");
+					.print("Celdas de jugador ",Player," ",C);
+					.wait(1000);
 					!showPoints;
 					!checkLevelWinner;
 					?levelWinner(3,Winner);
@@ -490,9 +521,31 @@ aleatoria(X,Y):-aleatoria(X,Y).
 //Mostrar Puntuaciones
 +!showPoints : level(L) & points(L,player1,P1) & points(L,player2,P2) <-	.print("Puntuaciones:  Player 1 -> ",P1,"  //  Player 2 -> ",P2).
 
-
 //Comprobacion del ganador de nivel
-+!checkLevelWinner : level(L) & points(L,player1,P1) & points(L,player2,P2) &  levelWinner(P1,P2,Winner) <-
++!checkLevelWinner : level(L) & L=3 & celdasPlayer(player1,C1) & celdasPlayer(player2,C2) & points(L,player1,P1) & points(L,player2,P2) &  levelWinner(P1,P2,C1,C2,Winner) <-
+				-levelWinner(L,_);
+				+levelWinner(L,Winner).
+
++!celdasJugador(Player): level(L) & L=3 & Player = player1 <-
+	-celdasPlayer(player1,_);
+	+celdasPlayer(player1,0);
+	.findall(tablero(celda(_,_,1),_),tablero(celda(_,_,1),_),Lista);
+	for ( .member(Estructure,Lista) ) {
+		?celdasPlayer(player1,N);
+		-+celdasPlayer(player1,N+1);
+	}.
++!celdasJugador(Player): level(L) & L=3 & Player = player2 <-
+	-celdasPlayer(player2,_);
+	+celdasPlayer(player2,0);
+	.findall(tablero(celda(_,_,2),_),tablero(celda(_,_,2),_),Lista);
+	for ( .member(Estructure,Lista) ) {
+		?celdasPlayer(player2,N);
+		-+celdasPlayer(player2,N+1);
+	}.
++!celdasJugador(Player).
+	
+//Comprobacion del ganador de nivel
++!checkLevelWinner : level(L) & points(L,player1,P1) & points(L,player2,P2) & levelWinner(P1,P2,Winner) <-
 				-levelWinner(L,_);
 				+levelWinner(L,Winner).
 
@@ -565,8 +618,6 @@ aleatoria(X,Y):-aleatoria(X,Y).
 		-tablero(celda(X2,Y2,_),ficha(C2,T2));
 		+tablero(celda(X2,Y2,1),ficha(C2,T2));
 		putOwner(C2,X2,Y2,1);
-		
-		.print(X,"-",Y," ",X1,"-",Y1," ",X2,"-",Y2);
 		.
 		
 +!asignarCeldas(Player): Player = player2 <-
@@ -581,8 +632,7 @@ aleatoria(X,Y):-aleatoria(X,Y).
 		?aleatoria(X2,Y2);
 		-tablero(celda(X2,Y2,_),ficha(C2,T2));
 		+tablero(celda(X2,Y2,2),ficha(C2,T2));
-		putOwner(C2,X2,Y2,2)
-		.print(X,"-",Y," ",X1,"-",Y1," ",X2,"-",Y2);
+		putOwner(C2,X2,Y2,2);
 		.
 	
 //Analisis del movimiento solicitado por un jugador
@@ -596,7 +646,7 @@ aleatoria(X,Y):-aleatoria(X,Y).
 								exchange(C1,X1,Y1,C2,X2,Y2); //Intercambio de fichas en el tablero grafico
 								.print("Se han intercambiado las fichas entre las posiciones (",X1,",",Y1,") y (",X2,",",Y2,")");
 								//.wait(250); //Ajusta la velocidad del intercambio de fichas
-								-+conquista(1);
+								-+conquista(Own1);
 								-+recursivityFlag(1);
 								-+explosionFlag(1);
 								-+dualExplosionFlag(0);
@@ -604,7 +654,9 @@ aleatoria(X,Y):-aleatoria(X,Y).
 								!exchangedPatternMatch; //Deteccion y borrado de patrones en las dos posiciones intercambiadas								
 								!fullPatternMatch; //Deteccion y borrado de todos los patrones, aplicacion del algoritmo de caida y rellenado
 								//.wait(750);  //Ajusta la velocidad del intercambio de fichas
-								//-+conquista(0);
+								-+conquista(0);
+								!celdasJugador(player1);
+								!celdasJugador(player2);
 								!updatePlayersTableroBB. //Actualizacion de la base del conocimiento de los players tras los eventos sucedidos en tablero durante un turno
 
 +!exchangedPatternMatch : posicionesIntercambiadas(X1,Y1,X2,Y2) <- 
