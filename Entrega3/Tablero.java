@@ -34,6 +34,7 @@ public class Tablero extends Environment {
   public static final int ORANGESTEAK  = 256;
   public static final int MAGENTASTEAK  = 512;
   public static final int OBSTACLE  = 1024;
+  public static final int BLANCO = 2048;
 
 
   private Logger logger = Logger.getLogger("Tablero.mas2j."+Tablero.class.getName());
@@ -42,7 +43,8 @@ public class Tablero extends Environment {
   private TableroView  view;
 
   String [][] steakType = new String[GSize][GSize];
-
+  int [][] propietario = new int [GSize][GSize];
+  
   @Override
   public void init(String[] args) {
     addPercept("judge",Literal.parseLiteral("size(" + GSize + ")"));
@@ -98,6 +100,15 @@ public class Tablero extends Environment {
           y = (int)((NumberTerm)message.getTerm(1)).solve();
           model.putObstacle(x,y);
           break;
+		  case("putOwner"): //Establecer nueva ficha
+          c = (int)((NumberTerm)message.getTerm(0)).solve();
+          x = (int)((NumberTerm)message.getTerm(1)).solve();
+          y = (int)((NumberTerm)message.getTerm(2)).solve();
+		  //t = message.getTerm(3).toString();
+		  int p = (int)((NumberTerm)message.getTerm(3)).solve();
+          model.putOwner(c,x,y,p);
+          //view.repaint();
+          break;
         }
       } else { //Recepcion de un mensaje de otro agente que no sea el juez
         logger.info("Se ha recibido una peticion ilegal. "+ agent +" no puede realizar la accion: "+ message);
@@ -126,7 +137,7 @@ public class Tablero extends Environment {
         int color = 16;
         for(int i = 0; i < GSize; i++){
           for(int j = 0; j < GSize; j++){
-            steakType[i][j]="in";
+			steakType[i][j]="in";
             set(color,i,j);
             int judgeColor = getJudgeColor(color);
             addPercept("judge",Literal.parseLiteral("addTablero(celda(" + i + "," + j + ",0),ficha(" + judgeColor + ",in))")); //Envio de la informacion correspondiente a la generacion de una posicion del tablero
@@ -151,14 +162,21 @@ public class Tablero extends Environment {
       void delete(int color,int x, int y) throws Exception { //Borrado de ficha
         steakType[x][y]="";
         int codColor = getEnvironmentColor(color);
-        remove(codColor,x,y);
+        set(BLANCO,x,y);
+		//remove(codColor,x,y);
       }
 
       void put(int c, int x, int y,String t) throws Exception { //Establecer ficha
-        steakType[x][y]=t;
-				set(getEnvironmentColor(c),x,y);
+		  steakType[x][y]=t;
+		  set(getEnvironmentColor(c),x,y);
       }
-
+	  
+	  void putOwner(int color,int x, int y,int p) throws Exception { //Establecer ficha
+		  propietario[x][y]=p;
+		  int codColor = getEnvironmentColor(color);
+		  set(codColor,x,y);
+      }
+	  
       void putObstacle(int x, int y){ //establecer obstaculo
         steakType[x][y]="obstacle";
         set(OBSTACLE,x,y);
@@ -204,7 +222,7 @@ public class Tablero extends Environment {
       //Métodos de generacion visual de fichas y obstaculos
       @Override
       public void draw(Graphics g, int x, int y, int object) {
- 
+		drawProp(g,x,y);
 		if(steakType[x][y].equals("in")){
           drawSteak(g, x, y, object);
         }
@@ -212,10 +230,22 @@ public class Tablero extends Environment {
           drawSpecialSteak(g, x, y,object);
         }
       }
-
+	  
+	  public void drawProp(Graphics g, int x, int y){
+		  if(propietario[x][y] == 1){
+			  Color p1=new Color(30, 175, 175);
+			  g.setColor(p1);
+			  g.fillRoundRect(x*cellSizeW,y*cellSizeH,cellSizeW,cellSizeH,10,10);
+		  }else if(propietario[x][y] == 2){
+			  Color p2=new Color(233, 134, 113);
+			  g.setColor(p2);
+			  g.fillRoundRect(x*cellSizeW,y*cellSizeH,cellSizeW,cellSizeH,10,10);
+		  }
+	  }
+	  
       public void drawSteak(Graphics g, int x, int y, int object) {
 		 switch (object) {
-          case Tablero.BLUESTEAK: //Circulo
+		  case Tablero.BLUESTEAK: //Circulo
           g.setColor(Color.blue);
           g.fillOval(x * cellSizeW + 10, y * cellSizeH + 10, cellSizeW - 20, cellSizeH - 20);
 		  break;
@@ -247,6 +277,17 @@ public class Tablero extends Environment {
           int[] diamondYPoints={y*cellSizeH+5,y*cellSizeH+cellSizeH/2,y*cellSizeH+cellSizeH-5,y*cellSizeH+cellSizeH/2};
           g.fillPolygon(diamondXPoints,diamondYPoints,4);
           break;
+		  case Tablero.BLANCO:
+			  if(propietario[x][y] == 1){
+				  Color p1=new Color(30, 175, 175);
+				  g.setColor(p1);
+				  g.fillRoundRect(x*cellSizeW,y*cellSizeH,cellSizeW,cellSizeH,10,10);
+			  }else if(propietario[x][y] == 2){
+				  Color p2=new Color(233, 134, 113);
+				  g.setColor(p2);
+				  g.fillRoundRect(x*cellSizeW,y*cellSizeH,cellSizeW,cellSizeH,10,10);
+			  }
+		  break;
           case Tablero.OBSTACLE: break;
         }
       }
