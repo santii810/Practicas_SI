@@ -209,7 +209,7 @@ movPrueba(Mov) :- Mov = moverDesdeEnDireccion(pos(1,0),"left").
 +!calcularPuntos(X,Y,C): grupo5(X+1,Y,C,X,Y) & not igualColor(X,Y-1,C,C) & not esObstaculo(X,Y-1).
 
 
-+buscarMejorJugada:size(N) <-
++buscarMejorJugada: size(N) & level(L) & L < 3 <-
 	-buscarMejorJugada;
 	
 	+borrarBusqueda;
@@ -295,9 +295,7 @@ movPrueba(Mov) :- Mov = moverDesdeEnDireccion(pos(1,0),"left").
 
 
 //Realizacion de la jugada
-+!realizarMovimiento <-
-	//?randomMov(moverDesdeEnDireccion(pos(P1,P2),Dir));					
-//	?movPrueba(moverDesdeEnDireccion(pos(P1,P2),Dir));
++!realizarMovimiento <-				
 	+buscarMejorJugada;
 	-buscarMejorJugada;
 	if(grupo5Especial(A1,B1,D1)){
