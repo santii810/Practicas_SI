@@ -32,9 +32,9 @@ obstacles(10). //Numero de obstaculos a generar
 celdasPlayer(player1,0).
 celdasPlayer(player2,0).
 
-limitPoints(1,1). //Puntuacion a obtener para ganar un nivel
-limitPoints(2,1).
-limitPoints(3,1).
+limitPoints(1,100). //Puntuacion a obtener para ganar un nivel
+limitPoints(2,100).
+limitPoints(3,100).
 
 points(1,player1,0). //Puntuacion de cada jugador en cada nivel [ points(nivel,jugador,puntos) ]
 points(1,player2,0).
@@ -499,7 +499,7 @@ aleatoria(X,Y):-aleatoria(X,Y).
 					!updatePlayersTableroBB.					
 
 					
-+turnoTerminado(Player) : level(L) & L=3 & ((celdasPlayer(Player,C) & Celdas>=90 | jugadasRestantes(N) & N=0) |  (jugadasPlayer(Player,J) & J>=2)) <- //Final del Nivel 2
++turnoTerminado(Player) : level(L) & L=3 & ((celdasPlayer(Player,C) & C>=90) | (jugadasRestantes(N) & N=0) |  (jugadasPlayer(Player,J) & J>=20)) <- //Final del Nivel 2
 					.print("Alcanzado el numero maximo de territorio en el Nivel 3");
 					.print("Celdas de jugador ",Player," ",C);
 					.wait(1000);
@@ -763,7 +763,7 @@ aleatoria(X,Y):-aleatoria(X,Y).
 
 
 //Actualizacion de los BB tras todas las acciones ocurridas sobre el tablero despues de que el jugador realice movimiento
-+!updatePlayersTableroBB: level(L)<-
+/*+!updatePlayersTableroBB: level(L)<-
 			.send(player1,tell,deleteTableroBB);
 			.send(player2,tell,deleteTableroBB);
 			.wait(500);
@@ -776,7 +776,16 @@ aleatoria(X,Y):-aleatoria(X,Y).
 			.send(player2,untell,level(_));
 			}
 			.send(player1,tell,level(L));
-			.send(player2,tell,level(L)).
+			.send(player2,tell,level(L)). */
+			
++!updatePlayersTableroBB <-
+			.send(player1,tell,deleteTableroBB);
+			.send(player2,tell,deleteTableroBB);
+			.wait(500);
+			.send(player1,untell,deleteTableroBB);
+			.send(player2,untell,deleteTableroBB);
+			!mostrarTablero(player1);
+			!mostrarTablero(player2).
 
 //Comunicacion del tablero al jugador indicado.
 +!mostrarTablero(P) <- .findall(tablero(X,Y),tablero(X,Y),Lista);
