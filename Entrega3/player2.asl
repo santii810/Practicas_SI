@@ -23,8 +23,8 @@ movPrueba(Mov) :- Mov = moverDesdeEnDireccion(pos(1,1),"left").
 
 
 //Comienzo del turno
-+puedesMover[source(judge)] <- !realizarMovimiento.
-
++puedesMover[source(judge)] <- 
+	!realizarMovimiento.
 
 //Realizacion de la jugada
 +!realizarMovimiento <-

@@ -1,4 +1,10 @@
 /* Initial beliefs and rules */
+//Nivel 3
+propietario(1).
+rival(0).
+celdasPotenciales(0).
+maxCeldas(0).
+////////////////////
 igual(X,Y,X,Y).	
 igualColor(X,Y,C,C):-datos(X,Y,C).
 datos(X,Y,Color,Tipo,Prop):- tablero(celda(X,Y,Prop),ficha(Color,Tipo)).
@@ -80,6 +86,8 @@ direccion(1,"down").
 direccion(2,"right").
 direccion(3,"left").
 
+movPrueba(Mov) :- Mov = moverDesdeEnDireccion(pos(1,0),"left").
+
 
 randomMov(Mov):-
 	size(Size) &
@@ -93,6 +101,487 @@ movPrueba(Mov) :- Mov = moverDesdeEnDireccion(pos(1,0),"left").
 
 
 /* Plans */
+
+//Estrategia level 3
++!mejorJugada:size(N) & level(L) & L=3 & propietario(Prop)<-
+	-+jugada(none,none,none);
+	-+puntosMejorPatron(0); 
+	-+maxCeldasNeutras(0);
+	-+maxCeldasRival(0);
+
+	!mirarCeldasRival;
+	!mirarCeldasNeutras;
+	!mirarPorPuntos;
+	.
+
+//Planes para cada uno de los casos de la estrategia
++!mirarCeldasRival:propietario(Own) <-
+	.findall(tablero(celda(X,Y,Prop),ficha(C,T)),tablero(celda(X,Y,Prop),ficha(C,T)),Lista);
+	for ( .member(tablero(celda(X1,Y1,O1),ficha(C1,T1)),Lista) ) {
+		!ganarCeldasRival(X1,Y1);
+	}.
++!mirarCeldasRival.
+
+//Para ganar celdas comunes (miramos el patron que tenga mas celdas)
++!mirarCeldasNeutras:propietario(Own) & jugada(none,none,none) <- //Aqui llegara si no se registra una jugada de conquistar celdas rivales
+	.findall(tablero(celda(X,Y,Own),ficha(C,T)),tablero(celda(X,Y,Own),ficha(C,T)),Lista);
+	.print("hola");
+	for ( .member(tablero(celda(X1,Y1,O1),ficha(C1,T1)),Lista) ) {
+		!ganarCeldasNeutras(X1,Y1);
+	}.
++!mirarCeldasNeutras.
+
+//Miramos una jugada por puntos moviendo una celda neutral
++!mirarPorPuntos:jugada(none,none,none) <- //Aqui llegara si no se registra una jugada de conquistar celdas neutrales
+	.findall(tablero(celda(X,Y,Own),ficha(C,T)),tablero(celda(X,Y,Own),ficha(C,T)),Lista);
+	for ( .member(tablero(celda(X1,Y1,O1),ficha(C1,T1)),Lista) ) {
+		!comprobarDir(X1,Y1);
+	}.
++!mirarPorPuntos.
+
+//////////////////////////////////////////////////Ganar celdas al rival///////////////////////////////////////////////////////////////////////////////////
+
++!ganarCeldasRival(X,Y): tablero(celda(X,Y,O),ficha(C,T)) <-
+	!left(X,Y,"left",ganarRival);
+	!up(X,Y,"up",ganarRival);
+	!right(X,Y,"right",ganarRival);
+	!down(X,Y,"down",ganarRival).
++!ganarCeldasRival(X,Y).
+
++!right(X,Y,D,Option):Option=ganarRival & tablero(celda(X,Y,O1),ficha(C1,T1)) & tablero(celda(X+1,Y,O2),ficha(C2,T2)) <-	
+	!intercambio(X,Y,X+1,Y);
+	!agrupacionCeldas(X+1,Y,C1,X,Y,D);
+	!intercambio(X,Y,X+1,Y);
+	.
++!right(X,Y,D,Option):Option=ganarRival.
+
++!left(X,Y,D,Option):Option=ganarRival& tablero(celda(X,Y,O1),ficha(C1,T1)) & tablero(celda(X-1,Y,O2),ficha(C2,T2)) <-	
+	!intercambio(X,Y,X-1,Y);
+	!agrupacionCeldas(X-1,Y,C1,X,Y,D);
+	!intercambio(X,Y,X-1,Y);
+	.
++!left(X,Y,D,Option):Option=ganarRival.
+
++!down(X,Y,D,Option):Option=ganarRival & tablero(celda(X,Y,O1),ficha(C1,T1)) & tablero(celda(X,Y+1,O2),ficha(C2,T2)) <-	
+	!intercambio(X,Y,X,Y+1);
+	!agrupacionCeldas(X,Y+1,C1,X,Y,D);
+	!intercambio(X,Y,X,Y+1);
+	.
++!down(X,Y,D,Option):Option=ganarRival.
+
++!up(X,Y,D,Option):Option=ganarRival & tablero(celda(X,Y,O1),ficha(C1,T1)) & tablero(celda(X,Y-1,O2),ficha(C2,T2)) <-	
+	!intercambio(X,Y,X,Y-1);
+	!agrupacionCeldas(X,Y-1,C1,X,Y,D);
+	!intercambio(X,Y-1,X,Y);
+	.
++!up(X,Y,D,Option):Option=ganarRival.
+
+//Comprobamos en todos los patrones el numero de celdas rivales para ganarle territorio	
++!agrupacionCeldas(X,Y,C,A,B,D) <-
+	-+celdasRival(0);
+	!grupo3FilA(X,Y,C,A,B,D);
+	-+celdasRival(0);
+	!grupo3FilB(X,Y,C,A,B,D);
+	-+celdasRival(0);
+	!grupo3FilC(X,Y,C,A,B,D);
+	-+celdasRival(0);
+	!grupo3ColA(X,Y,C,A,B,D);
+	-+celdasRival(0);
+	!grupo3ColB(X,Y,C,A,B,D);
+	-+celdasRival(0);
+	!grupo3ColC(X,Y,C,A,B,D);
+
+	-+celdasRival(0);
+	!grupo5TN(X,Y,C,A,B,D);
+	-+celdasRival(0);
+	!grupo5TI(X,Y,C,A,B,D);
+	-+celdasRival(0);
+	!grupo5TR(X,Y,C,A,B,D);
+	-+celdasRival(0);
+	!grupo5TL(X,Y,C,A,B,D);
+
+	-+celdasRival(0);
+	!grupo5Fil(X,Y,C,A,B,D);
+	-+celdasRival(0);
+	!grupo5Col(X,Y,C,A,B,D);
+
+	-+celdasRival(0);
+	!grupo4FilA(X,Y,C,A,B,D);
+	-+celdasRival(0);
+	!grupo4FilB(X,Y,C,A,B,D);
+	-+celdasRival(0);
+	!grupo4ColA(X,Y,C,A,B,D);
+	-+celdasRival(0);
+	!grupo4ColB(X,Y,C,A,B,D);
+
+	-+celdasRival(0);
+	!grupo4SquareA(X,Y,C,A,B,D);
+	-+celdasRival(0);
+	!grupo4SquareB(X,Y,C,A,B,D);
+	-+celdasRival(0);
+	!grupo4SquareC(X,Y,C,A,B,D);
+	-+celdasRival(0);
+	!grupo4SquareD(X,Y,C,A,B,D);
+	.
++!agrupacionCeldas(X,Y,C,A,B,D).
+
+//Agrupacion de T
++!grupo5TN(X,Y,C,A,B,D):grupo5TN(X,Y,C) <- 
+	!calcularCeldas(X-1,Y);
+	!calcularCeldas(X+1,Y);
+	!calcularCeldas(X,Y+1);
+	!calcularCeldas(X,Y+2);
+	!mejorPatronRival(A,B,D).
++!grupo5TN(X,Y,C,A,B,D).
+
++!grupo5TI(X,Y,C,A,B,D):grupo5TI(X,Y,C) <-
+	!calcularCeldas(X-1,Y);
+	!calcularCeldas(X+1,Y);
+	!calcularCeldas(X,Y-1);
+	!calcularCeldas(X,Y-2);
+	!mejorPatronRival(A,B,D).
++!grupo5TI(X,Y,C,A,B,D).
+
++!grupo5TR(X,Y,C,A,B,D):grupo5TR(X,Y,C) <-
+	!calcularCeldas(X-1,Y);
+	!calcularCeldas(X-2,Y);
+	!calcularCeldas(X,Y+1);
+	!calcularCeldas(X,Y-1);
+	!mejorPatronRival(A,B,D).
++!grupo5TR(X,Y,C,A,B,D).
+
++!grupo5TL(X,Y,C,A,B,D):grupo5TL(X,Y,C) <-
+	!calcularCeldas(X+1,Y);
+	!calcularCeldas(X+2,Y);
+	!calcularCeldas(X,Y+1);
+	!calcularCeldas(X,Y-1);
+	!mejorPatronRival(A,B,D).
++!grupo5TL(X,Y,C,A,B,D).
+
+//Agrupacion de 5
++!grupo5Fil(X,Y,C,A,B,D):grupo5Fil(X,Y,C) <-
+	!calcularCeldas(X+1,Y);
+	!calcularCeldas(X+2,Y);
+	!calcularCeldas(X-1,Y);
+	!calcularCeldas(X-2,Y);
+	!mejorPatronRival(A,B,D).
++!grupo5Fil(X,Y,C,A,B,D).
+
++!grupo5Col(X,Y,C,A,B,D):grupo5Col(X,Y,C) <-
+	!calcularCeldas(X,Y+1);
+	!calcularCeldas(X,Y+2);
+	!calcularCeldas(X,Y-1);
+	!calcularCeldas(X,Y-2);
+	!mejorPatronRival(A,B,D).
++!grupo5Col(X,Y,C,A,B,D).
+
+//Agrupacion de 4
++!grupo4FilA(X,Y,C,A,B,D):grupo4FilA(X,Y,C) <-
+	!calcularCeldas(X-1,Y);
+	!calcularCeldas(X+1,Y);
+	!calcularCeldas(X+2,Y);
+	!mejorPatronRival(A,B,D).
++!grupo4FilA(X,Y,C,A,B,D).
+
++!grupo4FilB(X,Y,C,A,B,D):grupo4FilB(X,Y,C) <-
+	!calcularCeldas(X-1,Y);
+	!calcularCeldas(X-2,Y);
+	!calcularCeldas(X+1,Y);
+	!mejorPatronRival(A,B,D).
++!grupo4FilB(X,Y,C,A,B,D).
+
++!grupo4ColA(X,Y,C,A,B,D):grupo4ColA(X,Y,C) <-
+	!calcularCeldas(X,Y-1);
+	!calcularCeldas(X,Y+1);
+	!calcularCeldas(X,Y+2);
+	!mejorPatronRival(A,B,D).
++!grupo4ColA(X,Y,C,A,B,D).
+
++!grupo4ColB(X,Y,C,A,B,D):grupo4ColB(X,Y,C) <-
+	!calcularCeldas(X,Y-1);
+	!calcularCeldas(X,Y-2);
+	!calcularCeldas(X,Y+1);
+	!mejorPatronRival(A,B,D).
++!grupo4ColB(X,Y,C,A,B,D).
+
+//Agrupacion cuadrado
++!grupo4SquareA(X,Y,C,A,B,D):grupo4SquareA(X,Y,C) <-
+	!calcularCeldas(X+1,Y);
+	!calcularCeldas(X,Y+1);
+	!calcularCeldas(X+1,Y+1);
+	!mejorPatronRival(A,B,D).
++!grupo4SquareA(X,Y,C,A,B,D).
+
++!grupo4SquareB(X,Y,C,A,B,D):grupo4SquareB(X,Y,C) <-
+	!calcularCeldas(X-1,Y);
+	!calcularCeldas(X,Y+1);
+	!calcularCeldas(X-1,Y+1);
+	!mejorPatronRival(A,B,D).
++!grupo4SquareB(X,Y,C,A,B,D).
+
++!grupo4SquareC(X,Y,C,A,B,D):grupo4SquareC(X,Y,C) <-
+	!calcularCeldas(X+1,Y);
+	!calcularCeldas(X,Y-1);
+	!calcularCeldas(X+1,Y-1);
+	!mejorPatronRival(A,B,D).
++!grupo4SquareC(X,Y,C,A,B,D).
+
++!grupo4SquareD(X,Y,C,A,B,D):grupo4SquareD(X,Y,C) <-
+	!calcularCeldas(X-1,Y);
+	!calcularCeldas(X,Y-1);
+	!calcularCeldas(X-1,Y-1);
+	!mejorPatronRival(A,B,D).
++!grupo4SquareD(X,Y,C,A,B,D).
+
+//Agrupacion de 3
++!grupo3FilA(X,Y,C,A,B,D):grupo3FilA(X,Y,C) <-
+	!calcularCeldas(X-1,Y);
+	!calcularCeldas(X+1,Y);
+	!mejorPatronRival(A,B,D).
++!grupo3FilA(X,Y,C,A,B,D).
+
++!grupo3FilB(X,Y,C,A,B,D):grupo3FilB(X,Y,C) <-
+	!calcularCeldas(X+1,Y);
+	!calcularCeldas(X+2,Y);
+	!mejorPatronRival(A,B,D).
++!grupo3FilB(X,Y,C,A,B,D).
+
++!grupo3FilC(X,Y,C,A,B,D):grupo3FilC(X,Y,C) <-
+	!calcularCeldas(X-1,Y);
+	!calcularCeldas(X-2,Y);
+	!mejorPatronRival(A,B,D).
++!grupo3FilC(X,Y,C,A,B,D).
+
++!grupo3ColA(X,Y,C,A,B,D):grupo3ColA(X,Y,C) <-
+	!calcularCeldas(X,Y-1);
+	!calcularCeldas(X,Y+1);
+	!mejorPatronRival(A,B,D).
++!grupo3ColA(X,Y,C,A,B,D).
+
++!grupo3ColB(X,Y,C,A,B,D):grupo3ColB(X,Y,C) <-
+	!calcularCeldas(X,Y+1);
+	!calcularCeldas(X,Y+2);
+	!mejorPatronRival(A,B,D).
++!grupo3ColB(X,Y,C,A,B,D).
+
++!grupo3ColC(X,Y,C,A,B,D):grupo3ColC(X,Y,C) <-
+	!calcularCeldas(X,Y-1);
+	!calcularCeldas(X,Y-2);
+	!mejorPatronRival(A,B,D).
++!grupo3ColC(X,Y,C,A,B,D).
+
++!calcularCeldas(X,Y): tablero(celda(X,Y,Own),ficha(C,T)) & celdasRival(Celdas) & rival(Own) <-
+	-+celdasRival(Celdas+1).
++!calcularCeldas(X,Y).
+
++!mejorPatronRival(X,Y,D) : celdasRival(P1) & maxCeldasRival(P2) & P1 > P2 <-
+	-+maxCeldasRival(P1);
+	-+jugada(X,Y,D);
+	-+celdasRival(0);
+	.
++!mejorPatronRival(X,Y,D) : celdasRival(P1) & maxCeldasRival(P2) & P1 <= P2.
+	
++!mejorPatronRival(X,Y,D).
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////Ganar celdas neutras///////////////////////////////////////////////////////////////////////////////
+//Caso que ganemos territorio neutro
++!ganarCeldasNeutras(X,Y): tablero(celda(X,Y,O),ficha(C,T)) <-
+	-+celdasNeutras(0);
+	!left(X,Y,"left",ganarNeutral);
+	-+celdasNeutras(0);
+	!up(X,Y,"up",ganarNeutral);
+	-+celdasNeutras(0);
+	!right(X,Y,"right",ganarNeutral);
+	-+celdasNeutras(0);
+	!down(X,Y,"down",ganarNeutral).
++!ganarCeldasNeutras(X,Y).
+
++!right(X,Y,D,Option):Option=ganarNeutral & tablero(celda(X,Y,O1),ficha(C1,T1)) & tablero(celda(X+1,Y,O2),ficha(C2,T2)) <-	
+	!intercambio(X,Y,X+1,Y);
+	!mayorNeutral(X+1,Y,C1,X,Y,D);
+	!intercambio(X,Y,X+1,Y);
+	.
++!right(X,Y,D,Option):Option=ganarNeutral.
+
++!left(X,Y,D,Option):Option=ganarNeutral & tablero(celda(X,Y,O1),ficha(C1,T1)) & tablero(celda(X-1,Y,O2),ficha(C2,T2)) <-	
+	!intercambio(X,Y,X-1,Y);
+	!mayorNeutral(X-1,Y,C1,X,Y,D);
+	!intercambio(X,Y,X-1,Y);
+	.
++!left(X,Y,D,Option):Option=ganarNeutral.
+
++!down(X,Y,D,Option):Option=ganarNeutral & tablero(celda(X,Y,O1),ficha(C1,T1)) & tablero(celda(X,Y+1,O2),ficha(C2,T2)) <-	
+	!intercambio(X,Y,X,Y+1);
+	!mayorNeutral(X,Y+1,C1,X,Y,D);
+	!intercambio(X,Y,X,Y+1);
+	.
++!down(X,Y,D,Option):Option=ganarNeutral.
+
++!up(X,Y,D,Option):Option=ganarNeutral & tablero(celda(X,Y,O1),ficha(C1,T1)) & tablero(celda(X,Y-1,O2),ficha(C2,T2)) <-	
+	!intercambio(X,Y,X,Y-1);
+	!mayorNeutral(X,Y-1,C1,X,Y,D);
+	!intercambio(X,Y-1,X,Y);
+	.
++!up(X,Y,D,Option):Option=ganarNeutral.
+
+//Agrupacion de T
++!mayorNeutral(X,Y,C,A,B,D):grupo5TN(X,Y,C) <- 
+	!calcularCeldasNeutras(X-1,Y);
+	!calcularCeldasNeutras(X+1,Y);
+	!calcularCeldasNeutras(X,Y+1);
+	!calcularCeldasNeutras(X,Y+2);
+	!mejorPatronNeutro(A,B,D).
+
++!mayorNeutral(X,Y,C,A,B,D):grupo5TI(X,Y,C) <-
+	!calcularCeldasNeutras(X-1,Y);
+	!calcularCeldasNeutras(X+1,Y);
+	!calcularCeldasNeutras(X,Y-1);
+	!calcularCeldasNeutras(X,Y-2);
+	!mejorPatronNeutro(A,B,D).
+
++!mayorNeutral(X,Y,C,A,B,D):grupo5TR(X,Y,C) <-
+	!calcularCeldasNeutras(X-1,Y);
+	!calcularCeldasNeutras(X-2,Y);
+	!calcularCeldasNeutras(X,Y+1);
+	!calcularCeldasNeutras(X,Y-1);
+	!mejorPatronNeutro(A,B,D).
+
++!mayorNeutral(X,Y,C,A,B,D):grupo5TL(X,Y,C) <-
+	!calcularCeldasNeutras(X+1,Y);
+	!calcularCeldasNeutras(X+2,Y);
+	!calcularCeldasNeutras(X,Y+1);
+	!calcularCeldasNeutras(X,Y-1);
+	!mejorPatronNeutro(A,B,D).
+
+//Agrupacion de 5
++!mayorNeutral(X,Y,C,A,B,D):grupo5Fil(X,Y,C) <-
+	!calcularCeldasNeutras(X+1,Y);
+	!calcularCeldasNeutras(X+2,Y);
+	!calcularCeldasNeutras(X-1,Y);
+	!calcularCeldasNeutras(X-2,Y);
+	!mejorPatronNeutro(A,B,D).
+
++!mayorNeutral(X,Y,C,A,B,D):grupo5Col(X,Y,C) <-
+	!calcularCeldasNeutras(X,Y+1);
+	!calcularCeldasNeutras(X,Y+2);
+	!calcularCeldasNeutras(X,Y-1);
+	!calcularCeldasNeutras(X,Y-2);
+	!mejorPatronNeutro(A,B,D).
+
+//Agrupacion de 4
++!mayorNeutral(X,Y,C,A,B,D):grupo4FilA(X,Y,C) <-
+	!calcularCeldasNeutras(X-1,Y);
+	!calcularCeldasNeutras(X+1,Y);
+	!calcularCeldasNeutras(X+2,Y);
+	!mejorPatronNeutro(A,B,D).
+
++!mayorNeutral(X,Y,C,A,B,D):grupo4FilB(X,Y,C) <-
+	!calcularCeldasNeutras(X-1,Y);
+	!calcularCeldasNeutras(X-2,Y);
+	!calcularCeldasNeutras(X+1,Y);
+	!mejorPatronNeutro(A,B,D).
+
++!mayorNeutral(X,Y,C,A,B,D):grupo4ColA(X,Y,C) <-
+	!calcularCeldasNeutras(X,Y-1);
+	!calcularCeldasNeutras(X,Y+1);
+	!calcularCeldasNeutras(X,Y+2);
+	!mejorPatronNeutro(A,B,D).
+
++!mayorNeutral(X,Y,C,A,B,D):grupo4ColB(X,Y,C) <-
+	!calcularCeldasNeutras(X,Y-1);
+	!calcularCeldasNeutras(X,Y-2);
+	!calcularCeldasNeutras(X,Y+1);
+	!mejorPatronNeutro(A,B,D).
+
+//Agrupacion cuadrado
++!mayorNeutral(X,Y,C,A,B,D):grupo4SquareA(X,Y,C) <-
+	!calcularCeldasNeutras(X+1,Y);
+	!calcularCeldasNeutras(X,Y+1);
+	!calcularCeldasNeutras(X+1,Y+1);
+	!mejorPatronNeutro(A,B,D).
+
++!mayorNeutral(X,Y,C,A,B,D):grupo4SquareB(X,Y,C) <-
+	!calcularCeldasNeutras(X-1,Y);
+	!calcularCeldasNeutras(X,Y+1);
+	!calcularCeldasNeutras(X-1,Y+1);
+	!mejorPatronNeutro(A,B,D).
+
++!mayorNeutral(X,Y,C,A,B,D):grupo4SquareC(X,Y,C) <-
+	!calcularCeldasNeutras(X+1,Y);
+	!calcularCeldasNeutras(X,Y-1);
+	!calcularCeldasNeutras(X+1,Y-1);
+	!mejorPatronNeutro(A,B,D).
+
++!mayorNeutral(X,Y,C,A,B,D):grupo4SquareD(X,Y,C) <-
+	!calcularCeldasNeutras(X-1,Y);
+	!calcularCeldasNeutras(X,Y-1);
+	!calcularCeldasNeutras(X-1,Y-1);
+	!mejorPatronNeutro(A,B,D).
+
+
+//Agrupacion de 3
++!mayorNeutral(X,Y,C,A,B,D):grupo3FilA(X,Y,C) <-
+	!calcularCeldasNeutras(X-1,Y);
+	!calcularCeldasNeutras(X+1,Y);
+	!mejorPatronNeutro(A,B,D).
+
++!mayorNeutral(X,Y,C,A,B,D):grupo3FilB(X,Y,C) <-
+	!calcularCeldasNeutras(X+1,Y);
+	!calcularCeldasNeutras(X+2,Y);
+	!mejorPatronNeutro(A,B,D).
+
++!mayorNeutral(X,Y,C,A,B,D):grupo3FilC(X,Y,C) <-
+	!calcularCeldasNeutras(X-1,Y);
+	!calcularCeldasNeutras(X-2,Y);
+	!mejorPatronNeutro(A,B,D).
+
++!mayorNeutral(X,Y,C,A,B,D):grupo3ColA(X,Y,C) <-
+	!calcularCeldasNeutras(X,Y-1);
+	!calcularCeldasNeutras(X,Y+1);
+	!mejorPatronNeutro(A,B,D).
+
++!mayorNeutral(X,Y,C,A,B,D):grupo3ColB(X,Y,C) <-
+	!calcularCeldasNeutras(X,Y+1);
+	!calcularCeldasNeutras(X,Y+2);
+	!mejorPatronNeutro(A,B,D).
+
++!mayorNeutral(X,Y,C,A,B,D):grupo3ColC(X,Y,C) <-
+	!calcularCeldasNeutras(X,Y-1);
+	!calcularCeldasNeutras(X,Y-2);
+	!mejorPatronNeutro(A,B,D).
+	
++!mayorNeutral(X,Y,C,A,B,D).
+
+
++!calcularCeldasNeutras(X,Y): tablero(celda(X,Y,Own),ficha(C,T)) & celdasNeutras(Celdas) <-
+	-+maxCeldasNeutras(Celdas+1).
++!calcularCeldasNeutras(X,Y).
+
++!mejorPatronNeutro(X,Y,D) : celdasNeutras(P1) & maxCeldasNeutras(P2) & P1 > P2 <-
+	-+maxCeldasNeutras(P1);
+	-+jugada(X,Y,D);
+	-+celdasNeutras(0);
+	.
++!mejorPatronNeutro(X,Y,D) : celdasNeutras(P1) & maxCeldasNeutras(P2) & P1 <= P2.
+	
++!mejorPatronNeutro(X,Y,D).
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
+
+
+
+
+
+
+
+
+
+//Estrategia para level 1 y 2
 +!mejorJugada:size(N) <-
 	-+jugada(none,none,none);
 	-+puntosMejorPatron(0); 
@@ -152,7 +641,7 @@ movPrueba(Mov) :- Mov = moverDesdeEnDireccion(pos(1,0),"left").
 +!intercambio(X1,Y1,X2,Y2).
 
 //Agrupacion de T
-+!agrupacion(X,Y,C,A,B,D):grupo5TN(X,Y,C,A,B) <-
++!agrupacion(X,Y,C,A,B,D):grupo5TN(X,Y,C,A,B) <- 
 	!calcularPuntos(X,Y);
 	!calcularPuntos(X-1,Y);
 	!calcularPuntos(X+1,Y);
@@ -160,7 +649,7 @@ movPrueba(Mov) :- Mov = moverDesdeEnDireccion(pos(1,0),"left").
 	!calcularPuntos(X,Y+2);
 	!comprobarMejorPatron(A,B,D).
 
-+!agrupacion(X,Y,C,A,B,D):grupo5TI(X,Y,C,A,B) <-
++!agrupacion(X,Y,C,A,B,D):grupo5TI(X,Y,C) <-
 	!calcularPuntos(X,Y);
 	!calcularPuntos(X-1,Y);
 	!calcularPuntos(X+1,Y);
@@ -168,7 +657,7 @@ movPrueba(Mov) :- Mov = moverDesdeEnDireccion(pos(1,0),"left").
 	!calcularPuntos(X,Y-2);
 	!comprobarMejorPatron(A,B,D).
 
-+!agrupacion(X,Y,C,A,B,D):grupo5TR(X,Y,C,A,B) <-
++!agrupacion(X,Y,C,A,B,D):grupo5TR(X,Y,C) <-
 	!calcularPuntos(X,Y);
 	!calcularPuntos(X-1,Y);
 	!calcularPuntos(X-2,Y);
@@ -176,7 +665,7 @@ movPrueba(Mov) :- Mov = moverDesdeEnDireccion(pos(1,0),"left").
 	!calcularPuntos(X,Y-1);
 	!comprobarMejorPatron(A,B,D).
 
-+!agrupacion(X,Y,C,A,B,D):grupo5TL(X,Y,C,A,B) <-
++!agrupacion(X,Y,C,A,B,D):grupo5TL(X,Y,C) <-
 	!calcularPuntos(X,Y);
 	!calcularPuntos(X+1,Y);
 	!calcularPuntos(X+2,Y);
@@ -185,7 +674,7 @@ movPrueba(Mov) :- Mov = moverDesdeEnDireccion(pos(1,0),"left").
 	!comprobarMejorPatron(A,B,D).
 
 //Agrupacion de 5
-+!agrupacion(X,Y,C,A,B,D):grupo5Fil(X,Y,C,A,B) <-
++!agrupacion(X,Y,C,A,B,D):grupo5Fil(X,Y,C) <-
 	!calcularPuntos(X,Y);
 	!calcularPuntos(X+1,Y);
 	!calcularPuntos(X+2,Y);
@@ -193,7 +682,7 @@ movPrueba(Mov) :- Mov = moverDesdeEnDireccion(pos(1,0),"left").
 	!calcularPuntos(X-2,Y);
 	!comprobarMejorPatron(A,B,D).
 
-+!agrupacion(X,Y,C,A,B,D):grupo5Col(X,Y,C,A,B) <-
++!agrupacion(X,Y,C,A,B,D):grupo5Col(X,Y,C) <-
 	!calcularPuntos(X,Y);
 	!calcularPuntos(X,Y+1);
 	!calcularPuntos(X,Y+2);
@@ -202,28 +691,28 @@ movPrueba(Mov) :- Mov = moverDesdeEnDireccion(pos(1,0),"left").
 	!comprobarMejorPatron(A,B,D).
 
 //Agrupacion de 4
-+!agrupacion(X,Y,C,A,B,D):grupo4FilA(X,Y,C,A,B) <-
++!agrupacion(X,Y,C,A,B,D):grupo4FilA(X,Y,C) <-
 	!calcularPuntos(X,Y);
 	!calcularPuntos(X-1,Y);
 	!calcularPuntos(X+1,Y);
 	!calcularPuntos(X+2,Y);
 	!comprobarMejorPatron(A,B,D).
 
-+!agrupacion(X,Y,C,A,B,D):grupo4FilB(X,Y,C,A,B) <-
++!agrupacion(X,Y,C,A,B,D):grupo4FilB(X,Y,C) <-
 	!calcularPuntos(X,Y);
 	!calcularPuntos(X-1,Y);
 	!calcularPuntos(X-2,Y);
 	!calcularPuntos(X+1,Y);
 	!comprobarMejorPatron(A,B,D).
 
-+!agrupacion(X,Y,C,A,B,D):grupo4ColA(X,Y,C,A,B) <-
++!agrupacion(X,Y,C,A,B,D):grupo4ColA(X,Y,C) <-
 	!calcularPuntos(X,Y);
 	!calcularPuntos(X,Y-1);
 	!calcularPuntos(X,Y+1);
 	!calcularPuntos(X,Y+2);
 	!comprobarMejorPatron(A,B,D).
 
-+!agrupacion(X,Y,C,A,B,D):grupo4ColB(X,Y,C,A,B) <-
++!agrupacion(X,Y,C,A,B,D):grupo4ColB(X,Y,C) <-
 	!calcularPuntos(X,Y);
 	!calcularPuntos(X,Y-1);
 	!calcularPuntos(X,Y-2);
@@ -231,28 +720,28 @@ movPrueba(Mov) :- Mov = moverDesdeEnDireccion(pos(1,0),"left").
 	!comprobarMejorPatron(A,B,D).
 
 //Agrupacion cuadrado
-+!agrupacion(X,Y,C,A,B,D):grupo4SquareA(X,Y,C,A,B) <-
++!agrupacion(X,Y,C,A,B,D):grupo4SquareA(X,Y,C) <-
 	!calcularPuntos(X,Y);
 	!calcularPuntos(X+1,Y);
 	!calcularPuntos(X,Y+1);
 	!calcularPuntos(X+1,Y+1);
 	!comprobarMejorPatron(A,B,D).
 
-+!agrupacion(X,Y,C,A,B,D):grupo4SquareB(X,Y,C,A,B) <-
++!agrupacion(X,Y,C,A,B,D):grupo4SquareB(X,Y,C) <-
 	!calcularPuntos(X,Y);
 	!calcularPuntos(X-1,Y);
 	!calcularPuntos(X,Y+1);
 	!calcularPuntos(X-1,Y+1);
 	!comprobarMejorPatron(A,B,D).
 
-+!agrupacion(X,Y,C,A,B,D):grupo4SquareC(X,Y,C,A,B) <-
++!agrupacion(X,Y,C,A,B,D):grupo4SquareC(X,Y,C) <-
 	!calcularPuntos(X,Y);
 	!calcularPuntos(X+1,Y);
 	!calcularPuntos(X,Y-1);
 	!calcularPuntos(X+1,Y-1);
 	!comprobarMejorPatron(A,B,D).
 
-+!agrupacion(X,Y,C,A,B,D):grupo4SquareD(X,Y,C,A,B) <-
++!agrupacion(X,Y,C,A,B,D):grupo4SquareD(X,Y,C) <-
 	!calcularPuntos(X,Y);
 	!calcularPuntos(X-1,Y);
 	!calcularPuntos(X,Y-1);
