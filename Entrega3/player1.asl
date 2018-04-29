@@ -1,9 +1,13 @@
 /* Initial beliefs and rules */
 //Nivel 3
+////////Para usar el jugador 2 seria poner 2 en propietario////
 propietario(1).
-rival(0).
-celdasPotenciales(0).
-maxCeldas(0).
+/////////////////////////////////////////////////////
+celdasNeutras(0).
+celdasRival(0).
+puntosMejorPatron(0). 
+maxCeldasNeutras(0).
+maxCeldasRival(0).
 ////////////////////
 igual(X,Y,X,Y).	
 igualColor(X,Y,C,C):-datos(X,Y,C).
@@ -111,7 +115,9 @@ movPrueba(Mov) :- Mov = moverDesdeEnDireccion(pos(1,0),"left").
 
 	!mirarCeldasRival;
 	!mirarCeldasNeutras;
-	!mirarPorPuntos;
+	//Celdas del territorio jugador o celdas neutras
+	!mirarPorPuntos(Prop);
+	!mirarPorPuntos(0);
 	.
 
 //Planes para cada uno de los casos de la estrategia
@@ -125,19 +131,18 @@ movPrueba(Mov) :- Mov = moverDesdeEnDireccion(pos(1,0),"left").
 //Para ganar celdas comunes (miramos el patron que tenga mas celdas)
 +!mirarCeldasNeutras:propietario(Own) & jugada(none,none,none) <- //Aqui llegara si no se registra una jugada de conquistar celdas rivales
 	.findall(tablero(celda(X,Y,Own),ficha(C,T)),tablero(celda(X,Y,Own),ficha(C,T)),Lista);
-	.print("hola");
 	for ( .member(tablero(celda(X1,Y1,O1),ficha(C1,T1)),Lista) ) {
 		!ganarCeldasNeutras(X1,Y1);
 	}.
 +!mirarCeldasNeutras.
 
-//Miramos una jugada por puntos moviendo una celda neutral
-+!mirarPorPuntos:jugada(none,none,none) <- //Aqui llegara si no se registra una jugada de conquistar celdas neutrales
+//Miramos una jugada por puntos moviendo una celda neutral o una celda del jugador haciendo patrones en su terreno
++!mirarPorPuntos(Own):jugada(none,none,none) <- //Aqui llegara si no se registra una jugada de conquistar celdas neutrales
 	.findall(tablero(celda(X,Y,Own),ficha(C,T)),tablero(celda(X,Y,Own),ficha(C,T)),Lista);
 	for ( .member(tablero(celda(X1,Y1,O1),ficha(C1,T1)),Lista) ) {
 		!comprobarDir(X1,Y1);
 	}.
-+!mirarPorPuntos.
++!mirarPorPuntos(Own).
 
 //////////////////////////////////////////////////Ganar celdas al rival///////////////////////////////////////////////////////////////////////////////////
 

@@ -9,6 +9,10 @@ conquista(0).
 jugadasPlayer(player1,0).
 jugadasPlayer(player2,0).
 
+numCeldasPropietario(7).
+propietario(player1,1).
+propietario(player2,2).
+
 turnoActual(player1).
 
 turnoActivado(0).
@@ -605,36 +609,15 @@ aleatoria(X,Y):-aleatoria(X,Y).
 	!asignarCeldas(player1);
 	!asignarCeldas(player2).
 
-+!asignarCeldas(Player): Player = player1 <-
-		?aleatoria(X,Y);
-		-tablero(celda(X,Y,_),ficha(C,T));
-		+tablero(celda(X,Y,1),ficha(C,T));
-		putOwner(C,X,Y,1);
-		?aleatoria(X1,Y1);
-		-tablero(celda(X1,Y1,_),ficha(C1,T1));
-		+tablero(celda(X1,Y1,1),ficha(C1,T1));
-		putOwner(C1,X1,Y1,1);
-		?aleatoria(X2,Y2);
-		-tablero(celda(X2,Y2,_),ficha(C2,T2));
-		+tablero(celda(X2,Y2,1),ficha(C2,T2));
-		putOwner(C2,X2,Y2,1);
++!asignarCeldas(Player):size(N)& propietario(Player,Own) & numCeldasPropietario(Celdas) & Celdas < 45 <-		
+		for ( .range(I,0,Celdas) ) {
+			?aleatoria(X,Y);
+			-tablero(celda(X,Y,_),ficha(C,T));
+			+tablero(celda(X,Y,Own),ficha(C,T));
+			putOwner(C,X,Y,Own);
+		}
 		.
-		
-+!asignarCeldas(Player): Player = player2 <-
-		?aleatoria(X,Y);
-		-tablero(celda(X,Y,_),ficha(C,T));
-		+tablero(celda(X,Y,2),ficha(C,T));
-		putOwner(C,X,Y,2);
-		?aleatoria(X1,Y1);
-		-tablero(celda(X1,Y1,_),ficha(C1,T1));
-		+tablero(celda(X1,Y1,2),ficha(C1,T1));
-		putOwner(C1,X1,Y1,2);
-		?aleatoria(X2,Y2);
-		-tablero(celda(X2,Y2,_),ficha(C2,T2));
-		+tablero(celda(X2,Y2,2),ficha(C2,T2));
-		putOwner(C2,X2,Y2,2);
-		.
-	
++!asignarCeldas(Player).	
 //Analisis del movimiento solicitado por un jugador
 //Movimiento correcto
 +intercambiarFichas(X1,Y1,Dir,P) : nextPosition(X1,Y1,Dir,X2,Y2) & plNumb(P,PlNumb) <-
