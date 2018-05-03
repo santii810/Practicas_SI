@@ -1,942 +1,1046 @@
-/* Initial beliefs and rules */
-//Nivel 3
-////////Para usar el jugador 2 seria poner 2 en propietario////
-propietario(1).
-/////////////////////////////////////////////////////
-celdasNeutras(0).
-celdasRival(0).
-puntosMejorPatron(0). 
-maxCeldasNeutras(0).
-maxCeldasRival(0).
-////////////////////
-igual(X,Y,X,Y).	
-igualColor(X,Y,C,C):-datos(X,Y,C).
-datos(X,Y,Color,Tipo,Prop):- tablero(celda(X,Y,Prop),ficha(Color,Tipo)).
-datos(X,Y,Color):- tablero(celda(X,Y,_),ficha(Color,_)).
+// Agent judge in project ESEI_SAGA.mas2j
+
+//Autores: Roi Perez Lopez, Martin Puga Egea
+
+/* ----- Initial beliefs and rules ------ */
+
+jugadasRestantes(100).
+conquista(0).
+jugadasPlayer(player1,0).
+jugadasPlayer(player2,0).
+
+numCeldasPropietario(7).
+propietario(player1,1).
+propietario(player2,2).
+
+turnoActual(player1).
+
+turnoActivado(0).
+
+fueraTablero(0).
+
+fueraTurno(player1,0).
+fueraTurno(player2,0).
+
+jugadorDescalificado(player1,0).
+jugadorDescalificado(player2,0).
+
+recursivityFlag(1). //Flag utilizado como herramienta para implentar un mecanismo de recursividad en el algoritmo de explosion-gravedad-rellenado
+explosionFlag(1). // Cuando el jugador provoca directamente una explosion, el flag se activa. Si las explosiones se producen por caidas, permanece desactivado.
+dualExplosionFlag(0). //Flag que permite controlar situaciones de explosion de doble patron
+
+level(1).
+
+obstacles(10). //Numero de obstaculos a generar
+
+celdasPlayer(player1,0).
+celdasPlayer(player2,0).
+
+limitPoints(1,100). //Puntuacion a obtener para ganar un nivel
+limitPoints(2,100).
+limitPoints(3,100).
+
+points(1,player1,0). //Puntuacion de cada jugador en cada nivel [ points(nivel,jugador,puntos) ]
+points(1,player2,0).
+points(2,player1,0).
+points(2,player2,0).
+points(3,player1,0).
+points(3,player2,0).
+
+levelWinner(1,none). //Ganador del nivel
+levelWinner(2,none).
+levelWinner(3,none).
+
+finalWinner(none). //Ganador del juego
+
+endGame(0). //Flag que indica la finalizacion del juego al terminar todos los niveles
+
+//Correspondencia entre el patron que explosiona y la ficha especial que se genera
+specialSteak("4inLineH",ip).
+specialSteak("4inLineW",ip).
+specialSteak("5inLineH",ct).
+specialSteak("5inLineW",ct).
+specialSteak("Square",gs).
+specialSteak("T",co).
+
+//Puntos por generacion de ficha
+generationPoints(in,0).
+generationPoints(ip,2).
+generationPoints(gs,4).
+generationPoints(co,6).
+generationPoints(ct,8).
+
+//Comprobacion completa de las condiciones de un movimiento correcto: Seleccion, movimiento y color
+movimientoValido(pos(X,Y),Dir):- tablero(celda(X,Y,_),ficha(COrigen,_)) & validacion(X,Y,Dir,COrigen).
+validacion(X,Y,"up",COrigen) :- tablero(celda(X,Y-1,_),ficha(CDestino,_)) & not mismoColor(COrigen,CDestino).
+validacion(X,Y,"down",COrigen) :- tablero(celda(X,Y+1,_),ficha(CDestino,_)) & not mismoColor(COrigen,CDestino).
+validacion(X,Y,"left",COrigen) :- tablero(celda(X-1,Y,_),ficha(CDestino,_)) & not mismoColor(COrigen,CDestino).
+validacion(X,Y,"right",COrigen) :- tablero(celda(X+1,Y,_),ficha(CDestino,_)) & not mismoColor(COrigen,CDestino).
+mismoColor(COrigen,CDestino) :- COrigen=CDestino.
+
+//Comprobacion de Movimiento
+direccionCorrecta(pos(X,Y),Dir):- tablero(celda(X,Y,_),_) & movimiento(X,Y,Dir).
+movimiento(X,Y,"up") :- tablero(celda(X,Y-1,_),_).
+movimiento(X,Y,"down") :- tablero(celda(X,Y+1,_),_).
+movimiento(X,Y,"left") :- tablero(celda(X-1,Y,_),_).
+movimiento(X,Y,"right") :- tablero(celda(X+1,Y,_),_).
+
+//Comprobacion de Color
+colorFichasDistintos(pos(X,Y),Dir):- tablero(celda(X,Y,_),ficha(COrigen,_)) & validacion(X,Y,Dir,COrigen).
+
+//Duenho de la jugada
+plNumb(A,PlNumb):-
+	(A == player1 & PlNumb = 1) | (A == player2 & PlNumb = 2).
 
 
-fichaEspecial(X,Y):-datos(X,Y,_,Tipo,_) & (Tipo = ct | Tipo = co | Tipo = gs | Tipo = ip).
-//esObstaculo(X,Y):- tablero(celda(X,Y,_),obstacle) | tablero(celda(X,Y,_),e).
-esObstaculo(X,Y):- tablero(celda(X,Y,_),obstacle).
-
-jugada(none,none,none).
-valorFicha(in,1).
-valorFicha(ip,2).
-valorFicha(gs,4).
-valorFicha(co,6).
-valorFicha(ct,8).
-puntosPatron(0).
-puntosMejorPatron(0).
-
-hayPatron(X,Y,C,Nombre) :- (
-						 (grupo3FilA(X,Y,C) & Nombre = grupo3FilA) | (grupo3FilB(X,Y,C) & Nombre = grupo3FilB) | (grupo3FilC(X,Y,C) & Nombre = grupo3FilC) |
-						 (grupo3ColA(X,Y,C) & Nombre = grupo3ColA) | (grupo3ColB(X,Y,C) & Nombre = grupo3ColB) | (grupo3ColC(X,Y,C) & Nombre = grupo3ColC) |
-						 Nombre = none
-						 ).
+//Calculo de coordenadas para un movimiento
+nextPosition(P1,P2,Dir,NX,NY):-
+	(
+	(Dir == "up" & NX = P1 & NY= (P2 - 1)) |
+	(Dir == "down" & NX = P1 & NY = (P2 + 1)) |
+	(Dir == "right" & NX = (P1 + 1) & NY = P2) |
+	(Dir == "left" & NX = (P1 - 1) & NY = P2)
+	).
 
 
-//Agrupaciones de 3
-grupo3FilA(X,Y,C) :- // #_#
-	size(N) & X-1 >= 0 & X+1 < N & datos(X-1,Y,C) & datos(X,Y,C) & datos(X+1,Y,C).
-grupo3FilB(X,Y,C) :- // _##
-	size(N) & X+2 < N & datos(X,Y,C) & datos(X+1,Y,C) & datos(X+2,Y,C).
-grupo3FilC(X,Y,C) :- // ##_
-	size(N) & X-2 >= 0 & datos(X-2,Y,C) & datos(X-1,Y,C) & datos(X,Y,C).
-
-grupo3ColA(X,Y,C) :- // #_# (ficha desde medio)
-		size(N) & Y-1 >= 0 & Y+1 < N & datos(X,Y-1,C) & datos(X,Y,C) & datos(X,Y+1,C).
-grupo3ColB(X,Y,C) :- // #_# (ficha desde medio)
-		size(N) & Y+2 < N & datos(X,Y,C) & datos(X,Y+1,C) & datos(X,Y+2,C).
-grupo3ColC(X,Y,C) :- // #_# (ficha desde medio)
-		size(N) & Y-2 >= 0 & datos(X,Y-2,C) & datos(X,Y-1,C) & datos(X,Y,C).
+//Reconocimiento de patrones
+//Los Patrones que devuelven mas puntos son los primeros.
+comprobarPatrones(Color,X,Y,StartsAtX,StartAtY,Direction,Pattern) :-
+	((pattern5inLineW(Color,X,Y,StartsAtX,StartAtY) & Pattern = "5inLineW" & Direction="none") |
+	(pattern5inLineH(Color,X,Y,StartsAtX,StartAtY) & Pattern = "5inLineH" & Direction="none") |
+	(patternT(Color,X,Y,Direction) & Pattern = "T" & StartAtY = Y & StartsAtX = X) |
+	(patternSquare(Color,X,Y,StartsAtX,StartAtY) & Pattern = "Square" & Direction="none") |
+	(pattern4inLineW(Color,X,Y,StartsAtX,StartAtY) & Pattern = "4inLineW" & Direction="none") |
+	(pattern4inLineH(Color,X,Y,StartsAtX,StartAtY) & Pattern = "4inLineH" & Direction="none") |
+	(pattern3inLineW(Color,X,Y,StartsAtX,StartAtY) & Pattern = "3inLineW" & Direction="none") |
+	(pattern3inLineH(Color,X,Y,StartsAtX,StartAtY) & Pattern = "3inLineH" & Direction="none") |
+	(Pattern = "none" & StartsAtX = X & StartAtY = Y & Direction="none")).
 
 
-//Agrupaciones de 4
-grupo4FilA(X,Y,C) :- // #_##
-	size(N) & X-1 >= 0 & X+2 < N & datos(X-1,Y,C) & datos(X,Y,C) & datos(X+1,Y,C) & datos(X+2,Y,C).
-grupo4FilB(X,Y,C) :- // ##_#
-	size(N) & X-2 >= 0 & X+1 < N & datos(X-1,Y,C) & datos(X-2,Y,C) & datos(X,Y,C) & datos(X+1,Y,C).	
-grupo4ColA(X,Y,C) :- // #_## (Vertical)
-	size(N) & Y-1 >= 0 & Y+2 < N & datos(X,Y-1,C) & datos(X,Y,C) & datos(X,Y+1,C) & datos(X,Y+2,C).
-grupo4ColB(X,Y,C) :- // ##_# (Vertical)
-	size(N) & Y-2 >= 0 & Y+1 < N & datos(X,Y-1,C) & datos(X,Y-2,C) & datos(X,Y,C) & datos(X,Y+1,C).
-
-//Cuadrado	
-grupo4SquareA(X,Y,C) :- // hueco arriba-izquierda
-	size(N) & X+1 < N & Y+1 < N & datos(X,Y,C) & datos(X+1,Y,C) & datos(X,Y+1,C) & datos(X+1,Y+1,C).
-grupo4SquareB(X,Y,C) :- // hueco arriba-derecha
-	size(N) & X-1 >= 0 & Y+1 < N & datos(X,Y,C) & datos(X-1,Y,C) & datos(X,Y+1,C) & datos(X-1,Y+1,C).
-grupo4SquareC(X,Y,C) :- // hueco abajo-izquierda
-	size(N) & X+1 < N & Y-1 >= 0 & datos(X,Y,C) & datos(X+1,Y,C) & datos(X,Y-1,C) & datos(X+1,Y-1,C).
-grupo4SquareD(X,Y,C) :- // hueco abajo-derecha
-	size(N) & X-1 >= 0 & Y+1 < N & datos(X,Y,C) & datos(X-1,Y,C) & datos(X,Y-1,C) & datos(X-1,Y-1,C).	
-
-//AgrupaciÃ³n de 5
-//##_##
-grupo5Fil(X,Y,C) :- size(N) & X+2 < N & X-2 >= 0 & datos(X+1,Y,C) & datos(X+2,Y,C) & datos(X,Y,C) & datos(X-1,Y,C) & datos(X-2,Y,C).
-//(Medio vertical)##_##
-grupo5Col(X,Y,C) :- size(N) & Y+2 < N & Y-2 >= 0 & datos(X,Y+1,C) & datos(X,Y+2,C) & datos(X,Y,C) & datos(X,Y-1,C) & datos(X,Y-2,C).
-
-//AgrupaciÃ³n 5 en T
-grupo5TN(X,Y,C) :- size(N) & X-1 >=0 & X+1 < N & Y+2 < N & datos(X-1,Y,C) & datos(X,Y,C) & datos(X+1,Y,C) & datos(X,Y+1,C) & datos(X,Y+2,C).
-grupo5TI(X,Y,C) :- size(N) & X-1 >=0 & X+1 < N & Y-2 < N & datos(X-1,Y,C) & datos(X,Y,C) & datos(X+1,Y,C) & datos(X,Y-1,C) & datos(X,Y-2,C).
-grupo5TR(X,Y,C) :- size(N) & X-2 >=0 & Y+1 < N & Y-1 >=0 & datos(X-1,Y,C) & datos(X-2,Y,C) & datos(X,Y,C) & datos(X,Y+1,C) & datos(X,Y-1,C).
-grupo5TL(X,Y,C) :- size(N) & X+1 < N & Y+1 < N & Y-1 >=0 & datos(X+1,Y,C) & datos(X+2,Y,C) & datos(X,Y,C) & datos(X,Y+1,C) & datos(X,Y-1,C).
+pattern5inLineH(Color,X,Y,StartsAtX,StartAtY) :-
+	(tablero(celda(X,Y+1,_),ficha(Color,_)) &
+	tablero(celda(X,Y+2,_),ficha(Color,_)) &
+	tablero(celda(X,Y+3,_),ficha(Color,_)) &
+	tablero(celda(X,Y+4,_),ficha(Color,_)) & StartAtY = Y & StartsAtX = X) |
+	(tablero(celda(X,Y-4,_),ficha(Color,_)) &
+	tablero(celda(X,Y-3,_),ficha(Color,_)) &
+	tablero(celda(X,Y-2,_),ficha(Color,_)) &
+	tablero(celda(X,Y-1,_),ficha(Color,_)) & StartAtY = (Y-4) & StartsAtX = X) |
+	(tablero(celda(X,Y-3,_),ficha(Color,_)) &
+	tablero(celda(X,Y-2,_),ficha(Color,_)) &
+	tablero(celda(X,Y-1,_),ficha(Color,_)) &
+	tablero(celda(X,Y+1,_),ficha(Color,_)) & StartAtY = (Y-3) & StartsAtX = X) |
+	(tablero(celda(X,Y-2,_),ficha(Color,_)) &
+	tablero(celda(X,Y-1,_),ficha(Color,_)) &
+	tablero(celda(X,Y+1,_),ficha(Color,_)) &
+	tablero(celda(X,Y+2,_),ficha(Color,_)) & StartAtY = (Y-2) & StartsAtX = X) |
+	(tablero(celda(X,Y-1,_),ficha(Color,_)) &
+	tablero(celda(X,Y+1,_),ficha(Color,_)) &
+	tablero(celda(X,Y+2,_),ficha(Color,_)) &
+	tablero(celda(X,Y+3,_),ficha(Color,_)) & StartAtY = (Y-1) & StartsAtX = X).
 
 
+pattern5inLineW(Color,X,Y,StartsAtX,StartAtY) :-
+	(tablero(celda(X+1,Y,_),ficha(Color,_)) &
+	tablero(celda(X+2,Y,_),ficha(Color,_)) &
+	tablero(celda(X+3,Y,_),ficha(Color,_)) &
+	tablero(celda(X+4,Y,_),ficha(Color,_)) & StartAtY = Y & StartsAtX = X) |
+	(tablero(celda(X-4,Y,_),ficha(Color,_)) &
+	tablero(celda(X-3,Y,_),ficha(Color,_)) &
+	tablero(celda(X-2,Y,_),ficha(Color,_)) &
+	tablero(celda(X-1,Y,_),ficha(Color,_)) & StartAtY = Y & StartsAtX = (X-4)) |
+	(tablero(celda(X-3,Y,_),ficha(Color,_)) &
+	tablero(celda(X-2,Y,_),ficha(Color,_)) &
+	tablero(celda(X-1,Y,_),ficha(Color,_)) &
+	tablero(celda(X+1,Y,_),ficha(Color,_)) & StartAtY = Y & StartsAtX = (X-3)) |
+	(tablero(celda(X-2,Y,_),ficha(Color,_)) &
+	tablero(celda(X-1,Y,_),ficha(Color,_)) &
+	tablero(celda(X+1,Y,_),ficha(Color,_)) &
+	tablero(celda(X+2,Y,_),ficha(Color,_)) & StartAtY = Y & StartsAtX = (X-2)) |
+	(tablero(celda(X-1,Y,_),ficha(Color,_)) &
+	tablero(celda(X+1,Y,_),ficha(Color,_)) &
+	tablero(celda(X+2,Y,_),ficha(Color,_)) &
+	tablero(celda(X+3,Y,_),ficha(Color,_)) & StartAtY = Y & StartsAtX = (X-1)).
 
-direccion(0,"up").
-direccion(1,"down").
-direccion(2,"right").
-direccion(3,"left").
+patternT(Color,X,Y,Direction) :-
+	(tablero(celda(X+1,Y,_),ficha(Color,_)) &
+	tablero(celda(X-1,Y,_),ficha(Color,_)) &
+	tablero(celda(X,Y+1,_),ficha(Color,_)) &
+	tablero(celda(X,Y+2,_),ficha(Color,_)) & Direction = "standing") |
+	(tablero(celda(X+1,Y,_),ficha(Color,_)) &
+	tablero(celda(X-1,Y,_),ficha(Color,_)) &
+	tablero(celda(X,Y-1,_),ficha(Color,_)) &
+	tablero(celda(X,Y-2,_),ficha(Color,_)) & Direction = "upside-down") |
+	(tablero(celda(X,Y-1,_),ficha(Color,_)) &
+	tablero(celda(X,Y+1,_),ficha(Color,_)) &
+	tablero(celda(X+1,Y,_),ficha(Color,_)) &
+	tablero(celda(X+2,Y,_),ficha(Color,_)) & Direction = "pointing-right") |
+	(tablero(celda(X,Y-1,_),ficha(Color,_)) &
+	tablero(celda(X,Y+1,_),ficha(Color,_)) &
+	tablero(celda(X-1,Y,_),ficha(Color,_)) &
+	tablero(celda(X-2,Y,_),ficha(Color,_)) & Direction = "pointing-left").
 
-movPrueba(Mov) :- Mov = moverDesdeEnDireccion(pos(1,0),"left").
+patternSquare(Color,X,Y,StartsAtX,StartAtY) :-
+	(tablero(celda(X+1,Y,_),ficha(Color,_)) &
+	tablero(celda(X,Y+1,_),ficha(Color,_)) &
+	tablero(celda(X+1,Y+1,_),ficha(Color,_)) & StartAtY = Y & StartsAtX = X) |
+	(tablero(celda(X-1,Y,_),ficha(Color,_)) &
+	tablero(celda(X-1,Y+1,_),ficha(Color,_)) &
+	tablero(celda(X,Y+1,_),ficha(Color,_)) & StartAtY = Y & StartsAtX = X) |
+	(tablero(celda(X,Y-1,_),ficha(Color,_)) &
+	tablero(celda(X+1,Y-1,_),ficha(Color,_)) &
+	tablero(celda(X+1,Y,_),ficha(Color,_)) & StartAtY = Y & StartsAtX = X) |
+	(tablero(celda(X-1,Y-1,_),ficha(Color,_)) &
+	tablero(celda(X,Y-1,_),ficha(Color,_)) &
+	tablero(celda(X-1,Y,_),ficha(Color,_)) & StartAtY = Y & StartsAtX = X).
+
+pattern4inLineH(Color,X,Y,StartsAtX,StartAtY) :-
+	(tablero(celda(X,Y+1,_),ficha(Color,_)) &
+	tablero(celda(X,Y+2,_),ficha(Color,_)) &
+	tablero(celda(X,Y+3,_),ficha(Color,_)) & StartAtY = Y & StartsAtX = X) |
+	(tablero(celda(X,Y-1,_),ficha(Color,_)) &
+	tablero(celda(X,Y-2,_),ficha(Color,_)) &
+	tablero(celda(X,Y-3,_),ficha(Color,_)) & StartAtY = (Y-3) & StartsAtX = X) |
+	(tablero(celda(X,Y-1,_),ficha(Color,_)) &
+	tablero(celda(X,Y+1,_),ficha(Color,_)) &
+	tablero(celda(X,Y+2,_),ficha(Color,_)) & StartAtY = (Y-1) & StartsAtX = X) |
+	(tablero(celda(X,Y-2,_),ficha(Color,_)) &
+	tablero(celda(X,Y-1,_),ficha(Color,_)) &
+	tablero(celda(X,Y+1,_),ficha(Color,_)) & StartAtY = (Y-2) & StartsAtX = X).
+
+pattern4inLineW(Color,X,Y,StartsAtX,StartAtY) :-
+	(tablero(celda(X+1,Y,_),ficha(Color,_)) &
+	tablero(celda(X+2,Y,_),ficha(Color,_)) &
+	tablero(celda(X+3,Y,_),ficha(Color,_)) & StartsAtX = X & StartAtY = Y) |
+	(tablero(celda(X-1,Y,_),ficha(Color,_)) &
+	tablero(celda(X-2,Y,_),ficha(Color,_)) &
+	tablero(celda(X-3,Y,_),ficha(Color,_)) & StartsAtX = (X-3) & StartAtY = Y) |
+	(tablero(celda(X-1,Y,_),ficha(Color,_)) &
+	tablero(celda(X+1,Y,_),ficha(Color,_)) &
+	tablero(celda(X+2,Y,_),ficha(Color,_)) & StartsAtX = (X-1) & StartAtY = Y) |
+	(tablero(celda(X-2,Y,_),ficha(Color,_)) &
+	tablero(celda(X-1,Y,_),ficha(Color,_)) &
+	tablero(celda(X+1,Y,_),ficha(Color,_)) & StartsAtX = (X-2) & StartAtY = Y).
+
+pattern3inLineW(Color,X,Y,StartsAtX,StartAtY) :-
+	(tablero(celda(X+1,Y,_),ficha(Color,_)) & tablero(celda(X+2,Y,_),ficha(Color,_)) &
+	StartsAtX = X & StartAtY = Y) |
+	(tablero(celda(X-1,Y,_),ficha(Color,_)) & tablero(celda(X-2,Y,_),ficha(Color,_)) &
+	StartsAtX = (X-2) & StartAtY = Y) |
+	(tablero(celda(X-1,Y,_),ficha(Color,_)) & tablero(celda(X+1,Y,_),ficha(Color,_)) &
+	StartsAtX = (X-1) & StartAtY = Y).
+
+pattern3inLineH(Color,X,Y,StartsAtX,StartAtY) :-
+	(tablero(celda(X,Y+1,_),ficha(Color,_)) & tablero(celda(X,Y+2,_),ficha(Color,_)) &
+	StartAtY = Y & StartsAtX = X) |
+	(tablero(celda(X,Y-1,_),ficha(Color,_)) & tablero(celda(X,Y-2,_),ficha(Color,_)) &
+	StartAtY = (Y-2) & StartsAtX = X) |
+	(tablero(celda(X,Y-1,_),ficha(Color,_)) & tablero(celda(X,Y+1,_),ficha(Color,_)) &
+	StartAtY = (Y-1) & StartsAtX = X).
+
+//Reconocimiento de celda vacia  para el algoritmo de caida y rodar
+emptyUnder(X,Y) :- tablero(celda(X,Y,_),ficha(_,_)) & tablero(celda(X,Y+1,_),e).
+emptyLeft(X,Y) :- tablero(celda(X,Y,_),ficha(_,_)) & tablero(celda(X-1,Y,_),e).
 
 
-randomMov(Mov):-
+//Comprobacion del ganador de un nivel
+levelWinner(P1,P2,Winner) :- P1 > P2 & Winner = player1.
+levelWinner(P1,P2,Winner) :- P2 > P1 & Winner = player2.
+levelWinner(P1,P2,Winner) :- P1 = P2 & Winner = draw.
+
+levelWinner(P1,P2,C1,C2,Winner) :- C1 > C2 & Winner = player1. 
+levelWinner(P1,P2,C1,C2,Winner) :- C1 < C2 & Winner = player2.
+levelWinner(P1,P2,C1,C1,Winner) :- P1 > P2 & Winner = player1.
+levelWinner(P1,P2,C1,C1,Winner) :- P1 < P2 & Winner = player2.
+
+//Asignar propietarios iniciales nivel 3
+esObstaculo(X,Y):- tablero(celda(X,Y,_),obstacle) | 
+				   tablero(celda(X,Y,1),_) |
+				   tablero(celda(X,Y,2),_).
+
+aleatoria(X,Y):-
 	size(Size) &
-	.random(R1) & .random(R2) & .random(R3) & 
-	direccion(4 * math.floor(R1), Dir) &
-	Mov = moverDesdeEnDireccion(pos(math.floor(R2*Size) ,math.floor(R3 * Size)),Dir).
+	.random(R1) & .random(R2) & 
+	X=math.floor(R1*Size) &
+	Y=math.floor(R2*Size) &
+	not esObstaculo(X,Y).
+aleatoria(X,Y):-aleatoria(X,Y).
 
-movPrueba(Mov) :- Mov = moverDesdeEnDireccion(pos(1,0),"left").
+/* ----- Initial goals ----- */
+  //No hay objetivos iniciales
+
+
+/* ----- Plans ----- */
+
+//Finalizacion de la partida
++!comienzoTurno : endGame(1) & levelWinner(1,W1) & levelWinner(2,W2) & levelWinner(3,W3)<-
+		.print(" *  *  *  *  *  *  *  *  * *  RESULTADOS  * *  *  *  *  *  *  *  *  *");
+		.print(" * Ganador Nivel 1 -> ",W1);
+		.print(" * Ganador Nivel 2 -> ",W2);
+		.print(" * Ganador Nivel 3 -> ",W3);
+		!checkFinalWinner(W1,W2,W3);
+		?finalWinner(FinalWinner);
+		.print(" *  *  *  *  *  *  *  *  * *  *  *  *  *  *  *  *  * *  *  *  *  *  *  *  *  *");
+		.print(" * Ganador de la partida -> ",FinalWinner," !!");
+		.print(" *  *  *  *  *  *  *  *  * *  *  *  *  *  *  *  *  * *  *  *  *  *  *  *  *  *");
+		.print("--- --- --- --- --- Fin del juego --- --- --- --- ---").
+
++!comienzoTurno:endGame(1) <- .print("Fallo comienzoasdfasñdflkasddfañlsdfkjaslkdfjkals").		
+//Comprobacion del ganador de la partida
+/*
++!checkFinalWinner(W1,W2) : W1=draw & W2=draw <- -+finalWinner(player1). //Si hay empate en ambos niveles, ganara el jugador uno por ser el que abre la partida
+
++!checkFinalWinner(W1,W2) : W1=draw <- -+finalWinner(W2). //Empate en el primer nivel, por lo tanto gana el jugador que ha ganado el segundo nivel
+
++!checkFinalWinner(W1,W2) : W1=W2 <- -+finalWinner(W1). //Ambos niveles han sido ganados por el mismo jugador y por tanto es el ganador del juego
+
++!checkFinalWinner(W1,W2) : points(1,player1,PointsPlayer1Lvl1) & points(2,player1,PointsPlayer1Lvl2) & points(1,player2,PointsPlayer2Lvl1) & points(2,player2,PointsPlayer2Lvl2) & ((PointsPlayer1Lvl1+PointsPlayer1Lvl2) > (PointsPlayer2Lvl1+PointsPlayer2Lvl2)) <- -+finalWinner(player1). //Gana por total de puntos player1
+
++!checkFinalWinner(W1,W2) : points(1,player1,PointsPlayer1Lvl1) & points(2,player1,PointsPlayer1Lvl2) & points(1,player2,PointsPlayer2Lvl1) & points(2,player2,PointsPlayer2Lvl2) & ((PointsPlayer2Lvl1+PointsPlayer2Lvl2) > (PointsPlayer1Lvl1+PointsPlayer1Lvl2)) <- -+finalWinner(player2). //Gana por total de puntos player2
+
++!checkFinalWinner(W1,W2) <- .print("ERROR en !finalWinner").
+
+*/
++!checkFinalWinner(W1,W2,W3) : W1=draw & W2=draw & W3=draw & 
+	points(1,player1,PointsPlayer1Lvl1) & points(2,player1,PointsPlayer1Lvl2) & points(2,player1,PointsPlayer1Lvl3) &
+	points(1,player2,PointsPlayer2Lvl1) & points(2,player2,PointsPlayer2Lvl2) & points(2,player2,PointsPlayer1Lvl3) &
+	((PointsPlayer1Lvl1+PointsPlayer1Lvl2+PointsPlayer1Lvl3) > (PointsPlayer2Lvl1+PointsPlayer2Lvl2+PointsPlayer2Lvl3)) <-
+	-+finalWinner(player1).
++!checkFinalWinner(W1,W2,W3) : W1=draw & W2=draw & W3=draw & 
+	points(1,player1,PointsPlayer1Lvl1) & points(2,player1,PointsPlayer1Lvl2) & points(2,player1,PointsPlayer1Lvl3) &
+	points(1,player2,PointsPlayer2Lvl1) & points(2,player2,PointsPlayer2Lvl2) & points(2,player2,PointsPlayer1Lvl3) &
+	((PointsPlayer1Lvl1+PointsPlayer1Lvl2+PointsPlayer1Lvl3) < (PointsPlayer2Lvl1+PointsPlayer2Lvl2+PointsPlayer2Lvl3)) <-
+	-+finalWinner(player2).
++!checkFinalWinner(W1,W2,W3) : W1=draw & W2=draw & W3=draw <-
+	-+finalWinner(player2).
 	
-/* Initial goals */
++!checkFinalWinner(W1,W2,W3) : W1=W2 | W1=W3 <-
+	-+finalWinner(W1).
++!checkFinalWinner(W1,W2,W3) : W2=W1 | W2=W3 <-
+	-+finalWinner(W2).
+/*+!checkFinalWinner(W1,W2,W3) : W3=W1 | W3=W2 <-
+	-+finalWinner(W3).*/
+	
+/* ----------------------------------------------------- COMIENZO INTOCABLE ----------------------------------------------------- */
+
+//Comienzo del turno de un jugador.
++!comienzoTurno : jugadorDescalificado(player1,1) & jugadorDescalificado(player2,1) <-
+			.print("FIN DE LA PARTIDA: Ambos jugadores han sido descalificados. TRAMPOSOS!!!").
+
++!comienzoTurno : turnoActual(P) & jugadasRestantes(N) & N>0 & jugadasPlayer(P,J) & J<50 <-
+	.print("Turno de: ",P,"!");
+	-+turnoActivado(1);
+	.print(P,", puedes mover");
+	.send(P,tell,puedesMover);
+	.send(P,untell,puedesMover).
+
++!comienzoTurno : jugadasRestantes(N) & N=0 <- .print("FIN DE LA PARTIDA: Se ha realizado el numero maximo de jugadas").
 
 
-/* Plans */
++!comienzoTurno : turnoActual(P) & jugadasPlayer(P,J) & J>=50 <- .print("FIN DE LA PARTIDA: ",P," ha realizado el maximo de jugadas por jugador (50)").
 
-//Estrategia level 3
-+!mejorJugada:size(N) & level(L) & L=3 & propietario(Prop)<-
-	-+jugada(none,none,none);
-	-+puntosMejorPatron(0); 
-	-+maxCeldasNeutras(0);
-	-+maxCeldasRival(0);
 
-	!mirarCeldasRival;
-	!mirarCeldasNeutras;
-	//Celdas del territorio jugador o celdas neutras
-	!mirarPorPuntos(Prop);
-	!mirarPorPuntos(0);
-	.
++!comienzoTurno <- .print("DEBUG: Error en +!comienzoTurno"). //Salvaguarda
 
-//Planes para cada uno de los casos de la estrategia
-+!mirarCeldasRival:propietario(Own) <-
-	.findall(tablero(celda(X,Y,Prop),ficha(C,T)),tablero(celda(X,Y,Prop),ficha(C,T)),Lista);
-	for ( .member(tablero(celda(X1,Y1,O1),ficha(C1,T1)),Lista) ) {
-		!ganarCeldasRival(X1,Y1);
++moverDesdeEnDireccion(pos(X,Y),Dir)[source(P)] :
+	turnoActual(P) & movimientoValido(pos(X,Y),Dir) & turnoActivado(1) <-
+			-+turnoActivado(0);
+			-moverDesdeEnDireccion(pos(X,Y),Dir)[source(P)];
+			.print("Jugada valida!")
+			.send(P,tell,valido);
+			.send(P,untell,valido);
+			+intercambiarFichas(X,Y,Dir,P);
+			-intercambiarFichas(X,Y,Dir,P);
+			-+turnoTerminado(P);
+			!comienzoTurno.
+
+//Movimiento Incorrecto
++moverDesdeEnDireccion(pos(X,Y),Dir)[source(P)] :
+	turnoActual(P) & not movimientoValido(pos(X,Y),Dir) & turnoActivado(1)<-
+			-+turnoActivado(0);
+			+movimientoInvalido(pos(X,Y),Dir,P).
+
+//Movimiento realizado por un jugador que tiene el turno pero el juez aun no le ha ordenado mover
++moverDesdeEnDireccion(pos(X,Y),Dir)[source(P)] :
+	turnoActual(P) & turnoActivado(0) <-
+			.print("Agente ",P,", espera mi orden para realizar el siguiente movimiento. No intentes mover mas de una vez.").
+
+
+//Movimiento realizado por un jugador fuera de su turno
++moverDesdeEnDireccion(pos(X,Y),Dir)[source(P)] :
+	not turnoActual(P) & fueraTurno(P,N) <-
+		.print(P," Has intentado realizar un movimiento fuera de tu turno. ", N+1," aviso");
+		.send(P,tell,invalido(fueraTurno,N+1));
+		.send(P,untell,invalido(fueraTurno,N+1));
+		-fueraTurno(P,N);
+		+fueraTurno(P,N+1).
+
+//Descalificacion de un jugador
++fueraTurno(P,N) : N>3 <-
+		-jugadorDescalificado(P,0);
+		+jugadorDescalificado(P,1);
+		.print("AVISO: ",P," ha sido descalificado por tramposo!!!").
+
+
+
+//Deteccion de un agente externo a la partida (distinto a player1 y player 2) que esta intentando jugar.
+// Esta regla la podeis adecuar a vuestras necesidades
+
++moverDesdeEnDireccion(pos(X,Y),Dir)[source(P)] :
+	not turnoActual(P) & not fueraTurno(P,N) <- // --- TODO ---
+		.print("El agente ",P," externo a la partida est? intentando jugar.").
+
+// Esta regla la podeis adecuar a vuestras necesidades
++moverDesdeEnDireccion(pos(X,Y),Dir)[source(P)] <-
+	.print("DEBUG: Error en +moverDesdeEnDireccion. Source", P). //Salvaguarda
+
+//Comprobacion de la falta cometida por mover una ficha hacia una posicion fuera del tablero, intentar mover una ficha de una posicion inexistente, o realizar un tipo de movimiento desconocido
++movimientoInvalido(pos(X,Y),Dir,P):
+	fueraTablero(V) & not direccionCorrecta(pos(X,Y),Dir)  <-
+		-movimientoInvalido(pos(X,Y),Dir,P);
+		.print("Movimiento Invalido. Has intentado mover una ficha fuera del tablero");
+		.send(P,tell,invalido(fueraTablero,V+1));
+		.send(P,untell,invalido(fueraTablero,V+1));
+		-+turnoActivado(1);
+		-+fueraTablero(V+1).
+
+//Comprobacion de la falta cometida por intercambiar dos fichas del mismo color
++movimientoInvalido(pos(X,Y),Dir,P) :
+	not colorFichasDistintos(pos(X,Y),Dir) <-
+		-movimientoInvalido(pos(X,Y),Dir,P);
+		.print("Movimiento Invalido. Has intentado  intercambiar dos fichas del mismo color");
+		-+turnoActivado(1);
+		.print("Intentalo de nuevo!");
+		.send(P,tell,tryAgain);
+		.send(P,untell,tryAgain).
+
+// Esta regla la podeis adecuar a vuestras necesidades
++movimientoInvalido(pos(X,Y),Dir,P) <-
+	.print("DEBUG: Error en +movimientoInvalido").
+
+
+//Recepcion del aviso de que un jugador pasa turno por haber realizado un movimiento fuera del tablero mas de 3 veces
++pasoTurno[source(P)] : turnoActual(P) <-
+		-+fueraTablero(0);
+		.print(P," ha pasado turno");
+		+cambioTurno(P);
+		!comienzoTurno.
+
+/* ----------------------------------------------------- FIN INTOCABLE ----------------------------------------------------- */
+
+
+
+
+//Gestion del comienzo del juego
++startGame : size(N) <- //Este plan se ejecutará cuando el entorno le avise al terminar la generacion del tablero
+				.print("Tablero de juego generado!");
+				.send(player1,tell,size(N));
+				.send(player2,tell,size(N));
+				.wait(500);
+				!mostrarTablero(player1);
+				.wait(500);
+				!mostrarTablero(player2);
+				.print(" ----- ----- ----- ----- EMPIEZA EL JUEGO! ----- ----- ----- -----");
+				.print("                ----- ----- ----- NIVEL 1 ----- ----- -----\n");
+				!comienzoTurno.
+
+
+//Recepcion del tamanho del tablero
++size(N).
+
+//Recepcion de la informacion de una posicion del tablero. Actua como interface para que las creencias tablero sean self
++addTablero(Celda,Ficha)[source(percept)] <-
+				-addTablero(Celda,Ficha)[source(percept)];
+				+tablero(Celda,Ficha).
+
+
+//Finalizacion de un turno
++turnoTerminado(Player) : level(L) & L=1 & ((limitPoints(1,LimitPoints)  & points(L,Player,Points) & Points>=LimitPoints) | (jugadasRestantes(N) & N=0) |  (jugadasPlayer(Player,J) & J>=15)) <- //Final del Nivel 1
+					.print("Alcanzado el numero maximo de puntos en el Nivel 1");
+					!showPoints;
+					!checkLevelWinner;
+					?levelWinner(1,Winner);
+					.print("[ GANADOR NIVEL 1: ",Winner," ]\n");
+					.print("                      ----- ----- ----- NIVEL 2 ----- ----- -----\n");
+					.wait(1000);
+					-+level(2);
+					-+turnoActual(player1);
+					-+jugadasRestantes(100);
+					-jugadasPlayer(player1,_);
+					+jugadasPlayer(player1,0);
+					-jugadasPlayer(player2,_);
+					+jugadasPlayer(player2,0);
+					.abolish(tablero(X,Y));
+					.wait(250);
+					resetTablero(_);
+					.wait(250);
+					!generateObstacles;
+					!updatePlayersTableroBB.
+
+
++turnoTerminado(Player) : level(L) & L=2 & ((limitPoints(2,LimitPoints)  & points(L,Player,Points) & Points>=LimitPoints) | (jugadasRestantes(N) & N=0) |  (jugadasPlayer(Player,J) & J>=20)) <- //Final del Nivel 2
+					.print("Alcanzado el numero maximo de puntos en el Nivel 2");
+					!showPoints;
+					!checkLevelWinner;
+					?levelWinner(2,Winner);
+					.print("[ GANADOR NIVEL 2: ",Winner," ]\n");
+					.print("                      ----- ----- ----- NIVEL 3 ----- ----- -----\n");
+					.wait(1000);
+					-+level(3);
+					-+turnoActual(player1);
+					-+jugadasRestantes(100);
+					-jugadasPlayer(player1,_);
+					+jugadasPlayer(player1,0);
+					-jugadasPlayer(player2,_);
+					+jugadasPlayer(player2,0);
+					.abolish(tablero(X,Y));
+					.wait(250);
+					resetTablero(_);
+					.wait(250);
+					-+obstacles(10);
+					!generateObstacles;
+					!propietariosIniciales;
+					!updatePlayersTableroBB.					
+
+					
++turnoTerminado(Player) : level(L) & L=3 & ((celdasPlayer(Player,C) & C>=90) | (jugadasRestantes(N) & N=0) |  (jugadasPlayer(Player,J) & J>=20)) <- //Final del Nivel 2
+					.print("Alcanzado el numero maximo de territorio en el Nivel 3");
+					.print("Celdas de jugador ",Player," ",C);
+					.wait(1000);
+					!showPoints;
+					!checkLevelWinner;
+					?levelWinner(3,Winner);
+					.print("[ GANADOR NIVEL 3: ",Winner," ]");
+					-+endGame(1).
+
+
++turnoTerminado(P): jugadorDescalificado(J,B) & B=1 <-
+					!showPoints;
+					!cambioTurnoMismoJugador(P,N,J). //Cambio de turno sobre el mismo jugador, ya que hay un jugador descalificado
+
++turnoTerminado(P) <-
+					!showPoints;
+					+cambioTurno(P). //Cambio de turno de forma normal
+
+//Mostrar Puntuaciones
++!showPoints : level(L) & points(L,player1,P1) & points(L,player2,P2) <-	.print("Puntuaciones:  Player 1 -> ",P1,"  //  Player 2 -> ",P2).
+
+//Comprobacion del ganador de nivel
++!checkLevelWinner : level(L) & L=3 & celdasPlayer(player1,C1) & celdasPlayer(player2,C2) & points(L,player1,P1) & points(L,player2,P2) &  levelWinner(P1,P2,C1,C2,Winner) <-
+				-levelWinner(L,_);
+				+levelWinner(L,Winner).
+
++!celdasJugador(Player): level(L) & L=3 & Player = player1 <-
+	-celdasPlayer(player1,_);
+	+celdasPlayer(player1,0);
+	.findall(tablero(celda(_,_,1),_),tablero(celda(_,_,1),_),Lista);
+	for ( .member(Estructure,Lista) ) {
+		?celdasPlayer(player1,N);
+		-+celdasPlayer(player1,N+1);
 	}.
-+!mirarCeldasRival.
-
-//Para ganar celdas comunes (miramos el patron que tenga mas celdas)
-+!mirarCeldasNeutras:propietario(Own) & jugada(none,none,none) <- //Aqui llegara si no se registra una jugada de conquistar celdas rivales
-	.findall(tablero(celda(X,Y,Own),ficha(C,T)),tablero(celda(X,Y,Own),ficha(C,T)),Lista);
-	for ( .member(tablero(celda(X1,Y1,O1),ficha(C1,T1)),Lista) ) {
-		!ganarCeldasNeutras(X1,Y1);
++!celdasJugador(Player): level(L) & L=3 & Player = player2 <-
+	-celdasPlayer(player2,_);
+	+celdasPlayer(player2,0);
+	.findall(tablero(celda(_,_,2),_),tablero(celda(_,_,2),_),Lista);
+	for ( .member(Estructure,Lista) ) {
+		?celdasPlayer(player2,N);
+		-+celdasPlayer(player2,N+1);
 	}.
-+!mirarCeldasNeutras.
-
-//Miramos una jugada por puntos moviendo una celda neutral o una celda del jugador haciendo patrones en su terreno
-+!mirarPorPuntos(Own):jugada(none,none,none) <- //Aqui llegara si no se registra una jugada de conquistar celdas neutrales
-	.findall(tablero(celda(X,Y,Own),ficha(C,T)),tablero(celda(X,Y,Own),ficha(C,T)),Lista);
-	for ( .member(tablero(celda(X1,Y1,O1),ficha(C1,T1)),Lista) ) {
-		!comprobarDir(X1,Y1);
-	}.
-+!mirarPorPuntos(Own).
-
-//////////////////////////////////////////////////Ganar celdas al rival///////////////////////////////////////////////////////////////////////////////////
-
-+!ganarCeldasRival(X,Y): tablero(celda(X,Y,O),ficha(C,T)) <-
-	!left(X,Y,"left",ganarRival);
-	!up(X,Y,"up",ganarRival);
-	!right(X,Y,"right",ganarRival);
-	!down(X,Y,"down",ganarRival).
-+!ganarCeldasRival(X,Y).
-
-+!right(X,Y,D,Option):Option=ganarRival & tablero(celda(X,Y,O1),ficha(C1,T1)) & tablero(celda(X+1,Y,O2),ficha(C2,T2)) <-	
-	!intercambio(X,Y,X+1,Y);
-	!agrupacionCeldas(X+1,Y,C1,X,Y,D);
-	!intercambio(X,Y,X+1,Y);
-	.
-+!right(X,Y,D,Option):Option=ganarRival.
-
-+!left(X,Y,D,Option):Option=ganarRival& tablero(celda(X,Y,O1),ficha(C1,T1)) & tablero(celda(X-1,Y,O2),ficha(C2,T2)) <-	
-	!intercambio(X,Y,X-1,Y);
-	!agrupacionCeldas(X-1,Y,C1,X,Y,D);
-	!intercambio(X,Y,X-1,Y);
-	.
-+!left(X,Y,D,Option):Option=ganarRival.
-
-+!down(X,Y,D,Option):Option=ganarRival & tablero(celda(X,Y,O1),ficha(C1,T1)) & tablero(celda(X,Y+1,O2),ficha(C2,T2)) <-	
-	!intercambio(X,Y,X,Y+1);
-	!agrupacionCeldas(X,Y+1,C1,X,Y,D);
-	!intercambio(X,Y,X,Y+1);
-	.
-+!down(X,Y,D,Option):Option=ganarRival.
-
-+!up(X,Y,D,Option):Option=ganarRival & tablero(celda(X,Y,O1),ficha(C1,T1)) & tablero(celda(X,Y-1,O2),ficha(C2,T2)) <-	
-	!intercambio(X,Y,X,Y-1);
-	!agrupacionCeldas(X,Y-1,C1,X,Y,D);
-	!intercambio(X,Y-1,X,Y);
-	.
-+!up(X,Y,D,Option):Option=ganarRival.
-
-//Comprobamos en todos los patrones el numero de celdas rivales para ganarle territorio	
-+!agrupacionCeldas(X,Y,C,A,B,D) <-
-	-+celdasRival(0);
-	!grupo3FilA(X,Y,C,A,B,D);
-	-+celdasRival(0);
-	!grupo3FilB(X,Y,C,A,B,D);
-	-+celdasRival(0);
-	!grupo3FilC(X,Y,C,A,B,D);
-	-+celdasRival(0);
-	!grupo3ColA(X,Y,C,A,B,D);
-	-+celdasRival(0);
-	!grupo3ColB(X,Y,C,A,B,D);
-	-+celdasRival(0);
-	!grupo3ColC(X,Y,C,A,B,D);
-
-	-+celdasRival(0);
-	!grupo5TN(X,Y,C,A,B,D);
-	-+celdasRival(0);
-	!grupo5TI(X,Y,C,A,B,D);
-	-+celdasRival(0);
-	!grupo5TR(X,Y,C,A,B,D);
-	-+celdasRival(0);
-	!grupo5TL(X,Y,C,A,B,D);
-
-	-+celdasRival(0);
-	!grupo5Fil(X,Y,C,A,B,D);
-	-+celdasRival(0);
-	!grupo5Col(X,Y,C,A,B,D);
-
-	-+celdasRival(0);
-	!grupo4FilA(X,Y,C,A,B,D);
-	-+celdasRival(0);
-	!grupo4FilB(X,Y,C,A,B,D);
-	-+celdasRival(0);
-	!grupo4ColA(X,Y,C,A,B,D);
-	-+celdasRival(0);
-	!grupo4ColB(X,Y,C,A,B,D);
-
-	-+celdasRival(0);
-	!grupo4SquareA(X,Y,C,A,B,D);
-	-+celdasRival(0);
-	!grupo4SquareB(X,Y,C,A,B,D);
-	-+celdasRival(0);
-	!grupo4SquareC(X,Y,C,A,B,D);
-	-+celdasRival(0);
-	!grupo4SquareD(X,Y,C,A,B,D);
-	.
-+!agrupacionCeldas(X,Y,C,A,B,D).
-
-//Agrupacion de T
-+!grupo5TN(X,Y,C,A,B,D):grupo5TN(X,Y,C) <- 
-	!calcularCeldas(X-1,Y);
-	!calcularCeldas(X+1,Y);
-	!calcularCeldas(X,Y+1);
-	!calcularCeldas(X,Y+2);
-	!mejorPatronRival(A,B,D).
-+!grupo5TN(X,Y,C,A,B,D).
-
-+!grupo5TI(X,Y,C,A,B,D):grupo5TI(X,Y,C) <-
-	!calcularCeldas(X-1,Y);
-	!calcularCeldas(X+1,Y);
-	!calcularCeldas(X,Y-1);
-	!calcularCeldas(X,Y-2);
-	!mejorPatronRival(A,B,D).
-+!grupo5TI(X,Y,C,A,B,D).
-
-+!grupo5TR(X,Y,C,A,B,D):grupo5TR(X,Y,C) <-
-	!calcularCeldas(X-1,Y);
-	!calcularCeldas(X-2,Y);
-	!calcularCeldas(X,Y+1);
-	!calcularCeldas(X,Y-1);
-	!mejorPatronRival(A,B,D).
-+!grupo5TR(X,Y,C,A,B,D).
-
-+!grupo5TL(X,Y,C,A,B,D):grupo5TL(X,Y,C) <-
-	!calcularCeldas(X+1,Y);
-	!calcularCeldas(X+2,Y);
-	!calcularCeldas(X,Y+1);
-	!calcularCeldas(X,Y-1);
-	!mejorPatronRival(A,B,D).
-+!grupo5TL(X,Y,C,A,B,D).
-
-//Agrupacion de 5
-+!grupo5Fil(X,Y,C,A,B,D):grupo5Fil(X,Y,C) <-
-	!calcularCeldas(X+1,Y);
-	!calcularCeldas(X+2,Y);
-	!calcularCeldas(X-1,Y);
-	!calcularCeldas(X-2,Y);
-	!mejorPatronRival(A,B,D).
-+!grupo5Fil(X,Y,C,A,B,D).
-
-+!grupo5Col(X,Y,C,A,B,D):grupo5Col(X,Y,C) <-
-	!calcularCeldas(X,Y+1);
-	!calcularCeldas(X,Y+2);
-	!calcularCeldas(X,Y-1);
-	!calcularCeldas(X,Y-2);
-	!mejorPatronRival(A,B,D).
-+!grupo5Col(X,Y,C,A,B,D).
-
-//Agrupacion de 4
-+!grupo4FilA(X,Y,C,A,B,D):grupo4FilA(X,Y,C) <-
-	!calcularCeldas(X-1,Y);
-	!calcularCeldas(X+1,Y);
-	!calcularCeldas(X+2,Y);
-	!mejorPatronRival(A,B,D).
-+!grupo4FilA(X,Y,C,A,B,D).
-
-+!grupo4FilB(X,Y,C,A,B,D):grupo4FilB(X,Y,C) <-
-	!calcularCeldas(X-1,Y);
-	!calcularCeldas(X-2,Y);
-	!calcularCeldas(X+1,Y);
-	!mejorPatronRival(A,B,D).
-+!grupo4FilB(X,Y,C,A,B,D).
-
-+!grupo4ColA(X,Y,C,A,B,D):grupo4ColA(X,Y,C) <-
-	!calcularCeldas(X,Y-1);
-	!calcularCeldas(X,Y+1);
-	!calcularCeldas(X,Y+2);
-	!mejorPatronRival(A,B,D).
-+!grupo4ColA(X,Y,C,A,B,D).
-
-+!grupo4ColB(X,Y,C,A,B,D):grupo4ColB(X,Y,C) <-
-	!calcularCeldas(X,Y-1);
-	!calcularCeldas(X,Y-2);
-	!calcularCeldas(X,Y+1);
-	!mejorPatronRival(A,B,D).
-+!grupo4ColB(X,Y,C,A,B,D).
-
-//Agrupacion cuadrado
-+!grupo4SquareA(X,Y,C,A,B,D):grupo4SquareA(X,Y,C) <-
-	!calcularCeldas(X+1,Y);
-	!calcularCeldas(X,Y+1);
-	!calcularCeldas(X+1,Y+1);
-	!mejorPatronRival(A,B,D).
-+!grupo4SquareA(X,Y,C,A,B,D).
-
-+!grupo4SquareB(X,Y,C,A,B,D):grupo4SquareB(X,Y,C) <-
-	!calcularCeldas(X-1,Y);
-	!calcularCeldas(X,Y+1);
-	!calcularCeldas(X-1,Y+1);
-	!mejorPatronRival(A,B,D).
-+!grupo4SquareB(X,Y,C,A,B,D).
-
-+!grupo4SquareC(X,Y,C,A,B,D):grupo4SquareC(X,Y,C) <-
-	!calcularCeldas(X+1,Y);
-	!calcularCeldas(X,Y-1);
-	!calcularCeldas(X+1,Y-1);
-	!mejorPatronRival(A,B,D).
-+!grupo4SquareC(X,Y,C,A,B,D).
-
-+!grupo4SquareD(X,Y,C,A,B,D):grupo4SquareD(X,Y,C) <-
-	!calcularCeldas(X-1,Y);
-	!calcularCeldas(X,Y-1);
-	!calcularCeldas(X-1,Y-1);
-	!mejorPatronRival(A,B,D).
-+!grupo4SquareD(X,Y,C,A,B,D).
-
-//Agrupacion de 3
-+!grupo3FilA(X,Y,C,A,B,D):grupo3FilA(X,Y,C) <-
-	!calcularCeldas(X-1,Y);
-	!calcularCeldas(X+1,Y);
-	!mejorPatronRival(A,B,D).
-+!grupo3FilA(X,Y,C,A,B,D).
-
-+!grupo3FilB(X,Y,C,A,B,D):grupo3FilB(X,Y,C) <-
-	!calcularCeldas(X+1,Y);
-	!calcularCeldas(X+2,Y);
-	!mejorPatronRival(A,B,D).
-+!grupo3FilB(X,Y,C,A,B,D).
-
-+!grupo3FilC(X,Y,C,A,B,D):grupo3FilC(X,Y,C) <-
-	!calcularCeldas(X-1,Y);
-	!calcularCeldas(X-2,Y);
-	!mejorPatronRival(A,B,D).
-+!grupo3FilC(X,Y,C,A,B,D).
-
-+!grupo3ColA(X,Y,C,A,B,D):grupo3ColA(X,Y,C) <-
-	!calcularCeldas(X,Y-1);
-	!calcularCeldas(X,Y+1);
-	!mejorPatronRival(A,B,D).
-+!grupo3ColA(X,Y,C,A,B,D).
-
-+!grupo3ColB(X,Y,C,A,B,D):grupo3ColB(X,Y,C) <-
-	!calcularCeldas(X,Y+1);
-	!calcularCeldas(X,Y+2);
-	!mejorPatronRival(A,B,D).
-+!grupo3ColB(X,Y,C,A,B,D).
-
-+!grupo3ColC(X,Y,C,A,B,D):grupo3ColC(X,Y,C) <-
-	!calcularCeldas(X,Y-1);
-	!calcularCeldas(X,Y-2);
-	!mejorPatronRival(A,B,D).
-+!grupo3ColC(X,Y,C,A,B,D).
-
-+!calcularCeldas(X,Y): tablero(celda(X,Y,Own),ficha(C,T)) & celdasRival(Celdas) & rival(Own) <-
-	-+celdasRival(Celdas+1).
-+!calcularCeldas(X,Y).
-
-+!mejorPatronRival(X,Y,D) : celdasRival(P1) & maxCeldasRival(P2) & P1 > P2 <-
-	-+maxCeldasRival(P1);
-	-+jugada(X,Y,D);
-	-+celdasRival(0);
-	.
-+!mejorPatronRival(X,Y,D) : celdasRival(P1) & maxCeldasRival(P2) & P1 <= P2.
++!celdasJugador(Player).
 	
-+!mejorPatronRival(X,Y,D).
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//Comprobacion del ganador de nivel
++!checkLevelWinner : level(L) & points(L,player1,P1) & points(L,player2,P2) & levelWinner(P1,P2,Winner) <-
+				-levelWinner(L,_);
+				+levelWinner(L,Winner).
 
 
-//////////////////////////////////////////////////Ganar celdas neutras///////////////////////////////////////////////////////////////////////////////
-//Caso que ganemos territorio neutro
-+!ganarCeldasNeutras(X,Y): tablero(celda(X,Y,O),ficha(C,T)) <-
-	-+celdasNeutras(0);
-	!left(X,Y,"left",ganarNeutral);
-	-+celdasNeutras(0);
-	!up(X,Y,"up",ganarNeutral);
-	-+celdasNeutras(0);
-	!right(X,Y,"right",ganarNeutral);
-	-+celdasNeutras(0);
-	!down(X,Y,"down",ganarNeutral).
-+!ganarCeldasNeutras(X,Y).
-
-+!right(X,Y,D,Option):Option=ganarNeutral & tablero(celda(X,Y,O1),ficha(C1,T1)) & tablero(celda(X+1,Y,O2),ficha(C2,T2)) <-	
-	!intercambio(X,Y,X+1,Y);
-	!mayorNeutral(X+1,Y,C1,X,Y,D);
-	!intercambio(X,Y,X+1,Y);
-	.
-+!right(X,Y,D,Option):Option=ganarNeutral.
-
-+!left(X,Y,D,Option):Option=ganarNeutral & tablero(celda(X,Y,O1),ficha(C1,T1)) & tablero(celda(X-1,Y,O2),ficha(C2,T2)) <-	
-	!intercambio(X,Y,X-1,Y);
-	!mayorNeutral(X-1,Y,C1,X,Y,D);
-	!intercambio(X,Y,X-1,Y);
-	.
-+!left(X,Y,D,Option):Option=ganarNeutral.
-
-+!down(X,Y,D,Option):Option=ganarNeutral & tablero(celda(X,Y,O1),ficha(C1,T1)) & tablero(celda(X,Y+1,O2),ficha(C2,T2)) <-	
-	!intercambio(X,Y,X,Y+1);
-	!mayorNeutral(X,Y+1,C1,X,Y,D);
-	!intercambio(X,Y,X,Y+1);
-	.
-+!down(X,Y,D,Option):Option=ganarNeutral.
-
-+!up(X,Y,D,Option):Option=ganarNeutral & tablero(celda(X,Y,O1),ficha(C1,T1)) & tablero(celda(X,Y-1,O2),ficha(C2,T2)) <-	
-	!intercambio(X,Y,X,Y-1);
-	!mayorNeutral(X,Y-1,C1,X,Y,D);
-	!intercambio(X,Y-1,X,Y);
-	.
-+!up(X,Y,D,Option):Option=ganarNeutral.
-
-//Agrupacion de T
-+!mayorNeutral(X,Y,C,A,B,D):grupo5TN(X,Y,C) <- 
-	!calcularCeldasNeutras(X-1,Y);
-	!calcularCeldasNeutras(X+1,Y);
-	!calcularCeldasNeutras(X,Y+1);
-	!calcularCeldasNeutras(X,Y+2);
-	!mejorPatronNeutro(A,B,D).
-
-+!mayorNeutral(X,Y,C,A,B,D):grupo5TI(X,Y,C) <-
-	!calcularCeldasNeutras(X-1,Y);
-	!calcularCeldasNeutras(X+1,Y);
-	!calcularCeldasNeutras(X,Y-1);
-	!calcularCeldasNeutras(X,Y-2);
-	!mejorPatronNeutro(A,B,D).
-
-+!mayorNeutral(X,Y,C,A,B,D):grupo5TR(X,Y,C) <-
-	!calcularCeldasNeutras(X-1,Y);
-	!calcularCeldasNeutras(X-2,Y);
-	!calcularCeldasNeutras(X,Y+1);
-	!calcularCeldasNeutras(X,Y-1);
-	!mejorPatronNeutro(A,B,D).
-
-+!mayorNeutral(X,Y,C,A,B,D):grupo5TL(X,Y,C) <-
-	!calcularCeldasNeutras(X+1,Y);
-	!calcularCeldasNeutras(X+2,Y);
-	!calcularCeldasNeutras(X,Y+1);
-	!calcularCeldasNeutras(X,Y-1);
-	!mejorPatronNeutro(A,B,D).
-
-//Agrupacion de 5
-+!mayorNeutral(X,Y,C,A,B,D):grupo5Fil(X,Y,C) <-
-	!calcularCeldasNeutras(X+1,Y);
-	!calcularCeldasNeutras(X+2,Y);
-	!calcularCeldasNeutras(X-1,Y);
-	!calcularCeldasNeutras(X-2,Y);
-	!mejorPatronNeutro(A,B,D).
-
-+!mayorNeutral(X,Y,C,A,B,D):grupo5Col(X,Y,C) <-
-	!calcularCeldasNeutras(X,Y+1);
-	!calcularCeldasNeutras(X,Y+2);
-	!calcularCeldasNeutras(X,Y-1);
-	!calcularCeldasNeutras(X,Y-2);
-	!mejorPatronNeutro(A,B,D).
-
-//Agrupacion de 4
-+!mayorNeutral(X,Y,C,A,B,D):grupo4FilA(X,Y,C) <-
-	!calcularCeldasNeutras(X-1,Y);
-	!calcularCeldasNeutras(X+1,Y);
-	!calcularCeldasNeutras(X+2,Y);
-	!mejorPatronNeutro(A,B,D).
-
-+!mayorNeutral(X,Y,C,A,B,D):grupo4FilB(X,Y,C) <-
-	!calcularCeldasNeutras(X-1,Y);
-	!calcularCeldasNeutras(X-2,Y);
-	!calcularCeldasNeutras(X+1,Y);
-	!mejorPatronNeutro(A,B,D).
-
-+!mayorNeutral(X,Y,C,A,B,D):grupo4ColA(X,Y,C) <-
-	!calcularCeldasNeutras(X,Y-1);
-	!calcularCeldasNeutras(X,Y+1);
-	!calcularCeldasNeutras(X,Y+2);
-	!mejorPatronNeutro(A,B,D).
-
-+!mayorNeutral(X,Y,C,A,B,D):grupo4ColB(X,Y,C) <-
-	!calcularCeldasNeutras(X,Y-1);
-	!calcularCeldasNeutras(X,Y-2);
-	!calcularCeldasNeutras(X,Y+1);
-	!mejorPatronNeutro(A,B,D).
-
-//Agrupacion cuadrado
-+!mayorNeutral(X,Y,C,A,B,D):grupo4SquareA(X,Y,C) <-
-	!calcularCeldasNeutras(X+1,Y);
-	!calcularCeldasNeutras(X,Y+1);
-	!calcularCeldasNeutras(X+1,Y+1);
-	!mejorPatronNeutro(A,B,D).
-
-+!mayorNeutral(X,Y,C,A,B,D):grupo4SquareB(X,Y,C) <-
-	!calcularCeldasNeutras(X-1,Y);
-	!calcularCeldasNeutras(X,Y+1);
-	!calcularCeldasNeutras(X-1,Y+1);
-	!mejorPatronNeutro(A,B,D).
-
-+!mayorNeutral(X,Y,C,A,B,D):grupo4SquareC(X,Y,C) <-
-	!calcularCeldasNeutras(X+1,Y);
-	!calcularCeldasNeutras(X,Y-1);
-	!calcularCeldasNeutras(X+1,Y-1);
-	!mejorPatronNeutro(A,B,D).
-
-+!mayorNeutral(X,Y,C,A,B,D):grupo4SquareD(X,Y,C) <-
-	!calcularCeldasNeutras(X-1,Y);
-	!calcularCeldasNeutras(X,Y-1);
-	!calcularCeldasNeutras(X-1,Y-1);
-	!mejorPatronNeutro(A,B,D).
+//Cambio de turno de un jugador a otro
++cambioTurno(P) : jugadasRestantes(N) & jugadasPlayer(P,J)<-
+				-cambioTurno(P);
+				!cambioTurno(P,N,J).
 
 
-//Agrupacion de 3
-+!mayorNeutral(X,Y,C,A,B,D):grupo3FilA(X,Y,C) <-
-	!calcularCeldasNeutras(X-1,Y);
-	!calcularCeldasNeutras(X+1,Y);
-	!mejorPatronNeutro(A,B,D).
-
-+!mayorNeutral(X,Y,C,A,B,D):grupo3FilB(X,Y,C) <-
-	!calcularCeldasNeutras(X+1,Y);
-	!calcularCeldasNeutras(X+2,Y);
-	!mejorPatronNeutro(A,B,D).
-
-+!mayorNeutral(X,Y,C,A,B,D):grupo3FilC(X,Y,C) <-
-	!calcularCeldasNeutras(X-1,Y);
-	!calcularCeldasNeutras(X-2,Y);
-	!mejorPatronNeutro(A,B,D).
-
-+!mayorNeutral(X,Y,C,A,B,D):grupo3ColA(X,Y,C) <-
-	!calcularCeldasNeutras(X,Y-1);
-	!calcularCeldasNeutras(X,Y+1);
-	!mejorPatronNeutro(A,B,D).
-
-+!mayorNeutral(X,Y,C,A,B,D):grupo3ColB(X,Y,C) <-
-	!calcularCeldasNeutras(X,Y+1);
-	!calcularCeldasNeutras(X,Y+2);
-	!mejorPatronNeutro(A,B,D).
-
-+!mayorNeutral(X,Y,C,A,B,D):grupo3ColC(X,Y,C) <-
-	!calcularCeldasNeutras(X,Y-1);
-	!calcularCeldasNeutras(X,Y-2);
-	!mejorPatronNeutro(A,B,D).
-	
-+!mayorNeutral(X,Y,C,A,B,D).
++!cambioTurno(P,N,J) : P = player1 | jugadorDescalificado(player1,1) <-
+					-+turnoActual(player2);
+					-+jugadasRestantes(N-1);
+					-jugadasPlayer(player1,J);
+					+jugadasPlayer(player1,J+1);
+					.print("[ Jugadas restantes: ", N-1," || Jugadas completadas ",P,": ", J+1," ]\n").
 
 
-+!calcularCeldasNeutras(X,Y): tablero(celda(X,Y,Own),ficha(C,T)) & celdasNeutras(Celdas) <-
-	-+maxCeldasNeutras(Celdas+1).
-+!calcularCeldasNeutras(X,Y).
++!cambioTurno(P,N,J) : P = player2 | jugadorDescalificado(player2,1) <-
+					-+turnoActual(player1);
+					-+jugadasRestantes(N-1);
+					-jugadasPlayer(player2,J);
+					+jugadasPlayer(player2,J+1);
+					.print("[ Jugadas restantes: ", N-1," || Jugadas completadas ",P,": ", J+1," ]\n").
 
-+!mejorPatronNeutro(X,Y,D) : celdasNeutras(P1) & maxCeldasNeutras(P2) & P1 > P2 <-
-	-+maxCeldasNeutras(P1);
-	-+jugada(X,Y,D);
-	-+celdasNeutras(0);
-	.
-+!mejorPatronNeutro(X,Y,D) : celdasNeutras(P1) & maxCeldasNeutras(P2) & P1 <= P2.
-	
-+!mejorPatronNeutro(X,Y,D).
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+//Cambio de turno cuando hay un jugador descalificado
++!cambioTurnoMismoJugador(P,N,J) :jugadasRestantes(N) & jugadasPlayer(P,J)<-
+					-+jugadasRestantes(N-1);
+					-jugadasPlayer(P,J);
+					+jugadasPlayer(P,J+1);
+					.print("[ Jugadas restantes: ", N-1," || Jugadas completadas ",P,": ", J+1," ]\n").
 
 
 
 
+//Generacion aleatoria de obstaculos
++!generateObstacles : obstacles(N) & N>0 <-
+					.random(X,10);
+					.random(Y,10);
+					!generateObstacle(math.round(9*X),math.round(9*Y));
+					!generateObstacles.
+
++!generateObstacle(X,Y) : tablero(celda(X,Y,_),ficha(C,_)) & obstacles(N) <- //Obliga a generar los N obstaculos en celdas distintas
+					-tablero(celda(X,Y,_),ficha(C,_));
+					+tablero(celda(X,Y,0),obstacle);
+					delete(C,X,Y);
+					putObstacle(X,Y);
+					-+obstacles(N-1).
+
++!generateObstacle(X,Y).
++!generateObstacles.
 
 
 
++!propietariosIniciales <-
+	!asignarCeldas(player1);
+	!asignarCeldas(player2).
 
-
-
-
-
-
-//Estrategia para level 1 y 2
-+!mejorJugada:size(N) <-
-	-+jugada(none,none,none);
-	-+puntosMejorPatron(0); 
-	for(.range(X,0,N-1)){
-		for(.range(Y,0,N-1)){
-			if(datos(X,Y,C)){
-				!comprobarDir(X,Y);
-			}
++!asignarCeldas(Player):size(N)& propietario(Player,Own) & numCeldasPropietario(Celdas) & Celdas < 45 <-		
+		for ( .range(I,0,Celdas) ) {
+			?aleatoria(X,Y);
+			-tablero(celda(X,Y,_),ficha(C,T));
+			+tablero(celda(X,Y,Own),ficha(C,T));
+			putOwner(C,X,Y,Own);
 		}
-	}.
+		.
++!asignarCeldas(Player).	
+//Analisis del movimiento solicitado por un jugador
+//Movimiento correcto
++intercambiarFichas(X1,Y1,Dir,P) : nextPosition(X1,Y1,Dir,X2,Y2) & plNumb(P,PlNumb) <-
+								-+direction(Dir);
+								-tablero(celda(X1,Y1,Own1),ficha(C1,TipoFicha1));
+								-tablero(celda(X2,Y2,Own2),ficha(C2,TipoFicha2));
+								+tablero(celda(X2,Y2,Own2),ficha(C1,TipoFicha1));
+								+tablero(celda(X1,Y1,Own1),ficha(C2,TipoFicha2));
+								exchange(C1,X1,Y1,C2,X2,Y2); //Intercambio de fichas en el tablero grafico
+								.print("Se han intercambiado las fichas entre las posiciones (",X1,",",Y1,") y (",X2,",",Y2,")");
+								//.wait(250); //Ajusta la velocidad del intercambio de fichas
+								-+conquista(Own1);
+								-+recursivityFlag(1);
+								-+explosionFlag(1);
+								-+dualExplosionFlag(0);
+								-+posicionesIntercambiadas(X1,Y1,X2,Y2);
+								!exchangedPatternMatch; //Deteccion y borrado de patrones en las dos posiciones intercambiadas								
+								!fullPatternMatch; //Deteccion y borrado de todos los patrones, aplicacion del algoritmo de caida y rellenado
+								//.wait(750);  //Ajusta la velocidad del intercambio de fichas
+								-+conquista(0);
+								!celdasJugador(player1);
+								!celdasJugador(player2);
+								!updatePlayersTableroBB. //Actualizacion de la base del conocimiento de los players tras los eventos sucedidos en tablero durante un turno
 
-//comprobar en las 4 direciones
-+!comprobarDir(X,Y) <-
-	-+puntosPatron(0);
-	!left(X,Y,"left");
-	-+puntosPatron(0);
-	!up(X,Y,"up");
-	-+puntosPatron(0);
-	!right(X,Y,"right");
-	-+puntosPatron(0);
-	!down(X,Y,"down");
-	.
++!exchangedPatternMatch : posicionesIntercambiadas(X1,Y1,X2,Y2) <- 
+							!patternMatchExchangedPosition(X1,Y1);
+							!patternMatchExchangedPosition(X2,Y2).
 
-+!right(X,Y,D): tablero(celda(X,Y,O1),ficha(C1,T1)) & tablero(celda(X+1,Y,O2),ficha(C2,T2)) <-	
-	!intercambio(X,Y,X+1,Y);
-	!agrupacion(X+1,Y,C,X,Y,D);
-	!intercambio(X,Y,X+1,Y);
-	.
-+!right(X,Y,D).
-
-+!left(X,Y,D): tablero(celda(X,Y,O1),ficha(C1,T1)) & tablero(celda(X-1,Y,O2),ficha(C2,T2)) <-	
-	!intercambio(X,Y,X-1,Y);
-	!agrupacion(X-1,Y,C,X,Y,D);
-	!intercambio(X,Y,X-1,Y);
-	.
-+!left(X,Y,D).
-
-+!down(X,Y,D): tablero(celda(X,Y,O1),ficha(C1,T1)) & tablero(celda(X,Y+1,O2),ficha(C2,T2)) <-	
-	!intercambio(X,Y,X,Y+1);
-	!agrupacion(X,Y+1,C,X,Y,D);
-	!intercambio(X,Y,X,Y+1);
-	.
-+!down(X,Y,D).
-
-+!up(X,Y,D): tablero(celda(X,Y,O1),ficha(C1,T1)) & tablero(celda(X,Y-1,O2),ficha(C2,T2)) <-	
-	!intercambio(X,Y,X,Y-1);
-	!agrupacion(X,Y-1,C,X,Y,D);
-	!intercambio(X,Y-1,X,Y);
-	.
-+!up(X,Y,D).
-
-+!intercambio(X1,Y1,X2,Y2) : tablero(celda(X1,Y1,O1),ficha(C1,T1)) & tablero(celda(X2,Y2,O2),ficha(C2,T2)) <-
-	-tablero(celda(X1,Y1,O1),ficha(C1,T1));
-	-tablero(celda(X2,Y2,O2),ficha(C2,T2));
-	+tablero(celda(X1,Y1,O2),ficha(C2,T2));
-	+tablero(celda(X2,Y2,O1),ficha(C1,T1)).
-+!intercambio(X1,Y1,X2,Y2).
++!patternMatchExchangedPosition(X,Y) : comprobarPatrones(C,X,Y,StartsAtX,StartsAtY,Direction,Pattern) & Pattern = "T" <-
+										!handlePattern(C,StartsAtX,StartsAtY,Direction,"T");
+										.wait(350); // Ajusta el tiempo tras cada explosion
+										!setMovedSteak(X,Y,"T");
+										!generateSpecialSteak("T",C);
+										!gravity;
+										!refill;
+										-+recursivityFlag(1);//Reset de flags
+										-+explosionFlag(1);
+										-+dualExplosionFlag(0).
++!patternMatchExchangedPosition(X,Y).
 
 
- +!agrupacion(X,Y,C,A,B,D) <-
- 	-+puntosPatron(0);
-	!grupo3FilA1(X,Y,C,A,B,D);
-	-+puntosPatron(0);
-	!grupo3FilB1(X,Y,C,A,B,D);
-	-+puntosPatron(0);
-	!grupo3FilC1(X,Y,C,A,B,D);
-	-+puntosPatron(0);
-	!grupo3ColA1(X,Y,C,A,B,D);
-	-+puntosPatron(0);
-	!grupo3ColB1(X,Y,C,A,B,D);
-	-+puntosPatron(0);
-	!grupo3ColC1(X,Y,C,A,B,D);
-
-	-+puntosPatron(0);
-	!grupo5TN1(X,Y,C,A,B,D);
-	-+puntosPatron(0);
-	!grupo5TI1(X,Y,C,A,B,D);
-	-+puntosPatron(0);
-	!grupo5TR1(X,Y,C,A,B,D);
-	-+puntosPatron(0);
-	!grupo5TL1(X,Y,C,A,B,D);
-
-	-+puntosPatron(0);
-	!grupo5Fil1(X,Y,C,A,B,D);
-	-+puntosPatron(0);
-	!grupo5Col1(X,Y,C,A,B,D);
-
-	-+puntosPatron(0);
-	!grupo4FilA1(X,Y,C,A,B,D);
-	-+puntosPatron(0);
-	!grupo4FilB1(X,Y,C,A,B,D);
-	-+puntosPatron(0);
-	!grupo4ColA1(X,Y,C,A,B,D);
-	-+puntosPatron(0);
-	!grupo4ColB1(X,Y,C,A,B,D);
-
-	-+puntosPatron(0);
-	!grupo4SquareA1(X,Y,C,A,B,D);
-	-+puntosPatron(0);
-	!grupo4SquareB1(X,Y,C,A,B,D);
-	-+puntosPatron(0);
-	!grupo4SquareC1(X,Y,C,A,B,D);
-	-+puntosPatron(0);
-	!grupo4SquareD1(X,Y,C,A,B,D);
- .
+//Deteccion de patrones en todo el tablero
++!fullPatternMatch : recursivityFlag(1) & size(N) <-
+					-+recursivityFlag(0);
+					for ( .range(I,0,(N-1)) ) {
+									for ( .range(J,0,(N-1)) ) {
+										!patternMatchPosition(I,J);
+									}
+								}
+					-+explosionFlag(0);
+					!gravity;
+					!refill;
+					!fullPatternMatch.
++!fullPatternMatch.
 
 
-//Agrupacion de T
-+!grupo5TN1(X,Y,C,A,B,D):grupo5TN(X,Y,C) <- 
-	-+puntosPatron(6);
-	!calcularPuntos(X,Y);
-	!calcularPuntos(X-1,Y);
-	!calcularPuntos(X+1,Y);
-	!calcularPuntos(X,Y+1);
-	!calcularPuntos(X,Y+2);
-	!comprobarMejorPatron(A,B,D).
-+!grupo5TN1(X,Y,C,A,B,D).
 
-+!grupo5TI1(X,Y,C,A,B,D):grupo5TI(X,Y,C) <-
-	-+puntosPatron(6);
-	!calcularPuntos(X,Y);
-	!calcularPuntos(X-1,Y);
-	!calcularPuntos(X+1,Y);
-	!calcularPuntos(X,Y-1);
-	!calcularPuntos(X,Y-2);
-	!comprobarMejorPatron(A,B,D).
-+!grupo5TI1(X,Y,C,A,B,D).
++!patternMatchPosition(I,J): tablero(celda(I,J,_),ficha(C,_)) & comprobarPatrones(C,I,J,StartsAtX,StartsAtY,Direction,Pattern) & not Pattern = "none" & posicionesIntercambiadas(X1,Y1,X2,Y2)<-
+	!handlePattern(C,StartsAtX,StartsAtY,Direction,Pattern);
+	.wait(350); // Ajusta el tiempo tras cada explosion
+	!setMovedSteak(X1,Y1,Pattern);
+	!setMovedSteak(X2,Y2,Pattern);
+	!generateSpecialSteak(Pattern,C);
+	-+recursivityFlag(1).
 
-+!grupo5TR1(X,Y,C,A,B,D):grupo5TR(X,Y,C) <-
-	-+puntosPatron(6);
-	!calcularPuntos(X,Y);
-	!calcularPuntos(X-1,Y);
-	!calcularPuntos(X-2,Y);
-	!calcularPuntos(X,Y+1);
-	!calcularPuntos(X,Y-1);
-	!comprobarMejorPatron(A,B,D).
-+!grupo5TR1(X,Y,C,A,B,D).
++!patternMatchPosition(I,J).
 
-+!grupo5TL1(X,Y,C,A,B,D):grupo5TL(X,Y,C) <-
-	-+puntosPatron(6);
-	!calcularPuntos(X,Y);
-	!calcularPuntos(X+1,Y);
-	!calcularPuntos(X+2,Y);
-	!calcularPuntos(X,Y+1);
-	!calcularPuntos(X,Y-1);
-	!comprobarMejorPatron(A,B,D).
-+!grupo5TL1(X,Y,C,A,B,D).
 
-//Agrupacion de 5
-+!grupo5Fil1(X,Y,C,A,B,D):grupo5Fil(X,Y,C) <-
-	-+puntosPatron(8);
-	!calcularPuntos(X,Y);
-	!calcularPuntos(X+1,Y);
-	!calcularPuntos(X+2,Y);
-	!calcularPuntos(X-1,Y);
-	!calcularPuntos(X-2,Y);
-	!comprobarMejorPatron(A,B,D).
-+!grupo5Fil1(X,Y,C,A,B,D).
+//Algoritmo de caida y rodar
++!gravity : emptyUnder(_,_) & size(N) <-
+					for ( .range(X,0,(N-1)) ) {
+									for ( .range(Y,0,(N-1)) ) {
+										!fall(X,Y);
+									}
+								}
+								!gravity;
+								.wait(100). //Ajusta el tiempo tras la caida de todas las fichas
++!gravity.
 
-+!grupo5Col1(X,Y,C,A,B,D):grupo5Col(X,Y,C) <-
-	-+puntosPatron(8);
-	!calcularPuntos(X,Y);
-	!calcularPuntos(X,Y+1);
-	!calcularPuntos(X,Y+2);
-	!calcularPuntos(X,Y-1);
-	!calcularPuntos(X,Y-2);
-	!comprobarMejorPatron(A,B,D).
-+!grupo5Col1(X,Y,C,A,B,D).
++!fall(X,Y) : emptyUnder(X,Y)  <-
+	!fallAndRoll(X,Y). //Solo rodaran las fichas que primeramente han caido
 
-//Agrupacion de 4
-+!grupo4FilA1(X,Y,C,A,B,D):grupo4FilA(X,Y,C) <-
-	-+puntosPatron(2);
-	!calcularPuntos(X,Y);
-	!calcularPuntos(X-1,Y);
-	!calcularPuntos(X+1,Y);
-	!calcularPuntos(X+2,Y);
-	!comprobarMejorPatron(A,B,D).
-+!grupo4FilA1(X,Y,C,A,B,D).
++!fallAndRoll(X,Y) : emptyUnder(X,Y) & tablero(celda(X,Y,Owner1),ficha(Color,Tipo))<-
+ 	-tablero(celda(X,Y,Owner1),ficha(Color,Tipo));
+	-tablero(celda(X,Y+1,Owner2),e);
+    +tablero(celda(X,Y,Owner1),e);
+	+tablero(celda(X,Y+1,Owner2),ficha(Color,Tipo));
+	delete(Color,X,Y);
+	put(Color,X,Y+1,Tipo);
+	!fallAndRoll(X,Y+1).
 
-+!grupo4FilB1(X,Y,C,A,B,D):grupo4FilB(X,Y,C) <-
-	-+puntosPatron(2);
-	!calcularPuntos(X,Y);
-	!calcularPuntos(X-1,Y);
-	!calcularPuntos(X-2,Y);
-	!calcularPuntos(X+1,Y);
-	!comprobarMejorPatron(A,B,D).
-+!grupo4FilB1(X,Y,C,A,B,D).
++!fallAndRoll(X,Y) : emptyLeft(X,Y) & tablero(celda(X,Y,Owner1),ficha(Color,Tipo))<- //Se ha elegido que las fichas rueden hacia la izquierda para funcionar correctamente con el orden de exploracion del tablero establecido.
+ 	-tablero(celda(X,Y,Owner1),ficha(Color,Tipo));
+	-tablero(celda(X-1,Y,Owner2),e);
+    +tablero(celda(X,Y,Owner1),e);
+	+tablero(celda(X-1,Y,Owner2),ficha(Color,Tipo));
+	delete(Color,X,Y);
+	put(Color,X-1,Y,Tipo);
+	!fallAndRoll(X-1,Y).
 
-+!grupo4ColA1(X,Y,C,A,B,D):grupo4ColA(X,Y,C) <-
-	-+puntosPatron(2);
-	!calcularPuntos(X,Y);
-	!calcularPuntos(X,Y-1);
-	!calcularPuntos(X,Y+1);
-	!calcularPuntos(X,Y+2);
-	!comprobarMejorPatron(A,B,D).
-+!grupo4ColA1(X,Y,C,A,B,D).
 
-+!grupo4ColB1(X,Y,C,A,B,D):grupo4ColB(X,Y,C) <-
-	-+puntosPatron(2);
-	!calcularPuntos(X,Y);
-	!calcularPuntos(X,Y-1);
-	!calcularPuntos(X,Y-2);
-	!calcularPuntos(X,Y+1);
-	!comprobarMejorPatron(A,B,D).
-+!grupo4ColB1(X,Y,C,A,B,D).
 
-//Agrupacion cuadrado
-+!grupo4SquareA1(X,Y,C,A,B,D):grupo4SquareA(X,Y,C) <-
-	-+puntosPatron(4);
-	!calcularPuntos(X,Y);
-	!calcularPuntos(X+1,Y);
-	!calcularPuntos(X,Y+1);
-	!calcularPuntos(X+1,Y+1);
-	!comprobarMejorPatron(A,B,D).
-+!grupo4SquareA1(X,Y,C,A,B,D).
++!fallAndRoll(X,Y).
++!fall(X,Y).
 
-+!grupo4SquareB1(X,Y,C,A,B,D):grupo4SquareB(X,Y,C) <-
-	-+puntosPatron(4);
-	!calcularPuntos(X,Y);
-	!calcularPuntos(X-1,Y);
-	!calcularPuntos(X,Y+1);
-	!calcularPuntos(X-1,Y+1);
-	!comprobarMejorPatron(A,B,D).
-+!grupo4SquareB1(X,Y,C,A,B,D).
 
-+!grupo4SquareC1(X,Y,C,A,B,D):grupo4SquareC(X,Y,C) <-
-	-+puntosPatron(4);
-	!calcularPuntos(X,Y);
-	!calcularPuntos(X+1,Y);
-	!calcularPuntos(X,Y-1);
-	!calcularPuntos(X+1,Y-1);
-	!comprobarMejorPatron(A,B,D).
-+!grupo4SquareC1(X,Y,C,A,B,D).
+//Algoritmo de rellenado de celdas vacias con fichas generadas de color aleatorio
++!refill : tablero(celda(_,0,_),e) & size(N) <- //Anhade una ficha en las posiciones (X,0) que esten libres y posteriormente aplica la caida
+		for ( .range(X,0,(N-1)) ) {
+			.random(Color,10);
+	       	!refillSteak(X,math.round(5*Color));
+			};
+		!gravity;
+		.wait(50); // Ajusta el tiempo tras la aplicacion del algoritmo de caida
+		!refill.
++!refill.
 
-+!grupo4SquareD1(X,Y,C,A,B,D):grupo4SquareD(X,Y,C) <-
-	-+puntosPatron(4);
-	!calcularPuntos(X,Y);
-	!calcularPuntos(X-1,Y);
-	!calcularPuntos(X,Y-1);
-	!calcularPuntos(X-1,Y-1);
-	!comprobarMejorPatron(A,B,D).
-+!grupo4SquareD1(X,Y,C,A,B,D).
++!refillSteak(X,Color) : tablero(celda(X,0,Own),e)<-
+					put(Color,X,0,in);
+					-tablero(celda(X,0,Own),e);
+					+tablero(celda(X,0,Own),ficha(Color,in)).
++!refillSteak(X,Color).
 
-//Agrupacion de 3
-+!grupo3FilA1(X,Y,C,A,B,D):grupo3FilA(X,Y,C) <-
-	!calcularPuntos(X,Y);
-	!calcularPuntos(X-1,Y);
-	!calcularPuntos(X+1,Y);
-	!comprobarMejorPatron(A,B,D).
-+!grupo3FilA1(X,Y,C,A,B,D).
 
-+!grupo3FilB1(X,Y,C,A,B,D):grupo3FilB(X,Y,C) <-
-	!calcularPuntos(X,Y);
-	!calcularPuntos(X+1,Y);
-	!calcularPuntos(X+2,Y);
-	!comprobarMejorPatron(A,B,D).
-+!grupo3FilB1(X,Y,C,A,B,D).
 
-+!grupo3FilC1(X,Y,C,A,B,D):grupo3FilC(X,Y,C) <-
-	!calcularPuntos(X,Y);
-	!calcularPuntos(X-1,Y);
-	!calcularPuntos(X-2,Y);
-	!comprobarMejorPatron(A,B,D).
-+!grupo3FilC1(X,Y,C,A,B,D).
 
-+!grupo3ColA1(X,Y,C,A,B,D):grupo3ColA(X,Y,C) <-
-	!calcularPuntos(X,Y);
-	!calcularPuntos(X,Y-1);
-	!calcularPuntos(X,Y+1);
-	!comprobarMejorPatron(A,B,D).
-+!grupo3ColA1(X,Y,C,A,B,D).
 
-+!grupo3ColB1(X,Y,C,A,B,D):grupo3ColB(X,Y,C) <-
-	!calcularPuntos(X,Y);
-	!calcularPuntos(X,Y+1);
-	!calcularPuntos(X,Y+2);
-	!comprobarMejorPatron(A,B,D).
-+!grupo3ColB1(X,Y,C,A,B,D).
+//Actualizacion de los BB tras todas las acciones ocurridas sobre el tablero despues de que el jugador realice movimiento
+/*+!updatePlayersTableroBB: level(L)<-
+			.send(player1,tell,deleteTableroBB);
+			.send(player2,tell,deleteTableroBB);
+			.wait(500);
+			.send(player1,untell,deleteTableroBB);
+			.send(player2,untell,deleteTableroBB);
+			!mostrarTablero(player1);
+			!mostrarTablero(player2);
+			if(L > 1) {
+			.send(player1,untell,level(_));
+			.send(player2,untell,level(_));
+			}
+			.send(player1,tell,level(L));
+			.send(player2,tell,level(L)). */
+			
++!updatePlayersTableroBB:level(L) <-
+			.send(player1,tell,deleteTableroBB);
+			.send(player2,tell,deleteTableroBB);
+			.wait(500);
+			.send(player1,untell,deleteTableroBB);
+			.send(player2,untell,deleteTableroBB);
+			!mostrarTablero(player1);
+			!mostrarTablero(player2);
+			
+			if(L > 1) {
+			.send(player1,untell,level(_));
+			.send(player2,untell,level(_));
+			}
+			.send(player1,tell,level(L));
+			.send(player2,tell,level(L)).
 
-+!grupo3ColC1(X,Y,C,A,B,D):grupo3ColC(X,Y,C) <-
-	!calcularPuntos(X,Y);
-	!calcularPuntos(X,Y-1);
-	!calcularPuntos(X,Y-2);
-	!comprobarMejorPatron(A,B,D).
-+!grupo3ColC1(X,Y,C,A,B,D).	
+//Comunicacion del tablero al jugador indicado.
++!mostrarTablero(P) <- .findall(tablero(X,Y),tablero(X,Y),Lista);
+		for ( .member(Estructure,Lista) ) {
+			.send(P,tell,Estructure);
+		 }.
 
-+!comprobarMejorPatron(X,Y,D) : puntosPatron(P1) & puntosMejorPatron(P2) & P1 > P2 <-
-	-+puntosMejorPatron(P1);
-	-+jugada(X,Y,D);
-	-+puntosPatron(0);
-	.
-+!comprobarMejorPatron(X,Y,D) : puntosPatron(P1) & puntosMejorPatron(P2) & P1 <= P2.
+//Gestion de explosion de patrones segun su tipo y colocacion en el tablero
++!handlePattern(Color,StartsAtX,StartsAtY,Direction,Pattern) : Pattern = "3inLineH" <-
+		delete(Color,StartsAtX,StartsAtY);
+		delete(Color,StartsAtX,StartsAtY+1);
+		delete(Color,StartsAtX,StartsAtY+2);
+
+		!explosion(StartsAtX,StartsAtY);
+		!explosion(StartsAtX,StartsAtY+1);
+		!explosion(StartsAtX,StartsAtY+2).
+
++!handlePattern(Color,StartsAtX,StartsAtY,Direction,Pattern) : Pattern = "3inLineW" <-
+		delete(Color,StartsAtX,StartsAtY);
+		delete(Color,StartsAtX+1,StartsAtY);
+		delete(Color,StartsAtX+2,StartsAtY);
+
+		!explosion(StartsAtX,StartsAtY);
+		!explosion(StartsAtX+1,StartsAtY);
+		!explosion(StartsAtX+2,StartsAtY).
+
+
++!handlePattern(Color,StartsAtX,StartsAtY,Direction,Pattern) : Pattern = "4inLineH" <-
+		delete(Color,StartsAtX,StartsAtY);
+		delete(Color,StartsAtX,StartsAtY+1);
+		delete(Color,StartsAtX,StartsAtY+2);
+		delete(Color,StartsAtX,StartsAtY+3);
+
+		!explosion(StartsAtX,StartsAtY);
+		!explosion(StartsAtX,StartsAtY+1);
+		!explosion(StartsAtX,StartsAtY+2);
+		!explosion(StartsAtX,StartsAtY+3).
+
+
++!handlePattern(Color,StartsAtX,StartsAtY,Direction,Pattern) : Pattern = "4inLineW" <-
+		delete(Color,StartsAtX,StartsAtY);
+		delete(Color,StartsAtX+1,StartsAtY);
+		delete(Color,StartsAtX+2,StartsAtY);
+		delete(Color,StartsAtX+3,StartsAtY);
+
+		!explosion(StartsAtX,StartsAtY);
+		!explosion(StartsAtX+1,StartsAtY);
+		!explosion(StartsAtX+2,StartsAtY);
+		!explosion(StartsAtX+3,StartsAtY).
+
+
++!handlePattern(Color,StartsAtX,StartsAtY,Direction,Pattern) : Pattern = "5inLineH"<-
+		delete(Color,StartsAtX,StartsAtY);
+		delete(Color,StartsAtX,StartsAtY+1);
+		delete(Color,StartsAtX,StartsAtY+2);
+		delete(Color,StartsAtX,StartsAtY+3);
+		delete(Color,StartsAtX,StartsAtY+4);
+
+		!explosion(StartsAtX,StartsAtY);
+		!explosion(StartsAtX,StartsAtY+1);
+		!explosion(StartsAtX,StartsAtY+2);
+		!explosion(StartsAtX,StartsAtY+3);
+		!explosion(StartsAtX,StartsAtY+4).
+
+
++!handlePattern(Color,StartsAtX,StartsAtY,Direction,Pattern) : Pattern = "5inLineW" <-
+		delete(Color,StartsAtX,StartsAtY);
+		delete(Color,StartsAtX+1,StartsAtY);
+		delete(Color,StartsAtX+2,StartsAtY);
+		delete(Color,StartsAtX+3,StartsAtY);
+		delete(Color,StartsAtX+4,StartsAtY);
+
+
+		!explosion(StartsAtX,StartsAtY);
+		!explosion(StartsAtX+1,StartsAtY);
+		!explosion(StartsAtX+2,StartsAtY);
+		!explosion(StartsAtX+3,StartsAtY);
+		!explosion(StartsAtX+4,StartsAtY).
+
+
++!handlePattern(Color,StartsAtX,StartsAtY,Direction,Pattern) : Pattern = "Square" <-
+		delete(Color,StartsAtX,StartsAtY);
+		delete(Color,StartsAtX+1,StartsAtY);
+		delete(Color,StartsAtX,StartsAtY+1);
+		delete(Color,StartsAtX+1,StartsAtY+1);
+
+		!explosion(StartsAtX,StartsAtY);
+		!explosion(StartsAtX+1,StartsAtY);
+		!explosion(StartsAtX,StartsAtY+1);
+		!explosion(StartsAtX+1,StartsAtY+1).
+
+
++!handlePattern(Color,StartsAtX,StartsAtY,Direction,Pattern) : Pattern = "T"<-
+	!handleT(Color,StartsAtX,StartsAtY,Direction,Pattern).
+
+
++!handleT(Color,StartsAtX,StartsAtY,Direction,Pattern) : Direction = "standing" <-
+	delete(Color,StartsAtX,StartsAtY);
+	delete(Color,StartsAtX+1,StartsAtY);
+	delete(Color,StartsAtX-1,StartsAtY);
+	delete(Color,StartsAtX,StartsAtY+1);
+	delete(Color,StartsAtX,StartsAtY+2);
+
+	!explosion(StartsAtX,StartsAtY);
+	!explosion(StartsAtX+1,StartsAtY);
+	!explosion(StartsAtX-1,StartsAtY);
+	!explosion(StartsAtX,StartsAtY+1);
+	!explosion(StartsAtX,StartsAtY+2).
+
++!handleT(Color,StartsAtX,StartsAtY,Direction,Pattern) : Direction = "upside-down" <-
+	delete(Color,StartsAtX,StartsAtY);
+	delete(Color,StartsAtX+1,StartsAtY);
+	delete(Color,StartsAtX-1,StartsAtY);
+	delete(Color,StartsAtX,StartsAtY-1);
+	delete(Color,StartsAtX,StartsAtY-2);
+
+	!explosion(StartsAtX,StartsAtY);
+	!explosion(StartsAtX+1,StartsAtY);
+	!explosion(StartsAtX-1,StartsAtY);
+	!explosion(StartsAtX,StartsAtY-1);
+	!explosion(StartsAtX,StartsAtY-2).
+
+
++!handleT(Color,StartsAtX,StartsAtY,Direction,Pattern) : Direction = "pointing-right" <-
+
+	delete(Color,StartsAtX,StartsAtY);
+	delete(Color,StartsAtX,StartsAtY+1);
+	delete(Color,StartsAtX,StartsAtY-1);
+	delete(Color,StartsAtX+1,StartsAtY);
+	delete(Color,StartsAtX+2,StartsAtY);
+
+	!explosion(StartsAtX,StartsAtY);
+	!explosion(StartsAtX,StartsAtY+1);
+	!explosion(StartsAtX,StartsAtY-1);
+	!explosion(StartsAtX+1,StartsAtY);
+	!explosion(StartsAtX+2,StartsAtY).
+
++!handleT(Color,StartsAtX,StartsAtY,Direction,Pattern) : Direction = "pointing-left" <-
+
+	delete(Color,StartsAtX,StartsAtY);
+	delete(Color,StartsAtX,StartsAtY+1);
+	delete(Color,StartsAtX,StartsAtY-1);
+	delete(Color,StartsAtX-1,StartsAtY);
+	delete(Color,StartsAtX-2,StartsAtY);
+
+	!explosion(StartsAtX,StartsAtY);
+	!explosion(StartsAtX,StartsAtY+1);
+	!explosion(StartsAtX,StartsAtY-1);
+	!explosion(StartsAtX-1,StartsAtY);
+	!explosion(StartsAtX-2,StartsAtY).
+
+
+//Establecer celda como movida para generar sobre ella la ficha especial cuando la explosion es directamente realizada por el movimiento del jugador
++!setMovedSteak(X,Y,Pattern) : explosionFlag(1) & tablero(celda(X,Y,Own),e) & specialSteak(Pattern,Type)<-
+			-tablero(celda(X,Y,Own),_);
+			+tablero(celda(X,Y,Own),m);
+			-+dualExplosionFlag(1). //Aunque se active el flag, solo se utilizara si explota otro patron contiguo
++!setMovedSteak(X,Y,Pattern).
+
+//Generacion de la ficha especial acorde al patron que le corresponde tras una explosion
++!generateSpecialSteak(Pattern,Color) : explosionFlag(1) & tablero(celda(X,Y,Own),m) & specialSteak(Pattern,Type)<- //La explosion se produjo directamente por el movimiento del jugador, y la ficha especial se debe de colocar en la ficha movida.
+			put(Color,X,Y,Type);
+			-tablero(celda(X,Y,Own),m);
+			+tablero(celda(X,Y,Own),ficha(Color,Type));
+			!specialStickGenerationPoints(Type);
+			!dualExplosion.
+
++!dualExplosion : dualExplosionFlag(F) & F=1 & tablero(celda(NX,NY,Own),m)<- //Gestion de la explosion de dos patrones contiguos para evitar problemas en la generacion de fichas especiales
+			-tablero(celda(NX,NY,Own),m);
+			+tablero(celda(NX,NY,Own),e);
+			-+dualExplosionFlag(0).
++!dualExplosion.
+
+//Generacion de ficha especial por explosion de un patron
++!generateSpecialSteak(Pattern,Color) : explosionFlag(0) & tablero(celda(X,Y,Own),e) & specialSteak(Pattern,Type)<-  //La explosion se produjo de forma indirecta por la caida de fichas. La ficha especial se coloca de forma aleatoria por unificacion.
+			put(Color,X,Y,Type);
+			-tablero(celda(X,Y,Own),e);
+			+tablero(celda(X,Y,Own),ficha(Color,Type));
+			!specialStickGenerationPoints(Type).
++!generateSpecialSteak(Pattern,Color).
+
+//Suma de los puntos correspondientes a la generacion de una ficha especial
++!specialStickGenerationPoints(T) : generationPoints(T,NP) & turnoActual(A) & level(L) & points(L,A,P) <-
+				-points(L,A,P);
+				+points(L,A,P+NP).
+				
+//Gestion de explosiones segun el tipo de ficha
++!explosion(X,Y) : tablero(celda(X,Y,Own),ficha(C,T)) & direction(D) & turnoActual(A) & level(L) & points(L,A,P)<-
+				-tablero(celda(X,Y,Own),_);//Primero se elimina la ficha seleccionada, luego las otras fichas afectadas en caso de ser necesario
+				+tablero(celda(X,Y,Own),e);
+				!cambiarPropietario(C,X,Y);
+				delete(C,X,Y);		
+				!specialExplosion(X,Y,C,T,D,A,P,L).
+//Falta verificar
++!explosion(X,Y) : tablero(celda(X,Y,_),e).
++!explosion(X,Y) <- .print("ERROR. !explosion(",X,",",Y,")").
+
++!cambiarPropietario(C,X,Y): tablero(celda(X,Y,_),_) & conquista(Conq) & level(L) & not Conq = 0 & L=3 <-
+	-tablero(celda(X,Y,_),_);//Primero se elimina la ficha seleccionada, luego las otras fichas afectadas en caso de ser necesario
+	+tablero(celda(X,Y,Conq),e);
+	putOwner(C,X,Y,Conq).
++!cambiarPropietario(C,X,Y).
 	
-+!comprobarMejorPatron(X,Y,D).
-	
-//Grupo de 5
-+!calcularPuntos(X,Y): tablero(celda(X,Y,_),ficha(_,T)) & puntosPatron(Puntos) & valorFicha(T,Valor) <-
-	-+puntosPatron(Puntos+Valor).
++!specialExplosion(X,Y,C,T,D,A,P,L) : T = in <-
+	-points(L,A,P);
+    +points(L,A,P+1).
 
++!specialExplosion(X,Y,C,T,D,A,P,L) : T = ip  & (D="up" | D="down")<-     //Explosion en linea vertical
+			-points(L,A,P);
+			+points(L,A,P+2);
+			for( tablero(celda(X,NY,Own),ficha(NC,_))){
+					!explosion(X,NY);
+					-tablero(celda(X,NY,Own),_);
+					+tablero(celda(X,NY,Own),e);
+					delete(NC,X,NY);
+				}.
 
++!specialExplosion(X,Y,C,T,D,A,P,L) : T = ip  & (D="left" | D="right")<-     //Explosion en linea horizontal
+			-points(L,A,P);
+			+points(L,A,P+2);
+			for( tablero(celda(NX,Y,Own),ficha(NC,_))){
+				 	!explosion(NX,Y);
+					-tablero(celda(NX,Y,Own),_);
+					+tablero(celda(NX,Y,Own),e);
+					delete(NC,NX,Y);
+				}.
 
-//Comienzo del turno
-+puedesMover[source(judge)] <- 
-	!mejorJugada;
-	!realizarMovimiento.
++!specialExplosion(X,Y,C,T,D,A,P,L) : T = gs & tablero(celda(NX,NY,Own),ficha(C,_)) & not X=NX & not Y=NY <-	 //Explosion de una ficha del mismo color (distinta a si misma)
+			-points(L,A,P);
+			+points(L,A,P+4);
+			!explosion(NX,NY);
+			-tablero(celda(NX,NY,Own),ficha(C,_));
+			+tablero(celda(NX,NY,Own),e);
+			delete(C,NX,NY).
 
++!specialExplosion(X,Y,C,T,D,A,P,L) : T = co <-  			//Explosion en cuadrado 3x3
+			-points(L,A,P);
+			+points(L,A,P+6);
+			for ( .range(I,-1,1) ) {
+				for ( .range(J,-1,1) ) {
+					!coExplosion(X+I,Y+J);
+				};
+			}.
 
-//Realizacion de la jugada
-+!realizarMovimiento : jugada(X,Y,D) & not X=none & not Y=none & not D=none <-				
-	.print("Intentando mover desde la posicion (",X,",",Y,") en direccion ",D);
-	.wait(2000);
-	.send(judge,tell,moverDesdeEnDireccion(pos(X,Y),D));
-	.send(judge,untell,moverDesdeEnDireccion(pos(X,Y),D)).
++!coExplosion(X,Y) : tablero(celda(X,Y,Own),ficha(C,_)) <-
+			  !explosion(X+I,Y+J);
+			  -tablero(celda(X,Y,Own),_);
+			  +tablero(celda(X,Y,Own),e);
+			  delete(C,X,Y).
++!coExplosion(X,Y).
 
-//Realizacion de la jugada random
-+!realizarMovimiento : randomMov(Mov) <-				
-	.print("Movimiento random");
-	.print("Intentando mover desde la posicion (",X,",",Y,") en direccion ",D);
-	.wait(20);
-	.send(judge,tell,Mov);
-	.send(judge,untell,Mov).
++!specialExplosion(X,Y,C,T,D,A,P,L) : T = ct <-     //Explosion de todas las fichas de ese color
+			-points(L,A,P);
+			+points(L,A,P+8);
+			for( tablero(celda(NX,NY,Own),ficha(C,_))){
+				 	!explosion(NX,NY);
+					-tablero(celda(NX,NY,Own),_);
+					+tablero(celda(NX,NY,Own),e);
+					delete(C,NX,NY);
+			}.
 
-//Movimiento realizado correctamente
-+valido[source(judge)] <- 
-	.print("Movimiento correcto realizado").
-
-
-//Movimiento realizado entre dos fichas del mismo color
-+tryAgain[source(judge)] <- 
-	!realizarMovimiento.
-
-//Movimiento realizado fuera del tablero
-+invalido(fueraTablero,N)[source(judge)] : N<=3 <-
-	!realizarMovimiento.
-
-+invalido(fueraTablero,N)[source(judge)] : N>3 <-
-	.send(judge,tell,pasoTurno);
-	.send(judge,untell,pasoTurno).
-
-//Movimiento realizado fuera de turno
-+invalido(fueraTurno,N)[source(judge)].
-
-+tablero(Celda,Ficha)[source(judge)] <-  
-	-tablero(Celda,Ficha)[source(judge)];
-	+tablero(Celda,Ficha).
-
-+deleteTableroBB [source(judge)]<-
-	.abolish(tablero(X,Y)).
++!specialExplosion(X,Y,C,T,D,A,P,L).
++!explosion(X,Y).
 
 //Plan por defecto a ejecutar en caso desconocido.
-+Default[source(A)]: not A=self  & not tablero(C,F) <- 
-	.print("El agente ",A," se comunica conmigo, pero no lo entiendo!").
++Default[source(A)]: not A=self  <- .print("He recibido el mensaje '",Default, "', pero no lo entiendo!");
+									-Default[source(A)].
 

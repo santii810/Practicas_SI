@@ -696,7 +696,7 @@ movPrueba(Mov) :- Mov = moverDesdeEnDireccion(pos(1,0),"left").
 
 //Agrupacion de T
 +!grupo5TN1(X,Y,C,A,B,D):grupo5TN(X,Y,C) <- 
-	-+puntosPatron(8);
+	-+puntosPatron(6);
 	!calcularPuntos(X,Y);
 	!calcularPuntos(X-1,Y);
 	!calcularPuntos(X+1,Y);
@@ -706,7 +706,7 @@ movPrueba(Mov) :- Mov = moverDesdeEnDireccion(pos(1,0),"left").
 +!grupo5TN1(X,Y,C,A,B,D).
 
 +!grupo5TI1(X,Y,C,A,B,D):grupo5TI(X,Y,C) <-
-	-+puntosPatron(8);
+	-+puntosPatron(6);
 	!calcularPuntos(X,Y);
 	!calcularPuntos(X-1,Y);
 	!calcularPuntos(X+1,Y);
@@ -716,7 +716,7 @@ movPrueba(Mov) :- Mov = moverDesdeEnDireccion(pos(1,0),"left").
 +!grupo5TI1(X,Y,C,A,B,D).
 
 +!grupo5TR1(X,Y,C,A,B,D):grupo5TR(X,Y,C) <-
-	-+puntosPatron(8);
+	-+puntosPatron(6);
 	!calcularPuntos(X,Y);
 	!calcularPuntos(X-1,Y);
 	!calcularPuntos(X-2,Y);
@@ -726,7 +726,7 @@ movPrueba(Mov) :- Mov = moverDesdeEnDireccion(pos(1,0),"left").
 +!grupo5TR1(X,Y,C,A,B,D).
 
 +!grupo5TL1(X,Y,C,A,B,D):grupo5TL(X,Y,C) <-
-	-+puntosPatron(8);
+	-+puntosPatron(6);
 	!calcularPuntos(X,Y);
 	!calcularPuntos(X+1,Y);
 	!calcularPuntos(X+2,Y);
@@ -737,7 +737,7 @@ movPrueba(Mov) :- Mov = moverDesdeEnDireccion(pos(1,0),"left").
 
 //Agrupacion de 5
 +!grupo5Fil1(X,Y,C,A,B,D):grupo5Fil(X,Y,C) <-
-	-+puntosPatron(6);
+	-+puntosPatron(8);
 	!calcularPuntos(X,Y);
 	!calcularPuntos(X+1,Y);
 	!calcularPuntos(X+2,Y);
@@ -747,7 +747,7 @@ movPrueba(Mov) :- Mov = moverDesdeEnDireccion(pos(1,0),"left").
 +!grupo5Fil1(X,Y,C,A,B,D).
 
 +!grupo5Col1(X,Y,C,A,B,D):grupo5Col(X,Y,C) <-
-	-+puntosPatron(6);
+	-+puntosPatron(8);
 	!calcularPuntos(X,Y);
 	!calcularPuntos(X,Y+1);
 	!calcularPuntos(X,Y+2);
