@@ -645,153 +645,233 @@ movPrueba(Mov) :- Mov = moverDesdeEnDireccion(pos(1,0),"left").
 	+tablero(celda(X2,Y2,O1),ficha(C1,T1)).
 +!intercambio(X1,Y1,X2,Y2).
 
+
+ +!agrupacion(X,Y,C,A,B,D) <-
+ 	-+puntosPatron(0);
+	!grupo3FilA1(X,Y,C,A,B,D);
+	-+puntosPatron(0);
+	!grupo3FilB1(X,Y,C,A,B,D);
+	-+puntosPatron(0);
+	!grupo3FilC1(X,Y,C,A,B,D);
+	-+puntosPatron(0);
+	!grupo3ColA1(X,Y,C,A,B,D);
+	-+puntosPatron(0);
+	!grupo3ColB1(X,Y,C,A,B,D);
+	-+puntosPatron(0);
+	!grupo3ColC1(X,Y,C,A,B,D);
+
+	-+puntosPatron(0);
+	!grupo5TN1(X,Y,C,A,B,D);
+	-+puntosPatron(0);
+	!grupo5TI1(X,Y,C,A,B,D);
+	-+puntosPatron(0);
+	!grupo5TR1(X,Y,C,A,B,D);
+	-+puntosPatron(0);
+	!grupo5TL1(X,Y,C,A,B,D);
+
+	-+puntosPatron(0);
+	!grupo5Fil1(X,Y,C,A,B,D);
+	-+puntosPatron(0);
+	!grupo5Col1(X,Y,C,A,B,D);
+
+	-+puntosPatron(0);
+	!grupo4FilA1(X,Y,C,A,B,D);
+	-+puntosPatron(0);
+	!grupo4FilB1(X,Y,C,A,B,D);
+	-+puntosPatron(0);
+	!grupo4ColA1(X,Y,C,A,B,D);
+	-+puntosPatron(0);
+	!grupo4ColB1(X,Y,C,A,B,D);
+
+	-+puntosPatron(0);
+	!grupo4SquareA1(X,Y,C,A,B,D);
+	-+puntosPatron(0);
+	!grupo4SquareB1(X,Y,C,A,B,D);
+	-+puntosPatron(0);
+	!grupo4SquareC1(X,Y,C,A,B,D);
+	-+puntosPatron(0);
+	!grupo4SquareD1(X,Y,C,A,B,D);
+ .
+
+
 //Agrupacion de T
-+!agrupacion(X,Y,C,A,B,D):grupo5TN(X,Y,C,A,B) <- 
++!grupo5TN1(X,Y,C,A,B,D):grupo5TN(X,Y,C) <- 
+	-+puntosPatron(8);
 	!calcularPuntos(X,Y);
 	!calcularPuntos(X-1,Y);
 	!calcularPuntos(X+1,Y);
 	!calcularPuntos(X,Y+1);
 	!calcularPuntos(X,Y+2);
 	!comprobarMejorPatron(A,B,D).
++!grupo5TN1(X,Y,C,A,B,D).
 
-+!agrupacion(X,Y,C,A,B,D):grupo5TI(X,Y,C) <-
++!grupo5TI1(X,Y,C,A,B,D):grupo5TI(X,Y,C) <-
+	-+puntosPatron(8);
 	!calcularPuntos(X,Y);
 	!calcularPuntos(X-1,Y);
 	!calcularPuntos(X+1,Y);
 	!calcularPuntos(X,Y-1);
 	!calcularPuntos(X,Y-2);
 	!comprobarMejorPatron(A,B,D).
++!grupo5TI1(X,Y,C,A,B,D).
 
-+!agrupacion(X,Y,C,A,B,D):grupo5TR(X,Y,C) <-
++!grupo5TR1(X,Y,C,A,B,D):grupo5TR(X,Y,C) <-
+	-+puntosPatron(8);
 	!calcularPuntos(X,Y);
 	!calcularPuntos(X-1,Y);
 	!calcularPuntos(X-2,Y);
 	!calcularPuntos(X,Y+1);
 	!calcularPuntos(X,Y-1);
 	!comprobarMejorPatron(A,B,D).
++!grupo5TR1(X,Y,C,A,B,D).
 
-+!agrupacion(X,Y,C,A,B,D):grupo5TL(X,Y,C) <-
++!grupo5TL1(X,Y,C,A,B,D):grupo5TL(X,Y,C) <-
+	-+puntosPatron(8);
 	!calcularPuntos(X,Y);
 	!calcularPuntos(X+1,Y);
 	!calcularPuntos(X+2,Y);
 	!calcularPuntos(X,Y+1);
 	!calcularPuntos(X,Y-1);
 	!comprobarMejorPatron(A,B,D).
++!grupo5TL1(X,Y,C,A,B,D).
 
 //Agrupacion de 5
-+!agrupacion(X,Y,C,A,B,D):grupo5Fil(X,Y,C) <-
++!grupo5Fil1(X,Y,C,A,B,D):grupo5Fil(X,Y,C) <-
+	-+puntosPatron(6);
 	!calcularPuntos(X,Y);
 	!calcularPuntos(X+1,Y);
 	!calcularPuntos(X+2,Y);
 	!calcularPuntos(X-1,Y);
 	!calcularPuntos(X-2,Y);
 	!comprobarMejorPatron(A,B,D).
++!grupo5Fil1(X,Y,C,A,B,D).
 
-+!agrupacion(X,Y,C,A,B,D):grupo5Col(X,Y,C) <-
++!grupo5Col1(X,Y,C,A,B,D):grupo5Col(X,Y,C) <-
+	-+puntosPatron(6);
 	!calcularPuntos(X,Y);
 	!calcularPuntos(X,Y+1);
 	!calcularPuntos(X,Y+2);
 	!calcularPuntos(X,Y-1);
 	!calcularPuntos(X,Y-2);
 	!comprobarMejorPatron(A,B,D).
++!grupo5Col1(X,Y,C,A,B,D).
 
 //Agrupacion de 4
-+!agrupacion(X,Y,C,A,B,D):grupo4FilA(X,Y,C) <-
++!grupo4FilA1(X,Y,C,A,B,D):grupo4FilA(X,Y,C) <-
+	-+puntosPatron(2);
 	!calcularPuntos(X,Y);
 	!calcularPuntos(X-1,Y);
 	!calcularPuntos(X+1,Y);
 	!calcularPuntos(X+2,Y);
 	!comprobarMejorPatron(A,B,D).
++!grupo4FilA1(X,Y,C,A,B,D).
 
-+!agrupacion(X,Y,C,A,B,D):grupo4FilB(X,Y,C) <-
++!grupo4FilB1(X,Y,C,A,B,D):grupo4FilB(X,Y,C) <-
+	-+puntosPatron(2);
 	!calcularPuntos(X,Y);
 	!calcularPuntos(X-1,Y);
 	!calcularPuntos(X-2,Y);
 	!calcularPuntos(X+1,Y);
 	!comprobarMejorPatron(A,B,D).
++!grupo4FilB1(X,Y,C,A,B,D).
 
-+!agrupacion(X,Y,C,A,B,D):grupo4ColA(X,Y,C) <-
++!grupo4ColA1(X,Y,C,A,B,D):grupo4ColA(X,Y,C) <-
+	-+puntosPatron(2);
 	!calcularPuntos(X,Y);
 	!calcularPuntos(X,Y-1);
 	!calcularPuntos(X,Y+1);
 	!calcularPuntos(X,Y+2);
 	!comprobarMejorPatron(A,B,D).
++!grupo4ColA1(X,Y,C,A,B,D).
 
-+!agrupacion(X,Y,C,A,B,D):grupo4ColB(X,Y,C) <-
++!grupo4ColB1(X,Y,C,A,B,D):grupo4ColB(X,Y,C) <-
+	-+puntosPatron(2);
 	!calcularPuntos(X,Y);
 	!calcularPuntos(X,Y-1);
 	!calcularPuntos(X,Y-2);
 	!calcularPuntos(X,Y+1);
 	!comprobarMejorPatron(A,B,D).
++!grupo4ColB1(X,Y,C,A,B,D).
 
 //Agrupacion cuadrado
-+!agrupacion(X,Y,C,A,B,D):grupo4SquareA(X,Y,C) <-
++!grupo4SquareA1(X,Y,C,A,B,D):grupo4SquareA(X,Y,C) <-
+	-+puntosPatron(4);
 	!calcularPuntos(X,Y);
 	!calcularPuntos(X+1,Y);
 	!calcularPuntos(X,Y+1);
 	!calcularPuntos(X+1,Y+1);
 	!comprobarMejorPatron(A,B,D).
++!grupo4SquareA1(X,Y,C,A,B,D).
 
-+!agrupacion(X,Y,C,A,B,D):grupo4SquareB(X,Y,C) <-
++!grupo4SquareB1(X,Y,C,A,B,D):grupo4SquareB(X,Y,C) <-
+	-+puntosPatron(4);
 	!calcularPuntos(X,Y);
 	!calcularPuntos(X-1,Y);
 	!calcularPuntos(X,Y+1);
 	!calcularPuntos(X-1,Y+1);
 	!comprobarMejorPatron(A,B,D).
++!grupo4SquareB1(X,Y,C,A,B,D).
 
-+!agrupacion(X,Y,C,A,B,D):grupo4SquareC(X,Y,C) <-
++!grupo4SquareC1(X,Y,C,A,B,D):grupo4SquareC(X,Y,C) <-
+	-+puntosPatron(4);
 	!calcularPuntos(X,Y);
 	!calcularPuntos(X+1,Y);
 	!calcularPuntos(X,Y-1);
 	!calcularPuntos(X+1,Y-1);
 	!comprobarMejorPatron(A,B,D).
++!grupo4SquareC1(X,Y,C,A,B,D).
 
-+!agrupacion(X,Y,C,A,B,D):grupo4SquareD(X,Y,C) <-
++!grupo4SquareD1(X,Y,C,A,B,D):grupo4SquareD(X,Y,C) <-
+	-+puntosPatron(4);
 	!calcularPuntos(X,Y);
 	!calcularPuntos(X-1,Y);
 	!calcularPuntos(X,Y-1);
 	!calcularPuntos(X-1,Y-1);
 	!comprobarMejorPatron(A,B,D).
-
++!grupo4SquareD1(X,Y,C,A,B,D).
 
 //Agrupacion de 3
-+!agrupacion(X,Y,C,A,B,D):grupo3FilA(X,Y,C) <-
++!grupo3FilA1(X,Y,C,A,B,D):grupo3FilA(X,Y,C) <-
 	!calcularPuntos(X,Y);
 	!calcularPuntos(X-1,Y);
 	!calcularPuntos(X+1,Y);
 	!comprobarMejorPatron(A,B,D).
++!grupo3FilA1(X,Y,C,A,B,D).
 
-+!agrupacion(X,Y,C,A,B,D):grupo3FilB(X,Y,C) <-
++!grupo3FilB1(X,Y,C,A,B,D):grupo3FilB(X,Y,C) <-
 	!calcularPuntos(X,Y);
 	!calcularPuntos(X+1,Y);
 	!calcularPuntos(X+2,Y);
 	!comprobarMejorPatron(A,B,D).
++!grupo3FilB1(X,Y,C,A,B,D).
 
-+!agrupacion(X,Y,C,A,B,D):grupo3FilC(X,Y,C) <-
++!grupo3FilC1(X,Y,C,A,B,D):grupo3FilC(X,Y,C) <-
 	!calcularPuntos(X,Y);
 	!calcularPuntos(X-1,Y);
 	!calcularPuntos(X-2,Y);
 	!comprobarMejorPatron(A,B,D).
++!grupo3FilC1(X,Y,C,A,B,D).
 
-+!agrupacion(X,Y,C,A,B,D):grupo3ColA(X,Y,C) <-
++!grupo3ColA1(X,Y,C,A,B,D):grupo3ColA(X,Y,C) <-
 	!calcularPuntos(X,Y);
 	!calcularPuntos(X,Y-1);
 	!calcularPuntos(X,Y+1);
 	!comprobarMejorPatron(A,B,D).
++!grupo3ColA1(X,Y,C,A,B,D).
 
-+!agrupacion(X,Y,C,A,B,D):grupo3ColB(X,Y,C) <-
++!grupo3ColB1(X,Y,C,A,B,D):grupo3ColB(X,Y,C) <-
 	!calcularPuntos(X,Y);
 	!calcularPuntos(X,Y+1);
 	!calcularPuntos(X,Y+2);
 	!comprobarMejorPatron(A,B,D).
++!grupo3ColB1(X,Y,C,A,B,D).
 
-+!agrupacion(X,Y,C,A,B,D):grupo3ColC(X,Y,C) <-
++!grupo3ColC1(X,Y,C,A,B,D):grupo3ColC(X,Y,C) <-
 	!calcularPuntos(X,Y);
 	!calcularPuntos(X,Y-1);
 	!calcularPuntos(X,Y-2);
 	!comprobarMejorPatron(A,B,D).
-	
-+!agrupacion(X,Y,C,A,B,D).
++!grupo3ColC1(X,Y,C,A,B,D).	
 
 +!comprobarMejorPatron(X,Y,D) : puntosPatron(P1) & puntosMejorPatron(P2) & P1 > P2 <-
 	-+puntosMejorPatron(P1);
