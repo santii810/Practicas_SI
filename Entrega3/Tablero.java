@@ -233,11 +233,11 @@ public class Tablero extends Environment {
 	  
 	  public void drawProp(Graphics g, int x, int y){
 		  if(propietario[x][y] == 1){
-			  Color p1=new Color(30, 175, 175);
+			  Color p1=new Color(162,181,205);
 			  g.setColor(p1);
 			  g.fillRoundRect(x*cellSizeW,y*cellSizeH,cellSizeW,cellSizeH,10,10);
 		  }else if(propietario[x][y] == 2){
-			  Color p2=new Color(233, 134, 113);
+			  Color p2=new Color(199, 71, 197);
 			  g.setColor(p2);
 			  g.fillRoundRect(x*cellSizeW,y*cellSizeH,cellSizeW,cellSizeH,10,10);
 		  }
@@ -279,11 +279,11 @@ public class Tablero extends Environment {
           break;
 		  case Tablero.BLANCO:
 			  if(propietario[x][y] == 1){
-				  Color p1=new Color(30, 175, 175);
+				  Color p1=new Color(162,181,205);
 				  g.setColor(p1);
 				  g.fillRoundRect(x*cellSizeW,y*cellSizeH,cellSizeW,cellSizeH,10,10);
 			  }else if(propietario[x][y] == 2){
-				  Color p2=new Color(233, 134, 113);
+				  Color p2=new Color(199, 71, 197);
 				  g.setColor(p2);
 				  g.fillRoundRect(x*cellSizeW,y*cellSizeH,cellSizeW,cellSizeH,10,10);
 			  }
@@ -329,7 +329,7 @@ public class Tablero extends Environment {
       }
 
       public void drawObstacle(Graphics g, int x, int y){
-        g.setColor(Color.lightGray);
+        g.setColor(Color.darkGray);
         g.fillRoundRect(x*cellSizeW,y*cellSizeH,cellSizeW,cellSizeH,15,15);
         g.setColor(Color.black);
         //drawString(g,x,y,new Font("Arial", Font.BOLD, 50),"*"); //Descomentar si se desea relleno de los obstaculos para una mejor visualizacion
