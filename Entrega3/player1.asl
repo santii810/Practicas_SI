@@ -28,11 +28,14 @@ valorFicha(ct,8).
 puntosPatron(0).
 puntosMejorPatron(0).
 
-hayPatron(X,Y,C,Nombre) :- (
-						 (grupo3FilA(X,Y,C) & Nombre = grupo3FilA) | (grupo3FilB(X,Y,C) & Nombre = grupo3FilB) | (grupo3FilC(X,Y,C) & Nombre = grupo3FilC) |
-						 (grupo3ColA(X,Y,C) & Nombre = grupo3ColA) | (grupo3ColB(X,Y,C) & Nombre = grupo3ColB) | (grupo3ColC(X,Y,C) & Nombre = grupo3ColC) |
-						 Nombre = none
-						 ).
+hayPatron(X,Y,C) :- (
+					 grupo3FilA(X,Y,C) | grupo3FilB(X,Y,C) | grupo3FilC(X,Y,C) |
+					 grupo3ColA(X,Y,C) | grupo3ColB(X,Y,C) | grupo3ColC(X,Y,C) |
+					 grupo4FilA(X,Y,C) | grupo4FilB(X,Y,C) | grupo4ColA(X,Y,C) | grupo4ColB(X,Y,C) |
+					 grupo4SquareA(X,Y,C) | grupo4SquareB(X,Y,C) | grupo4SquareC(X,Y,C) | grupo4SquareD(X,Y,C) |
+					 grupo5Fil(X,Y,C) | grupo5Col(X,Y,C) |
+					 grupo5TN(X,Y,C) | grupo5TI(X,Y,C) | grupo5TR(X,Y,C) | grupo5TL(X,Y,C)
+					).
 
 
 //Agrupaciones de 3
@@ -71,13 +74,13 @@ grupo4SquareC(X,Y,C) :- // hueco abajo-izquierda
 grupo4SquareD(X,Y,C) :- // hueco abajo-derecha
 	size(N) & X-1 >= 0 & Y+1 < N & datos(X,Y,C) & datos(X-1,Y,C) & datos(X,Y-1,C) & datos(X-1,Y-1,C).	
 
-//AgrupaciÃ³n de 5
+//Agrupación de 5
 //##_##
 grupo5Fil(X,Y,C) :- size(N) & X+2 < N & X-2 >= 0 & datos(X+1,Y,C) & datos(X+2,Y,C) & datos(X,Y,C) & datos(X-1,Y,C) & datos(X-2,Y,C).
 //(Medio vertical)##_##
 grupo5Col(X,Y,C) :- size(N) & Y+2 < N & Y-2 >= 0 & datos(X,Y+1,C) & datos(X,Y+2,C) & datos(X,Y,C) & datos(X,Y-1,C) & datos(X,Y-2,C).
 
-//AgrupaciÃ³n 5 en T
+//Agrupación 5 en T
 grupo5TN(X,Y,C) :- size(N) & X-1 >=0 & X+1 < N & Y+2 < N & datos(X-1,Y,C) & datos(X,Y,C) & datos(X+1,Y,C) & datos(X,Y+1,C) & datos(X,Y+2,C).
 grupo5TI(X,Y,C) :- size(N) & X-1 >=0 & X+1 < N & Y-2 < N & datos(X-1,Y,C) & datos(X,Y,C) & datos(X+1,Y,C) & datos(X,Y-1,C) & datos(X,Y-2,C).
 grupo5TR(X,Y,C) :- size(N) & X-2 >=0 & Y+1 < N & Y-1 >=0 & datos(X-1,Y,C) & datos(X-2,Y,C) & datos(X,Y,C) & datos(X,Y+1,C) & datos(X,Y-1,C).
@@ -140,7 +143,7 @@ movPrueba(Mov) :- Mov = moverDesdeEnDireccion(pos(1,0),"left").
 +!mirarPorPuntos(Own):jugada(none,none,none) <- //Aqui llegara si no se registra una jugada de conquistar celdas neutrales
 	.findall(tablero(celda(X,Y,Own),ficha(C,T)),tablero(celda(X,Y,Own),ficha(C,T)),Lista);
 	for ( .member(tablero(celda(X1,Y1,O1),ficha(C1,T1)),Lista) ) {
-		!comprobarDir(X1,Y1);
+		!comprobarDir2(X1,Y1);
 	}.
 +!mirarPorPuntos(Own).
 
@@ -640,8 +643,79 @@ movPrueba(Mov) :- Mov = moverDesdeEnDireccion(pos(1,0),"left").
 	
 +!mejorPatronNeutro(X,Y,D).
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////Conseguir mayor puntuacion sin dar terreno al rival//////////////////////////////////////////////////////////////////////////////////////
+
+//comprobaciones para no dar terreno al rival en la busqueda de mejor puntuacion, comprobamos si se forman patrones al mover un ficha propiedad rival
+
++!comprobarDir2(X,Y) <-
+	-+puntosPatron(0);
+	!left2(X,Y,"left");
+	-+puntosPatron(0);
+	!up2(X,Y,"up");
+	-+puntosPatron(0);
+	!right2(X,Y,"right");
+	-+puntosPatron(0);
+	!down2(X,Y,"down");
+	.
+
++!right2(X,Y,D): tablero(celda(X,Y,O1),ficha(C1,T1)) & tablero(celda(X+1,Y,O2),ficha(C2,T2)) & rival(O2) <-	
+	!intercambio(X,Y,X+1,Y);
+	if(not hayPatron(X,Y,C2)){
+		!agrupacion(X+1,Y,C,X,Y,D);	
+	};
+	!intercambio(X,Y,X+1,Y);
+	.
++!right2(X,Y,D): tablero(celda(X,Y,O1),ficha(C1,T1)) & tablero(celda(X+1,Y,O2),ficha(C2,T2)) <-	
+	!intercambio(X,Y,X+1,Y);
+	!agrupacion(X+1,Y,C,X,Y,D);	
+	!intercambio(X,Y,X+1,Y);
+	.
++!right2(X,Y,D).
+
++!left(X,Y,D): tablero(celda(X,Y,O1),ficha(C1,T1)) & tablero(celda(X-1,Y,O2),ficha(C2,T2)) & rival(O2) <-	
+	!intercambio(X,Y,X-1,Y);
+	if(not hayPatron(X,Y,C2)){
+		!agrupacion(X-1,Y,C,X,Y,D);
+	};
+	!intercambio(X,Y,X-1,Y);
+	.
++!left(X,Y,D): tablero(celda(X,Y,O1),ficha(C1,T1)) & tablero(celda(X-1,Y,O2),ficha(C2,T2)) <-	
+	!intercambio(X,Y,X-1,Y);
+	!agrupacion(X-1,Y,C,X,Y,D);
+	!intercambio(X,Y,X-1,Y);
+	.
++!left2(X,Y,D).
+
++!down2(X,Y,D): tablero(celda(X,Y,O1),ficha(C1,T1)) & tablero(celda(X,Y+1,O2),ficha(C2,T2)) & rival(O2) <-	
+	!intercambio(X,Y,X,Y+1);
+	if(not hayPatron(X,Y,C2)){
+		!agrupacion(X,Y+1,C,X,Y,D);
+	};
+	!intercambio(X,Y,X,Y+1);
+	.
++!down2(X,Y,D): tablero(celda(X,Y,O1),ficha(C1,T1)) & tablero(celda(X,Y+1,O2),ficha(C2,T2)) <-	
+	!intercambio(X,Y,X,Y+1);
+	!agrupacion(X,Y+1,C,X,Y,D);
+	!intercambio(X,Y,X,Y+1);
+	.
++!down2(X,Y,D).
+
++!up2(X,Y,D): tablero(celda(X,Y,O1),ficha(C1,T1)) & tablero(celda(X,Y-1,O2),ficha(C2,T2)) & rival(O2) <-	
+	!intercambio(X,Y,X,Y-1);
+	if(not hayPatron(X,Y,C2)){
+		!agrupacion(X,Y-1,C,X,Y,D);
+	};
+	!intercambio(X,Y-1,X,Y);
+	.
++!up2(X,Y,D): tablero(celda(X,Y,O1),ficha(C1,T1)) & tablero(celda(X,Y-1,O2),ficha(C2,T2)) <-	
+	!intercambio(X,Y,X,Y-1);
+	!agrupacion(X,Y-1,C,X,Y,D);
+	!intercambio(X,Y-1,X,Y);
+	.
++!up2(X,Y,D).
 
 
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 //Estrategia para level 1 y 2
