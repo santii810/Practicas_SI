@@ -36,8 +36,8 @@ obstacles(10). //Numero de obstaculos a generar
 celdasPlayer(player1,0).
 celdasPlayer(player2,0).
 
-limitPoints(1,100). //Puntuacion a obtener para ganar un nivel
-limitPoints(2,100).
+limitPoints(1,1). //Puntuacion a obtener para ganar un nivel
+limitPoints(2,1).
 limitPoints(3,100).
 
 points(1,player1,0). //Puntuacion de cada jugador en cada nivel [ points(nivel,jugador,puntos) ]
